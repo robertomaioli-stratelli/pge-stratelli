@@ -1,0 +1,19 @@
+# INPACTA - proteção da raiz do projeto
+# A aplicação deve ser acessada somente pelo VirtualHost cujo DocumentRoot aponta para /public.
+Options -Indexes
+RewriteEngine On
+
+# Ambiente XAMPP local: qualquer tentativa de abrir a pasta física pelo localhost
+# é enviada para a URL oficial da aplicação.
+RewriteCond %{HTTP_HOST} ^(?:localhost|127\.0\.0\.1)(?::\d+)?$ [NC]
+RewriteRule ^ http://plataforma.local/login [R=302,L]
+
+# Mesmo que a raiz seja exposta por engano, bloqueia diretórios internos.
+RewriteRule ^(?:app|bin|config|database|deploy|legacy|storage)(?:/|$) - [F,L,NC]
+
+# Bloqueia arquivos de configuração, código/backup e artefatos de implantação.
+RewriteRule ^(?:\.env(?:\..*)?|routes\.php|composer\.(?:json|lock)|.*\.(?:sql|md|log|ini|bak|old|orig|zip|tar|gz|7z))(?:$|/) - [F,L,NC]
+
+<FilesMatch "^(?:\.env(?:\..*)?|routes\.php|composer\.(?:json|lock)|.*\.(?:sql|md|log|ini|bak|old|orig|zip|tar|gz|7z))$">
+    Require all denied
+</FilesMatch>

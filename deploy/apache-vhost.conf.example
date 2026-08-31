@@ -1,0 +1,20 @@
+# Exemplo Apache de produção/local. Ajuste caminhos e domínio.
+<VirtualHost *:80>
+    ServerName stratelli.local
+    DocumentRoot "C:/xampp/htdocs/stratelli/plataforma_etapa1/public"
+
+    <Directory "C:/xampp/htdocs/stratelli/plataforma_etapa1/public">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    # Defesa adicional: a raiz do projeto nunca deve ser servida diretamente.
+    <Directory "C:/xampp/htdocs/stratelli/plataforma_etapa1">
+        Options -Indexes
+        AllowOverride All
+    </Directory>
+
+    ErrorLog "logs/stratelli-error.log"
+    CustomLog "logs/stratelli-access.log" common
+</VirtualHost>

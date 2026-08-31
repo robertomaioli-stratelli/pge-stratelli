@@ -1,0 +1,17 @@
+server {
+    listen 80;
+    server_name inpacta.exemplo.com.br;
+    root /var/www/inpacta/public;
+    index index.php;
+
+    location ~ \.php$ { return 404; }
+    location / { try_files $uri $uri/ /index.php?$query_string; }
+    location ~ ^/assets/ { try_files $uri =404; expires 7d; }
+
+    location = /index.php {
+        if ($request_uri ~* "\.php(?:[/?]|$)") { return 404; }
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root/index.php;
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+    }
+}

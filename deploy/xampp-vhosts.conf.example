@@ -1,0 +1,36 @@
+# Cole/ajuste em: C:/xampp/apache/conf/extra/httpd-vhosts.conf
+
+# Mantém localhost disponível, mas impede que a pasta física do INPACTA seja usada como entrada.
+<VirtualHost *:80>
+    ServerName localhost
+    DocumentRoot "C:/xampp/htdocs"
+
+    <Directory "C:/xampp/htdocs">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    RedirectMatch 302 ^/stratelli/plataforma_etapa1(?:/.*)?$ http://stratelli.local/login
+</VirtualHost>
+
+# Entrada oficial do INPACTA.
+<VirtualHost *:80>
+    ServerName stratelli.local
+    DocumentRoot "C:/xampp/htdocs/stratelli/plataforma_etapa1/public"
+
+    <Directory "C:/xampp/htdocs/stratelli/plataforma_etapa1/public">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    # A raiz permanece sem listagem; o .htaccess da raiz bloqueia conteúdo sensível.
+    <Directory "C:/xampp/htdocs/stratelli/plataforma_etapa1">
+        Options -Indexes
+        AllowOverride All
+    </Directory>
+
+    ErrorLog "logs/stratelli-error.log"
+    CustomLog "logs/stratelli-access.log" common
+</VirtualHost>

@@ -1,0 +1,178 @@
+/* INPACTA v4.20.9 — Identidade visual dinâmica dos cabeçalhos por município */
+.tenant-theme-active{
+    --tenant-primary:#082A55;
+    --tenant-secondary:#176FDD;
+    --tenant-header-text:#FFFFFF;
+}
+
+/* Cabeçalhos principais da instância */
+.tenant-theme-active .production-content > .hero,
+.tenant-theme-active .production-content > .module-page > .module-hero,
+.tenant-theme-active .production-content > .historical-page > .historical-hero,
+.tenant-theme-active .production-content .sla-page > .sla-hero,
+.tenant-theme-active .production-content .inp-search-page > .inp-search-hero,
+.tenant-theme-active .production-content .instance-params-hero{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    padding:24px!important;
+    border:1px solid color-mix(in srgb,var(--tenant-primary) 78%, white 22%)!important;
+    border-radius:24px!important;
+    background:linear-gradient(125deg,var(--tenant-primary) 0%,color-mix(in srgb,var(--tenant-primary) 72%,var(--tenant-secondary) 28%) 68%,var(--tenant-secondary) 100%)!important;
+    color:var(--tenant-header-text)!important;
+    box-shadow:0 18px 42px color-mix(in srgb,var(--tenant-primary) 20%,transparent)!important;
+}
+
+.tenant-theme-active .production-content > .hero > *,
+.tenant-theme-active .production-content > .module-page > .module-hero > *,
+.tenant-theme-active .production-content > .historical-page > .historical-hero > *,
+.tenant-theme-active .production-content .sla-page > .sla-hero > *,
+.tenant-theme-active .production-content .inp-search-page > .inp-search-hero > *,
+.tenant-theme-active .production-content .instance-params-hero > *{
+    position:relative;
+    z-index:2;
+}
+
+/* Tipografia e textos dentro dos cabeçalhos */
+.tenant-theme-active .production-content > .hero h1,
+.tenant-theme-active .production-content > .hero h2,
+.tenant-theme-active .production-content > .module-page > .module-hero h1,
+.tenant-theme-active .production-content > .module-page > .module-hero h2,
+.tenant-theme-active .production-content > .historical-page > .historical-hero h1,
+.tenant-theme-active .production-content .sla-page > .sla-hero h1,
+.tenant-theme-active .production-content .inp-search-page > .inp-search-hero h1,
+.tenant-theme-active .production-content .instance-params-hero h2{
+    color:var(--tenant-header-text)!important;
+}
+
+.tenant-theme-active .production-content > .hero p,
+.tenant-theme-active .production-content > .module-page > .module-hero p,
+.tenant-theme-active .production-content > .historical-page > .historical-hero p,
+.tenant-theme-active .production-content .sla-page > .sla-hero p,
+.tenant-theme-active .production-content .inp-search-page > .inp-search-hero-main > p,
+.tenant-theme-active .production-content .instance-params-hero p{
+    color:color-mix(in srgb,var(--tenant-header-text) 82%,transparent)!important;
+}
+
+/* Chips, avisos e contexto dentro dos cabeçalhos */
+.tenant-theme-active .production-content > .hero .notice,
+.tenant-theme-active .production-content > .module-page > .module-hero .module-context,
+.tenant-theme-active .production-content > .historical-page > .historical-hero .historical-eyebrow,
+.tenant-theme-active .production-content .sla-page > .sla-hero .sla-eyebrow,
+.tenant-theme-active .production-content .sla-page > .sla-hero .sla-current-phase,
+.tenant-theme-active .production-content .inp-search-page > .inp-search-hero .inp-search-eyebrow,
+.tenant-theme-active .production-content .inp-search-page > .inp-search-hero .inp-search-hero-domains span,
+.tenant-theme-active .production-content .instance-params-hero .instance-params-eyebrow,
+.tenant-theme-active .production-content .instance-params-hero .instance-params-hero-status{
+    border-color:color-mix(in srgb,var(--tenant-header-text) 24%,transparent)!important;
+    background:color-mix(in srgb,var(--tenant-header-text) 11%,transparent)!important;
+    color:var(--tenant-header-text)!important;
+}
+
+.tenant-theme-active .production-content > .hero .notice,
+.tenant-theme-active .production-content > .hero .notice.purple{
+    min-width:min(430px,42%);
+    color:var(--tenant-header-text)!important;
+}
+
+.tenant-theme-active .production-content .instance-params-hero-status small,
+.tenant-theme-active .production-content .instance-params-hero-status span{
+    color:color-mix(in srgb,var(--tenant-header-text) 72%,transparent)!important;
+}
+.tenant-theme-active .production-content .instance-params-hero-status b{color:var(--tenant-header-text)!important}
+
+/* Botões dentro de cabeçalhos com contraste automático */
+.tenant-theme-active .production-content > .module-page > .module-hero .btn.neutral,
+.tenant-theme-active .production-content > .historical-page > .historical-hero .btn.neutral,
+.tenant-theme-active .production-content .sla-page > .sla-hero .btn.neutral,
+.tenant-theme-active .production-content .inp-search-page > .inp-search-hero .btn.neutral{
+    border-color:color-mix(in srgb,var(--tenant-header-text) 25%,transparent)!important;
+    background:color-mix(in srgb,var(--tenant-header-text) 10%,transparent)!important;
+    color:var(--tenant-header-text)!important;
+}
+.tenant-theme-active .production-content > .module-page > .module-hero .btn.primary,
+.tenant-theme-active .production-content > .historical-page > .historical-hero .btn.primary,
+.tenant-theme-active .production-content .sla-page > .sla-hero .btn.primary,
+.tenant-theme-active .production-content .inp-search-page > .inp-search-hero .btn.primary{
+    border-color:var(--tenant-header-text)!important;
+    background:var(--tenant-header-text)!important;
+    color:var(--tenant-primary)!important;
+}
+
+/* Busca Global: mantém cards auxiliares claros, mas herda o cabeçalho municipal */
+.tenant-theme-active .inp-search-hero-side article{
+    background:color-mix(in srgb,white 94%,var(--tenant-secondary) 6%)!important;
+}
+
+/* Semicírculo decorativo comum a todos os cabeçalhos principais */
+.tenant-decoration-semicirculo .production-content > .hero::after,
+.tenant-decoration-semicirculo .production-content > .module-page > .module-hero::after,
+.tenant-decoration-semicirculo .production-content > .historical-page > .historical-hero::after,
+.tenant-decoration-semicirculo .production-content .sla-page > .sla-hero::after,
+.tenant-decoration-semicirculo .production-content .inp-search-page > .inp-search-hero::after,
+.tenant-decoration-semicirculo .production-content .instance-params-hero::after{
+    content:""!important;
+    display:block!important;
+    position:absolute!important;
+    z-index:1!important;
+    width:250px!important;
+    height:250px!important;
+    right:52px!important;
+    top:-145px!important;
+    bottom:auto!important;
+    border:0!important;
+    border-radius:50%!important;
+    background:color-mix(in srgb,var(--tenant-secondary) 38%,var(--tenant-header-text) 62%)!important;
+    opacity:.20!important;
+    box-shadow:none!important;
+    pointer-events:none!important;
+}
+
+.tenant-decoration-nenhuma .production-content > .hero::after,
+.tenant-decoration-nenhuma .production-content > .module-page > .module-hero::after,
+.tenant-decoration-nenhuma .production-content > .historical-page > .historical-hero::after,
+.tenant-decoration-nenhuma .production-content .sla-page > .sla-hero::after,
+.tenant-decoration-nenhuma .production-content .inp-search-page > .inp-search-hero::after,
+.tenant-decoration-nenhuma .production-content .instance-params-hero::after{
+    display:none!important;
+}
+
+/* O brasão ganha uma moldura neutra sobre o fundo da instância */
+.tenant-theme-active .territory-hero-coat,
+.tenant-theme-active .territory-hero-coat.placeholder{
+    border-color:color-mix(in srgb,var(--tenant-header-text) 25%,transparent)!important;
+    background:color-mix(in srgb,white 94%,var(--tenant-secondary) 6%)!important;
+}
+
+@media(max-width:900px){
+    .tenant-theme-active .production-content > .hero,
+    .tenant-theme-active .production-content > .module-page > .module-hero,
+    .tenant-theme-active .production-content > .historical-page > .historical-hero,
+    .tenant-theme-active .production-content .sla-page > .sla-hero,
+    .tenant-theme-active .production-content .inp-search-page > .inp-search-hero,
+    .tenant-theme-active .production-content .instance-params-hero{
+        padding:20px!important;
+    }
+    .tenant-theme-active .production-content > .hero .notice{min-width:0;width:100%;max-width:none}
+    .tenant-decoration-semicirculo .production-content > .hero::after,
+    .tenant-decoration-semicirculo .production-content > .module-page > .module-hero::after,
+    .tenant-decoration-semicirculo .production-content > .historical-page > .historical-hero::after,
+    .tenant-decoration-semicirculo .production-content .sla-page > .sla-hero::after,
+    .tenant-decoration-semicirculo .production-content .inp-search-page > .inp-search-hero::after,
+    .tenant-decoration-semicirculo .production-content .instance-params-hero::after{
+        width:190px!important;height:190px!important;right:-18px!important;top:-105px!important;
+    }
+}
+
+@media print{
+    .tenant-theme-active .production-content > .hero,
+    .tenant-theme-active .production-content > .module-page > .module-hero,
+    .tenant-theme-active .production-content > .historical-page > .historical-hero,
+    .tenant-theme-active .production-content .sla-page > .sla-hero,
+    .tenant-theme-active .production-content .inp-search-page > .inp-search-hero,
+    .tenant-theme-active .production-content .instance-params-hero{
+        box-shadow:none!important;
+        print-color-adjust:exact;
+        -webkit-print-color-adjust:exact;
+    }
+}

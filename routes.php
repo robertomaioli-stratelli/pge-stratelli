@@ -1,0 +1,111 @@
+<?php
+use App\Controllers\AdminController;
+use App\Controllers\AuthController;
+use App\Controllers\TenantController;
+use App\Controllers\MediaController;
+use App\Controllers\NotificationController;
+use App\Controllers\SearchController;
+use App\Core\Response;
+use App\Core\Router;
+
+$router=new Router();
+$router->get('/',fn()=>Response::redirect(Router::homeForUser()),['auth']);
+$router->get('/login',[AuthController::class,'loginForm'],['guest']);
+$router->post('/login',[AuthController::class,'login'],['guest']);
+$router->get('/esqueci-senha',[AuthController::class,'forgotForm'],['guest']);
+$router->post('/esqueci-senha',[AuthController::class,'forgot'],['guest']);
+$router->get('/redefinir-senha/{token}',[AuthController::class,'resetForm'],['guest']);
+$router->post('/redefinir-senha/{token}',[AuthController::class,'reset'],['guest']);
+$router->post('/logout',[AuthController::class,'logout'],['auth']);
+$router->get('/busca',[SearchController::class,'index'],['auth']);
+$router->get('/busca/sugestoes',[SearchController::class,'suggestions'],['auth']);
+$router->get('/notificacoes',[NotificationController::class,'index'],['auth']);
+$router->get('/notificacoes/{id}/abrir',[NotificationController::class,'open'],['auth']);
+$router->post('/notificacoes/{id}/ler',[NotificationController::class,'markRead'],['auth']);
+$router->post('/notificacoes/ler-todas',[NotificationController::class,'markAllRead'],['auth']);
+$router->get('/conta/senha',[AuthController::class,'changePasswordForm'],['auth']);
+$router->post('/conta/senha',[AuthController::class,'changePassword'],['auth']);
+$router->get('/media/municipios/{id}/brasao',[MediaController::class,'municipioBrasao'],['auth']);
+$router->get('/media/municipios/{id}/territorio',[MediaController::class,'municipioTerritorio'],['auth']);
+
+$router->get('/admin',[AdminController::class,'dashboard'],['auth','platform_admin']);
+$router->get('/admin/pendencias',[AdminController::class,'pendencias'],['auth','platform_admin']);
+$router->get('/admin/auditoria',[AdminController::class,'auditoria'],['auth','platform_admin']);
+$router->get('/admin/indicadores-historicos',[AdminController::class,'indicadoresHistoricos'],['auth','platform_admin']);
+$router->get('/admin/indicadores-historicos/exportar',[AdminController::class,'exportIndicadoresHistoricos'],['auth','platform_admin']);
+$router->get('/admin/auditoria/exportar',[AdminController::class,'exportAuditoria'],['auth','platform_admin']);
+$router->get('/admin/municipios',[AdminController::class,'municipios'],['auth','platform_admin']);
+$router->post('/admin/municipios',[AdminController::class,'createMunicipio'],['auth','platform_admin']);
+$router->get('/admin/municipios/{id}',[AdminController::class,'municipioDetalhes'],['auth','platform_admin']);
+$router->post('/admin/municipios/{id}',[AdminController::class,'updateMunicipio'],['auth','platform_admin']);
+$router->post('/admin/municipios/{id}/modulos/territorio',[AdminController::class,'toggleTerritorialModule'],['auth','platform_admin']);
+$router->post('/admin/municipios/{id}/inteligencia-territorial',[AdminController::class,'toggleTerritorialModule'],['auth','platform_admin']); // compatibilidade v4.20.10
+$router->get('/admin/usuarios',[AdminController::class,'usuarios'],['auth','platform_admin']);
+$router->post('/admin/usuarios',[AdminController::class,'createUsuario'],['auth','platform_admin']);
+$router->get('/admin/usuarios/{id}',[AdminController::class,'editUsuario'],['auth','platform_admin']);
+$router->post('/admin/usuarios/{id}',[AdminController::class,'updateUsuario'],['auth','platform_admin']);
+$router->post('/admin/usuarios/{id}/senha',[AdminController::class,'updateUsuarioSenha'],['auth','platform_admin']);
+$router->post('/admin/usuarios/{id}/status',[AdminController::class,'toggleUsuario'],['auth','platform_admin']);
+$router->post('/admin/usuarios/{id}/recuperacao',[AdminController::class,'recoveryUsuario'],['auth','platform_admin']);
+$router->get('/admin/configuracoes',[AdminController::class,'configuracoes'],['auth','platform_admin']);
+
+$router->get('/{municipio}/dashboard',[TenantController::class,'dashboard'],['auth','tenant']);
+$router->get('/{municipio}/municipio',[TenantController::class,'municipioCadastro'],['auth','tenant']);
+$router->get('/{municipio}/pendencias',[TenantController::class,'pendencias'],['auth','tenant']);
+$router->get('/{municipio}/workflow',[TenantController::class,'workflow'],['auth','tenant']);
+$router->get('/{municipio}/workflow/fase/{fase}',[TenantController::class,'workflowPhase'],['auth','tenant']);
+$router->post('/{municipio}/etapa-1/arquivar',[TenantController::class,'archiveEtapa1'],['auth','tenant','platform_admin']);
+$router->get('/{municipio}/etapa-1/arquivamento/download',[TenantController::class,'downloadEtapa1Archive'],['auth','tenant','platform_admin']);
+$router->get('/{municipio}/documentos',[TenantController::class,'documentos'],['auth','tenant','manager']);
+$router->get('/{municipio}/documentos/{requisito}/auditoria',[TenantController::class,'documentAudit'],['auth','tenant']);
+$router->get('/{municipio}/territorio',[TenantController::class,'territorio'],['auth','tenant']);
+$router->post('/{municipio}/territorio/camadas/salvar',[TenantController::class,'territorialSaveLayer'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/territorio/camadas/{id}/alternar',[TenantController::class,'territorialToggleLayer'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/territorio/geocodificar',[TenantController::class,'territorialGeocode'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/territorio/objetos/salvar',[TenantController::class,'territorialSaveObject'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/territorio/objetos/{id}/alternar',[TenantController::class,'territorialToggleObject'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/territorio/importar',[TenantController::class,'territorialImport'],['auth','tenant','platform_admin']);
+$router->get('/{municipio}/relatorios',[TenantController::class,'relatorios'],['auth','tenant']);
+$router->get('/{municipio}/relatorios/historicos',[TenantController::class,'indicadoresHistoricos'],['auth','tenant']);
+$router->get('/{municipio}/relatorios/historicos/exportar',[TenantController::class,'exportIndicadoresHistoricos'],['auth','tenant']);
+$router->get('/{municipio}/relatorios/sla',[TenantController::class,'slaSecretarias'],['auth','tenant']);
+$router->get('/{municipio}/relatorios/sla/exportar',[TenantController::class,'exportSlaSecretarias'],['auth','tenant']);
+$router->get('/{municipio}/historico',[TenantController::class,'historico'],['auth','tenant']);
+$router->get('/{municipio}/configuracoes',[TenantController::class,'configuracoes'],['auth','tenant','platform_admin']);
+
+$router->post('/{municipio}/workflow/documentos/{requisito}/enviar',[TenantController::class,'uploadDocument'],['auth','tenant']);
+$router->post('/{municipio}/workflow/modelos/{requisito}/enviar',[TenantController::class,'uploadModel'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/workflow/documentos/{documento}/validar',[TenantController::class,'validateDocument'],['auth','tenant','platform_admin']);
+$router->get('/{municipio}/arquivos/modelos/{requisito}',[TenantController::class,'downloadModel'],['auth','tenant']);
+$router->get('/{municipio}/arquivos/documentos/{documento}',[TenantController::class,'downloadDocument'],['auth','tenant']);
+$router->get('/{municipio}/arquivos/historico/{historico}',[TenantController::class,'downloadHistory'],['auth','tenant']);
+
+$router->post('/{municipio}/cronograma/inicio',[TenantController::class,'saveScheduleStart'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/cronograma/fases/{fase}/encerrar',[TenantController::class,'concludePhase'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/cronograma/fases/{fase}/concluir',[TenantController::class,'concludePhase'],['auth','tenant','platform_admin']); // compatibilidade v4.16 e anteriores
+$router->post('/{municipio}/cronograma/fases/{fase}/reabrir',[TenantController::class,'reopenPhase'],['auth','tenant','platform_admin']);
+
+$router->post('/{municipio}/configuracoes/parametros/salvar',[TenantController::class,'configSaveParameters'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/fases/salvar',[TenantController::class,'configSavePhase'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/fases/{id}/alternar',[TenantController::class,'configTogglePhase'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/secretarias/salvar',[TenantController::class,'configSaveSecretaria'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/secretarias/{id}/alternar',[TenantController::class,'configToggleSecretaria'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/departamentos/salvar',[TenantController::class,'configSaveDepartamento'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/departamentos/{id}/alternar',[TenantController::class,'configToggleDepartamento'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/tipos/salvar',[TenantController::class,'configSaveTipo'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/tipos/{id}/alternar',[TenantController::class,'configToggleTipo'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/documentos/salvar',[TenantController::class,'configSaveRequirement'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/documentos/{id}/alternar',[TenantController::class,'configToggleRequirement'],['auth','tenant','platform_admin']);
+$router->get('/{municipio}/configuracoes/importacao/modelo',[TenantController::class,'configImportTemplate'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/importacao/municipio/validar',[TenantController::class,'configImportPreviewMunicipio'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/importacao/planilha/validar',[TenantController::class,'configImportPreviewPlanilha'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/importacao/confirmar',[TenantController::class,'configImportExecute'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/importacao/cancelar',[TenantController::class,'configImportCancel'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/importacao/{id}/desfazer',[TenantController::class,'configImportUndo'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/restauracao/criar',[TenantController::class,'configSnapshotCreate'],['auth','tenant','platform_admin']);
+$router->get('/{municipio}/configuracoes/restauracao/{id}/download',[TenantController::class,'configSnapshotDownload'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/restauracao/importar',[TenantController::class,'configSnapshotImport'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/restauracao/{id}/restaurar',[TenantController::class,'configSnapshotRestore'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/restauracao/{id}/remover',[TenantController::class,'configSnapshotRemove'],['auth','tenant','platform_admin']);
+
+return $router;

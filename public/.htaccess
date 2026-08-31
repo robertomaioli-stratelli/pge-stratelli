@@ -1,0 +1,38 @@
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+RewriteEngine On
+
+# Cabeçalhos básicos de proteção
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# ==========================================================
+# INSTALADOR LIMPO
+# Permite somente o instalador específico.
+# Todos os demais .php continuam bloqueados diretamente.
+# ==========================================================
+
+RewriteRule ^instalacao_limpa\.php$ - [L,NC]
+
+# Nunca expõe outros nomes físicos .php na URL.
+RewriteCond %{THE_REQUEST} \s/+[^?]*\.php[\s?] [NC]
+RewriteRule ^ - [R=404,L]
+
+# Bloqueia arquivos sensíveis e diretórios ocultos.
+RewriteRule (^|/)\. - [F,L]
+RewriteRule ^(?:storage|app|config|database|bin|deploy|legacy)(?:/|$) - [F,L,NC]
+
+RewriteRule ^(?:routes\.php|.*\.(?:sql|md|log|ini|bak|old|orig|zip|tar|gz|7z))(?:$|/) - [F,L,NC]
+
+# Arquivos estáticos existentes continuam servidos.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Front Controller
+RewriteRule ^ index.php [QSA,L]
