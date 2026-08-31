@@ -1,0 +1,37 @@
+# Ambiente
+.env
+.env.*.local
+.env.backup
+
+# Dependências
+/vendor/
+/node_modules/
+
+# Storage / runtime
+/storage/*.lock
+/storage/logs/
+/storage/cache/
+/storage/sessions/
+/storage/uploads/
+
+# Backups e pacotes de instalação
+*.zip
+*.tar.gz
+*.sql.gz
+/PLATAFORMA_*.zip
+
+# Logs
+*.log
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+
+# Configuração local de servidor
+/deploy/*.local.conf
