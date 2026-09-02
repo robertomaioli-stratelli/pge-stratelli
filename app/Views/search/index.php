@@ -18,7 +18,7 @@
         <div class="inp-search-hero-side">
             <article><small>Pesquisa simultânea</small><b>7 áreas</b><span>Uma consulta, múltiplas fontes da plataforma.</span></article>
             <article><small>Acesso protegido</small><b>Escopo seguro</b><span>Você só encontra o que já tem permissão para acessar.</span></article>
-            <article class="shortcut"><small>Atalho rápido</small><b>Ctrl + K</b><span>Abra a busca de qualquer tela do INPACTA.</span></article>
+            <article class="shortcut"><small>Atalho rápido</small><b>Ctrl + K</b><span>Abra a busca de qualquer tela do INPACTA by Stratelli.</span></article>
         </div>
     </section>
 
@@ -48,7 +48,7 @@
 
     <?php if((function_exists('mb_strlen')?mb_strlen($query,'UTF-8'):strlen($query))<2): ?>
         <section class="inp-search-discovery">
-            <div class="inp-search-section-title"><div><small>EXPLORAR</small><h2>Pesquise por qualquer referência operacional</h2><p>A Busca Global conecta os principais cadastros e registros do INPACTA em uma única experiência.</p></div></div>
+            <div class="inp-search-section-title"><div><small>EXPLORAR</small><h2>Pesquise por qualquer referência operacional</h2><p>A Busca Global conecta os principais cadastros e registros do INPACTA by Stratelli em uma única experiência.</p></div></div>
             <div class="inp-search-discovery-grid">
                 <article><div class="inp-search-discovery-icon">▣</div><div><h3>Processos e documentos</h3><p>Localize fases, ETPs, termos, requisitos, entregáveis e documentos configurados.</p></div><span>Fases · Documentos</span></article>
                 <article><div class="inp-search-discovery-icon">⌁</div><div><h3>Arquivos e versões</h3><p>Encontre arquivos enviados, modelos documentais e versões auditadas.</p></div><span>Uploads · Modelos</span></article>

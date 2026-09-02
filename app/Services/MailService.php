@@ -25,7 +25,7 @@ final class MailService
         $username = trim((string)(getenv('MAIL_USERNAME') ?: ''));
         $password = (string)(getenv('MAIL_PASSWORD') ?: '');
         $from = trim((string)(getenv('MAIL_FROM') ?: $username));
-        $fromName = trim((string)(getenv('MAIL_FROM_NAME') ?: 'INPACTA By Stratelli'));
+        $fromName = trim((string)(getenv('MAIL_FROM_NAME') ?: 'INPACTA by Stratelli'));
         $timeout = max(5, (int)(getenv('MAIL_TIMEOUT') ?: 20));
         $verifyPeer = filter_var(getenv('MAIL_VERIFY_PEER') ?: 'true', FILTER_VALIDATE_BOOLEAN);
 
@@ -107,11 +107,11 @@ final class MailService
     {
         $safeName = htmlspecialchars($name !== '' ? $name : 'usuário', ENT_QUOTES, 'UTF-8');
         $safeUrl = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
-        $brand = 'INPACTA By Stratelli';
+        $brand = 'INPACTA by Stratelli';
         $subject = 'Recuperação de senha | ' . $brand;
         $html = '<!doctype html><html><body style="margin:0;background:#eef3f8;font-family:Arial,Helvetica,sans-serif;color:#082a55">'
             . '<div style="max-width:640px;margin:32px auto;background:#fff;border:1px solid #dce6f1;border-radius:18px;overflow:hidden">'
-            . '<div style="background:#0b3d6d;padding:28px 32px;color:#fff"><div style="font-size:30px;font-weight:800">INPACTA <span style="font-size:16px;font-weight:600;opacity:.9">By Stratelli</span></div><div style="margin-top:6px;font-size:13px;opacity:.9">Sistema de Governança de Proteção Municipal</div></div>'
+            . '<div style="background:#0b3d6d;padding:28px 32px;color:#fff"><div style="font-size:30px;font-weight:800">INPACTA <span style="font-size:16px;font-weight:600;opacity:.9">by Stratelli</span></div><div style="margin-top:6px;font-size:13px;opacity:.9">PGE - Plataforma de Governança Executiva</div></div>'
             . '<div style="padding:32px"><h2 style="margin:0 0 16px;font-size:24px">Recuperação de senha</h2>'
             . '<p style="font-size:15px;line-height:1.6">Olá, <strong>' . $safeName . '</strong>.</p>'
             . '<p style="font-size:15px;line-height:1.6">Recebemos uma solicitação para redefinir a senha da sua conta. O link abaixo é individual, de uso único e válido por <strong>' . $minutes . ' minutos</strong>.</p>'
@@ -119,7 +119,7 @@ final class MailService
             . '<p style="font-size:12px;line-height:1.6;color:#64748b">Se o botão não funcionar, copie este endereço no navegador:<br><span style="word-break:break-all">' . $safeUrl . '</span></p>'
             . '<div style="margin-top:24px;padding:14px 16px;background:#f6f8fb;border-radius:10px;font-size:12px;line-height:1.6;color:#5b6f84"><strong>Segurança:</strong> se você não solicitou esta recuperação, ignore esta mensagem. Sua senha atual continuará válida.</div>'
             . '</div><div style="padding:18px 32px;background:#f8fafc;border-top:1px solid #e5ebf2;font-size:11px;color:#718096">Mensagem automática do ' . $brand . '. Não responda a este e-mail.</div></div></body></html>';
-        $text = "Olá, {$name}.\n\nRecebemos uma solicitação para redefinir a senha da sua conta INPACTA By Stratelli.\n\nUse o link abaixo em até {$minutes} minutos:\n{$url}\n\nSe você não solicitou esta recuperação, ignore esta mensagem.";
+        $text = "Olá, {$name}.\n\nRecebemos uma solicitação para redefinir a senha da sua conta INPACTA by Stratelli.\n\nUse o link abaixo em até {$minutes} minutos:\n{$url}\n\nSe você não solicitou esta recuperação, ignore esta mensagem.";
         $this->send($to, $subject, $html, $text);
     }
 

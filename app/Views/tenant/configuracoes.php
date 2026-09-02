@@ -98,7 +98,7 @@
 
 <?php elseif($secao==='importacao'):$preview=$importacaoPreview??null;?>
 <section class="structure-import-hero">
-    <div><span class="structure-import-eyebrow">IMPLANTAÇÃO EM LOTE</span><h2>Importação de Estrutura</h2><p>Replique estruturas já homologadas ou utilize a planilha oficial da INPACTA para acelerar a implantação de <?=Format::h($tenant['nome'])?>.</p></div>
+    <div><span class="structure-import-eyebrow">IMPLANTAÇÃO EM LOTE</span><h2>Importação de Estrutura</h2><p>Replique estruturas já homologadas ou utilize a planilha oficial da INPACTA by Stratelli para acelerar a implantação de <?=Format::h($tenant['nome'])?>.</p></div>
     <div class="structure-import-hero-badge"><small>DESTINO</small><b><?=Format::h($tenant['nome'].' - '.$tenant['uf'])?></b><span>Somente a Stratelli pode executar importações</span></div>
 </section>
 
@@ -147,7 +147,7 @@
 <section class="instance-snapshot-section" id="pontos-restauracao">
     <div class="instance-snapshot-head">
         <div><span class="instance-snapshot-eyebrow">SEGURANÇA DA INSTÂNCIA</span><h3>Pontos de restauração</h3><p>Salve o estado atual de <?=Format::h($tenant['nome'])?> antes de alterações importantes. O pacote pode ser exportado e restaurado posteriormente.</p></div>
-        <div class="instance-snapshot-shield"><span>⟲</span><div><b>Restauração protegida</b><small>Antes de restaurar, o INPACTA cria automaticamente um novo ponto de segurança.</small></div></div>
+        <div class="instance-snapshot-shield"><span>⟲</span><div><b>Restauração protegida</b><small>Antes de restaurar, o INPACTA by Stratelli cria automaticamente um novo ponto de segurança.</small></div></div>
     </div>
     <div class="instance-snapshot-grid">
         <article class="instance-snapshot-card primary">
@@ -165,7 +165,7 @@
     <?php foreach($pontosRestauracao as$pt):$sum=$pt['resumo']??[];?>
         <article class="instance-snapshot-item <?=($pt['origem']??'')==='AUTOMATICO'?'automatic':''?>">
             <div class="instance-snapshot-item-main"><div class="instance-snapshot-state-icon"><?=($pt['origem']??'')==='AUTOMATICO'?'⛨':'◫'?></div><div><div class="instance-snapshot-item-title"><b><?=Format::h($pt['nome'])?></b><span><?=Format::h($pt['origem'])?></span></div><small><?=Format::h(Format::dateTime($pt['criado_em']))?> · <?=Format::h($pt['usuario_nome']?:'Stratelli')?> · <?=Format::h(Format::fileSize((int)$pt['tamanho']))?></small><div class="instance-snapshot-metrics"><span><?=$sum['fases']??0?> fases</span><span><?=$sum['secretarias']??0?> Secretarias</span><span><?=$sum['usuarios']??0?> usuários</span><span><?=$sum['documentos']??0?> docs.</span><span><?=$sum['arquivos']??0?> arquivos</span></div><?php if(!empty($pt['restaurado_em'])):?><em>Restaurado <?=intval($pt['restauracoes']??0)?> vez(es) · último em <?=Format::h(Format::dateTime($pt['restaurado_em']))?></em><?php endif;?></div></div>
-            <div class="instance-snapshot-actions"><a class="btn tiny secondary" href="/<?=Format::h($slug)?>/configuracoes/restauracao/<?=$pt['id']?>/download">↓ Exportar</a><form method="post" action="/<?=Format::h($slug)?>/configuracoes/restauracao/<?=$pt['id']?>/restaurar" onsubmit="return confirm('RESTAURAR A INSTÂNCIA para este estado? O INPACTA criará automaticamente um ponto de segurança do estado atual antes de prosseguir.');"><input type="hidden" name="_token" value="<?=Format::h($token)?>"><button class="btn tiny approve" type="submit">⟲ Restaurar</button></form><form method="post" action="/<?=Format::h($slug)?>/configuracoes/restauracao/<?=$pt['id']?>/remover" onsubmit="return confirm('Remover este ponto de restauração? Se ele não estiver exportado externamente, não poderá mais ser utilizado.');"><input type="hidden" name="_token" value="<?=Format::h($token)?>"><button class="btn tiny off" type="submit">Remover</button></form></div>
+            <div class="instance-snapshot-actions"><a class="btn tiny secondary" href="/<?=Format::h($slug)?>/configuracoes/restauracao/<?=$pt['id']?>/download">↓ Exportar</a><form method="post" action="/<?=Format::h($slug)?>/configuracoes/restauracao/<?=$pt['id']?>/restaurar" onsubmit="return confirm('RESTAURAR A INSTÂNCIA para este estado? O INPACTA by Stratelli criará automaticamente um ponto de segurança do estado atual antes de prosseguir.');"><input type="hidden" name="_token" value="<?=Format::h($token)?>"><button class="btn tiny approve" type="submit">⟲ Restaurar</button></form><form method="post" action="/<?=Format::h($slug)?>/configuracoes/restauracao/<?=$pt['id']?>/remover" onsubmit="return confirm('Remover este ponto de restauração? Se ele não estiver exportado externamente, não poderá mais ser utilizado.');"><input type="hidden" name="_token" value="<?=Format::h($token)?>"><button class="btn tiny off" type="submit">Remover</button></form></div>
         </article>
     <?php endforeach;?>
     </div><?php else:?><div class="structure-import-empty">Nenhum ponto de restauração salvo nesta instância. Crie um antes da próxima alteração estrutural.</div><?php endif;?>

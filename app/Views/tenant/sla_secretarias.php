@@ -5,7 +5,7 @@
         <div class="sla-hero-copy">
             <span class="sla-eyebrow">GESTÃO OPERACIONAL</span>
             <h1><?=$scope==='secretaria'?'Meu SLA Operacional':'SLA por Secretaria'?></h1>
-            <p><?=$scope==='secretaria'?'Acompanhe pontualidade das suas entregas, tempo médio de envio, correções e aprovação na primeira versão.':'Compare a capacidade de entrega das Secretarias com base nos prazos operacionais e na trilha documental já registrada no INPACTA.'?></p>
+            <p><?=$scope==='secretaria'?'Acompanhe pontualidade das suas entregas, tempo médio de envio, correções e aprovação na primeira versão.':'Compare a capacidade de entrega das Secretarias com base nos prazos operacionais e na trilha documental já registrada no INPACTA by Stratelli.'?></p>
             <?php if($current):?><span class="sla-current-phase">Fase atual · <?=Format::h($current['ordem'])?> — <?=Format::h($current['aba'])?></span><?php endif;?>
         </div>
         <div class="sla-hero-actions">

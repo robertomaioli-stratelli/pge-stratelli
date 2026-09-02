@@ -90,7 +90,7 @@ final class NotificationService
         if(!$this->tableReady())return;
         $st=$this->pdo->prepare('SELECT u.id,u.nome,u.email,u.municipio_id,u.administrador_plataforma,m.nome municipio_nome,m.slug FROM usuarios u LEFT JOIN municipios m ON m.id=u.municipio_id WHERE u.id=? LIMIT 1');$st->execute([$userId]);$u=$st->fetch(PDO::FETCH_ASSOC);if(!$u)return;
         $link=(int)$u['administrador_plataforma']===1?'/admin':'/'.($u['slug']?:'').'/dashboard';
-        $this->notifyUsers([$userId],'USUARIO_CRIADO','👤','Seu acesso foi criado','Seu usuário INPACTA está ativo'.($u['municipio_nome']?' para '.$u['municipio_nome']:'').'.',$link,$u['municipio_id']?(int)$u['municipio_id']:null,250,'USUARIO_CRIADO:'.$userId);
+        $this->notifyUsers([$userId],'USUARIO_CRIADO','👤','Seu acesso foi criado','Seu usuário INPACTA by Stratelli está ativo'.($u['municipio_nome']?' para '.$u['municipio_nome']:'').'.',$link,$u['municipio_id']?(int)$u['municipio_id']:null,250,'USUARIO_CRIADO:'.$userId);
         $admins=array_values(array_filter($this->platformAdminIds(),fn($id)=>$id!==(int)(Auth::id()??0)&&$id!==$userId));
         $this->notifyUsers($admins,'USUARIO_CRIADO','👤','Novo usuário criado',$u['nome'].' · '.$u['email'].($u['municipio_nome']?' · '.$u['municipio_nome']:''),'/admin/usuarios',$u['municipio_id']?(int)$u['municipio_id']:null,180,'USUARIO_CRIADO_ADMIN:'.$userId);
     }

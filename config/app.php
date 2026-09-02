@@ -1,7 +1,7 @@
 <?php
 $idleEnv=getenv('SESSION_IDLE_MINUTES');$absoluteEnv=getenv('SESSION_ABSOLUTE_MINUTES');
 return [
-    'name' => 'INPACTA',
+    'name' => 'INPACTA by Stratelli',
     'timezone' => 'America/Sao_Paulo',
     'session_name' => getenv('SESSION_NAME') ?: 'INPACTA_SESSION',
     'session_secure' => filter_var(getenv('SESSION_SECURE') ?: 'false', FILTER_VALIDATE_BOOLEAN),

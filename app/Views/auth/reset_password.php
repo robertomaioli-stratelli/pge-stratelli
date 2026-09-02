@@ -7,8 +7,8 @@ $invalidToken = !empty($erro) && stripos((string)$erro, 'inválido ou expirado')
 <div class="login-shell reset-password-shell">
     <section class="login-brand-panel reset-password-brand">
         <div class="login-mark">IN</div>
-        <h1>INPACTA <span>By Stratelli</span></h1>
-        <p>Sistema de Governança de Proteção Municipal</p>
+        <h1>INPACTA <span>by Stratelli</span></h1>
+        <p>PGE - Plataforma de Governança Executiva</p>
 
         <div class="reset-brand-message">
             <div class="reset-brand-icon">✓</div>

@@ -2,8 +2,8 @@
 <div class="login-shell recovery-shell">
     <section class="login-brand-panel">
         <div class="login-mark">IN</div>
-        <h1>INPACTA By Stratelli</h1>
-        <p>Sistema de Governança de Proteção Municipal</p>
+        <h1>INPACTA by Stratelli</h1>
+        <p>PGE - Plataforma de Governança Executiva</p>
         <div class="login-security">Recuperação protegida por link individual, temporário e de uso único.</div>
     </section>
     <section class="login-card recovery-card">

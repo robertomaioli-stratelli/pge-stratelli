@@ -1,0 +1,58 @@
+{
+  "patch": "STRATELLI_V5_patch_PGE_branding_v1",
+  "created_at": "2026-09-02T17:32:22",
+  "changed_files": [
+    {
+      "path": "app/Services/MailService.php",
+      "sha256": "c4186927729d9c5cd1c070dfea8a6761d1a0690a5a7032d64b6e64895e7a3c2d"
+    },
+    {
+      "path": "app/Services/NotificationService.php",
+      "sha256": "36ac771205460ce1032e0db364262268c55368295f3713960483d778fd2d7f7a"
+    },
+    {
+      "path": "app/Views/auth/forgot_password.php",
+      "sha256": "1f85846c52634bf4acc77b090bc6b458e8c9e39177b1961778cc7968fd2405f2"
+    },
+    {
+      "path": "app/Views/auth/login.php",
+      "sha256": "442d481e1028c055491dc804c64f1fc583e9125fc0e935c84cf9096ac9f88fc3"
+    },
+    {
+      "path": "app/Views/auth/reset_password.php",
+      "sha256": "73503dd899f8b79b1193cdeca3ec79ee70165ebf4c0890b63396a213fe03ae93"
+    },
+    {
+      "path": "app/Views/errors/error.php",
+      "sha256": "74373a2be7e8428684c9b3680a08b9bf76c79a4b4fdaa0ceb9e9bc361d569a43"
+    },
+    {
+      "path": "app/Views/layouts/app.php",
+      "sha256": "226e21410234789f0ad36c4ee96b207c011707894a83c384ac5096a9407abf89"
+    },
+    {
+      "path": "app/Views/layouts/guest.php",
+      "sha256": "a1ea139c861fa942172a398724f864aada11387dc0ed92820dcb3713b9147783"
+    },
+    {
+      "path": "app/Views/search/index.php",
+      "sha256": "965dcc53fa75835d047eb239aab29a21165fc8f183833e47d86613cd6391c80f"
+    },
+    {
+      "path": "app/Views/tenant/configuracoes.php",
+      "sha256": "eea57105922ba971409ff89f2c3d3fb5d7a1ecced3f4d11b9f6cce64bb1e5a72"
+    },
+    {
+      "path": "app/Views/tenant/partials/process_preview.php",
+      "sha256": "ae207fdedec56c42ccd51d2aeadf45020b127838e84238cc1d33928fe0d1faa8"
+    },
+    {
+      "path": "app/Views/tenant/sla_secretarias.php",
+      "sha256": "426159a4fec320cb05cdae688b30b6c942243b71f1db20f161df5bd07a8a8f30"
+    },
+    {
+      "path": "config/app.php",
+      "sha256": "041d241feba82d3bef1373d465afab0165bc61ed536e0c528539a3bae98260fb"
+    }
+  ]
+}
