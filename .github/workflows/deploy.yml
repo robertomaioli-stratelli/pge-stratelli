@@ -16,4 +16,5 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /www/wwwroot/pge.stratelli.com.br
-            git pull origin master
+            git fetch origin master
+            git reset --hard origin/master
