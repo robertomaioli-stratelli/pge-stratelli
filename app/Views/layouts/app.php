@@ -4,7 +4,7 @@ use App\Core\Csrf;
 use App\Core\Format;
 use App\Core\Tenant;
 use App\Services\InstanceParameterService;
-$user=Auth::user();$tenant=Tenant::current();$platform=Auth::isPlatformAdmin();$title=$title??'INPACTA by Stratelli';$path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
+$user=Auth::user();$tenant=Tenant::current();$platform=Auth::isPlatformAdmin();$title=$title??'INPACTA';$path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
 if(!function_exists('activeLink')){function activeLink(string $needle,string $path): string{return str_contains($path,$needle)?'active':'';}}
 $scope=$scope??($platform?'stratelli':(($user['grupo']??'')==='USUARIO'?'secretaria':'municipio'));
 $notifications=$notificacoes??[];$notificationCount=$notificacaoContagemAtiva??0;
@@ -14,10 +14,10 @@ $instanceHeaderText='#FFFFFF';if(preg_match('/^#([0-9A-Fa-f]{6})$/',$instancePri
 $instanceNotificationsEnabled=$platform||!$tenant||!empty($instanceParams['notificacoes_ativas']);
 ?>
 <!doctype html><html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>INPACTA by Stratelli | <?=Format::h($title)?></title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/assets/mvp-base.css?v=4206"><link rel="stylesheet" href="/assets/production.css?v=4206"><link rel="stylesheet" href="/assets/global-search.css?v=4206"><link rel="stylesheet" href="/assets/tenant-theme.css?v=4209"><link rel="stylesheet" href="/assets/municipality-profile.css?v=42010"></head>
+<title>INPACTA | <?=Format::h($title)?></title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/assets/mvp-base.css?v=4206"><link rel="stylesheet" href="/assets/production.css?v=4211"><link rel="stylesheet" href="/assets/global-search.css?v=4206"><link rel="stylesheet" href="/assets/tenant-theme.css?v=4209"><link rel="stylesheet" href="/assets/municipality-profile.css?v=42010"></head>
 <body class="<?=$tenant?'tenant-theme-active tenant-decoration-'.Format::h($instanceHeaderDecoration):''?>" style="--navy:<?=Format::h($instancePrimary)?>;--navy2:<?=Format::h($instanceSecondary)?>;--preview-accent:<?=Format::h($instanceSecondary)?>;--tenant-primary:<?=Format::h($instancePrimary)?>;--tenant-secondary:<?=Format::h($instanceSecondary)?>;--tenant-header-text:<?=Format::h($instanceHeaderText)?>"><div class="app production-app" id="appShell">
 <aside class="side" id="menuLateral">
-    <div class="brand"><div class="mark">IN</div><div>PGE<br><small>Plataforma de<br>Governança Executiva</small></div></div>
+    <div class="brand"><div class="mark">IN</div><div>Sistema de<br>Governança<br><small>de Proteção Municipal</small></div></div>
     <div class="user"><div class="avatar"><?=Format::h(strtoupper(substr($user['nome'],0,1)))?></div><div><b><?=Format::h($user['nome'])?></b><br><span><?=Format::h($user['email'])?></span><br><span class="role <?=$platform?'stratelli':($scope==='secretaria'?'secretaria':'')?>"><?=Format::h($platform?'ADMINISTRADOR STRATELLI':($scope==='secretaria'?'SECRETARIA':$user['grupo']))?></span></div></div>
     <nav class="menu">
     <?php if($platform&&!$tenant):?>

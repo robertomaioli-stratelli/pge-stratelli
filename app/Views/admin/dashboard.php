@@ -8,8 +8,41 @@ $healthMeta=[
     'implementation'=>['label'=>'Implantação','icon'=>'●'],
     'completed'=>['label'=>'Concluído','icon'=>'●'],
 ];
+$macroMapClients=array_values(array_map(static function($c){
+    $phase=$c['fase_atual']??null;
+    return [
+        'id'=>(int)$c['id'],
+        'nome'=>(string)$c['nome'],
+        'uf'=>(string)$c['uf'],
+        'slug'=>(string)$c['slug'],
+        'status'=>(string)($c['status']??'IMPLANTACAO'),
+        'status_label'=>match((string)($c['status']??'IMPLANTACAO')){
+            'NEGOCIACAO'=>'Negociação',
+            'APRESENTACAO'=>'Apresentação',
+            'IMPLANTACAO'=>'Implantação',
+            'ATIVO'=>'Ativo',
+            'SUSPENSO'=>'Suspenso',
+            'DESATIVADO'=>'Desativado',
+            default=>'Não informado',
+        },
+        'dashboard'=>'/'.rawurlencode((string)$c['slug']).'/dashboard',
+        'fase'=>$phase?'Fase '.(int)$phase['ordem'].' — '.(string)$phase['aba']:'Processo concluído',
+        'progresso'=>(int)($c['progresso']??0),
+        'prazo'=>(string)($c['prazo_rotulo']??'—'),
+        'proxima_acao'=>(string)($c['proxima_acao']??'—'),
+    ];
+},array_filter($clientes,static fn($c)=>!empty($c['geojson_delimitacao']))));
 ?>
 <?php if($macroHasTerritory):?><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""><?php endif;?>
+<?php if($macroHasTerritory):?>
+<style>
+/* Fallback crítico do mapa: evita altura zero mesmo quando o navegador mantém CSS antigo em cache. */
+#macroPortfolioMap{display:block;width:100%;height:520px;min-height:420px;background:#eaf1f7}
+.macro-portfolio-map-wrap{position:relative;min-height:520px;background:#eaf1f7}
+@media(max-width:900px){#macroPortfolioMap{height:440px;min-height:360px}.macro-portfolio-map-wrap{min-height:440px}}
+@media(max-width:560px){#macroPortfolioMap{height:390px;min-height:330px}.macro-portfolio-map-wrap{min-height:390px}}
+</style>
+<?php endif;?>
 <div class="module-page macro-dashboard">
     <div class="module-hero macro-hero">
         <div>
@@ -49,6 +82,28 @@ $healthMeta=[
             </a>
             <?php endforeach;?>
         </div>
+    </section>
+    <?php endif;?>
+
+    <?php if($macroMapClients):?>
+    <section class="macro-section macro-portfolio-map-section">
+        <div class="macro-section-head macro-map-head">
+            <div><h2>Mapa da carteira de municípios</h2><p>Visão territorial dos clientes cadastrados. Passe o mouse para consultar os dados e clique no município para abrir seu dashboard.</p></div>
+            <span class="macro-section-count"><?=count($macroMapClients)?> município(s) com delimitação</span>
+        </div>
+        <div class="macro-portfolio-map-wrap">
+            <div id="macroPortfolioMap" class="macro-portfolio-map" aria-label="Mapa da carteira de municípios"></div>
+            <div class="macro-map-legend" aria-label="Legenda de status dos clientes">
+                <strong>Status do cliente</strong>
+                <span><i style="--status-color:#7c3aed"></i>Negociação</span>
+                <span><i style="--status-color:#0891b2"></i>Apresentação</span>
+                <span><i style="--status-color:#176fdd"></i>Implantação</span>
+                <span><i style="--status-color:#20a84d"></i>Ativo</span>
+                <span><i style="--status-color:#f59e0b"></i>Suspenso</span>
+                <span><i style="--status-color:#64748b"></i>Desativado</span>
+            </div>
+        </div>
+        <div class="macro-map-footnote">Somente municípios com delimitação GeoJSON cadastrada são exibidos no mapa.</div>
     </section>
     <?php endif;?>
 
@@ -156,7 +211,45 @@ $healthMeta=[
 <?php if($macroHasTerritory):?>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-(function(){if(typeof L==='undefined')return;document.querySelectorAll('.macro-territory-preview-map').forEach(el=>{const mid=el.dataset.mid;if(!mid)return;const map=L.map(el,{zoomControl:false,attributionControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false});map.getContainer().style.background='#eef4f8';fetch('/media/municipios/'+mid+'/territorio',{credentials:'same-origin'}).then(r=>r.json()).then(geo=>{const boundary=L.geoJSON(geo,{style:{color:'#174c98',weight:2,fillColor:'#176fdd',fillOpacity:.14}}).addTo(map);const b=boundary.getBounds();if(b.isValid())map.fitBounds(b,{padding:[8,8]});}).catch(()=>{});setTimeout(()=>map.invalidateSize(),80);});})();
+(function(){
+ const portfolioEl=document.getElementById('macroPortfolioMap');
+ if(typeof L==='undefined'){
+   if(portfolioEl){
+     portfolioEl.innerHTML='<div style="display:grid;place-items:center;height:100%;min-height:420px;padding:30px;text-align:center;color:#536980;background:#eef4f8"><div><b style="display:block;color:#0d3f73;margin-bottom:8px">Não foi possível carregar o componente do mapa.</b><span>Verifique a conexão com a internet ou o acesso ao Leaflet (unpkg.com) e recarregue a página.</span></div></div>';
+   }
+   return;
+ }
+ const clients=<?=json_encode($macroMapClients,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT)?>;
+ const statusColors={NEGOCIACAO:'#7c3aed',APRESENTACAO:'#0891b2',IMPLANTACAO:'#176fdd',ATIVO:'#20a84d',SUSPENSO:'#f59e0b',DESATIVADO:'#64748b'};
+ const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[ch]));
+ if(portfolioEl&&clients.length){
+   const map=L.map(portfolioEl,{zoomControl:true,attributionControl:true,scrollWheelZoom:false,minZoom:3}).setView([-14.2,-51.9],4);
+   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+   const group=L.featureGroup().addTo(map);
+   Promise.allSettled(clients.map(client=>fetch('/media/municipios/'+client.id+'/territorio',{credentials:'same-origin'})
+     .then(r=>{if(!r.ok)throw new Error('GeoJSON indisponível');return r.json();})
+     .then(geo=>{
+       const color=statusColors[client.status]||'#176fdd';
+       const layer=L.geoJSON(geo,{style:{color,weight:2,opacity:.95,fillColor:color,fillOpacity:.36}});
+       const tooltip='<div class="macro-map-tooltip">'+
+         '<div class="macro-map-tooltip-head"><span style="--tooltip-status:'+color+'"></span><strong>'+esc(client.nome)+' — '+esc(client.uf)+'</strong></div>'+
+         '<div><small>Status</small><b>'+esc(client.status_label)+'</b></div>'+
+         '<div><small>Fase atual</small><b>'+esc(client.fase)+'</b></div>'+
+         '<div><small>Progresso documental</small><b>'+esc(client.progresso)+'%</b></div>'+
+         '<div><small>Situação do prazo</small><b>'+esc(client.prazo)+'</b></div>'+
+         '<p><small>Próxima ação</small>'+esc(client.proxima_acao)+'</p>'+
+         '<em>Clique para acessar o dashboard</em></div>';
+       layer.bindTooltip(tooltip,{sticky:true,direction:'top',className:'macro-map-leaflet-tooltip',opacity:1});
+       layer.on('mouseover',function(){this.setStyle({weight:3.5,fillOpacity:.58});this.bringToFront();});
+       layer.on('mouseout',function(){this.setStyle({weight:2,fillOpacity:.36});});
+       layer.on('click',()=>{window.location.href=client.dashboard;});
+       layer.addTo(group);
+       return layer;
+     }))
+   ).then(()=>{const b=group.getBounds();if(b.isValid())map.fitBounds(b,{padding:[24,24],maxZoom:8});setTimeout(()=>map.invalidateSize(),100);});
+ }
+ document.querySelectorAll('.macro-territory-preview-map').forEach(el=>{const mid=el.dataset.mid;if(!mid)return;const map=L.map(el,{zoomControl:false,attributionControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false});map.getContainer().style.background='#eef4f8';fetch('/media/municipios/'+mid+'/territorio',{credentials:'same-origin'}).then(r=>r.json()).then(geo=>{const boundary=L.geoJSON(geo,{style:{color:'#174c98',weight:2,fillColor:'#176fdd',fillOpacity:.14}}).addTo(map);const b=boundary.getBounds();if(b.isValid())map.fitBounds(b,{padding:[8,8]});}).catch(()=>{});setTimeout(()=>map.invalidateSize(),80);});
+})();
 </script>
 <?php endif;?>
 
