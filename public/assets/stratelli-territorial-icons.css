@@ -1,0 +1,19 @@
+/* PGE-Stratelli — complemento visual dos Ícones Territoriais v4 */
+.territorial-map-marker > span > .fa-solid{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:auto;
+  height:auto;
+  background:transparent;
+  color:#fff;
+  font-size:14px;
+  line-height:1;
+  text-shadow:0 1px 1px rgba(0,0,0,.2);
+}
+.territorial-map-marker.compact > span > .fa-solid{font-size:12px}
+.territorial-popup-layer > i.fa-solid{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+}
