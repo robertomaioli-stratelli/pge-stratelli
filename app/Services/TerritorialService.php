@@ -18,6 +18,7 @@ final class TerritorialService
     public function __construct()
     {
         $this->pdo=Database::connection();
+        TerritorialStatusSchema::ensure();
         $this->municipioId=(int)(Tenant::id()??0);
         $this->user=Auth::user()??[];
         $this->scope=Auth::isPlatformAdmin()?'stratelli':(($this->user['grupo']??'')==='USUARIO'?'secretaria':'municipio');
@@ -92,7 +93,8 @@ final class TerritorialService
         $nome=trim((string)($data['nome']??''));
         $descricao=trim((string)($data['descricao']??''));
         $endereco=trim((string)($data['endereco']??''));
-        $status=strtoupper(trim((string)($data['status']??'ATIVO')));
+        $status='ATIVO';
+        if($id){$currentObject=$this->one('SELECT status FROM objetos_territoriais WHERE id=? AND municipio_id=?',[$id,$this->municipioId]);if(!$currentObject)throw new RuntimeException('Objeto territorial não encontrado.');$status=(string)$currentObject['status'];}
         $secretariaId=(int)($data['secretaria_id']??0)?:null;
         $departamentoId=(int)($data['departamento_id']??0)?:null;
         $faseId=(int)($data['fase_id']??0)?:null;
@@ -135,6 +137,51 @@ final class TerritorialService
         $this->replacePhaseLink($id,$faseId,(string)($data['observacao_vinculo']??''));
         Audit::log($isNew?'objeto_territorial_criado':'objeto_territorial_atualizado','Objeto territorial salvo: '.$nome,$this->municipioId);
         return $id;
+    }
+
+    public function changeSecurityStatus(int $id,array $data): void
+    {
+        $this->assertManage();
+        $object=$this->one('SELECT id,nome,status FROM objetos_territoriais WHERE id=? AND municipio_id=?',[$id,$this->municipioId]);
+        if(!$object)throw new RuntimeException('Objeto territorial não encontrado.');
+        $status=strtoupper(trim((string)($data['status']??'')));
+        $allowed=['ATIVO','ATENCAO','CRITICO','CONCLUIDO','INATIVO'];
+        if(!in_array($status,$allowed,true))throw new RuntimeException('Situação de Segurança Pública inválida.');
+        $categories=$this->securityReasonCategories();
+        $category=trim((string)($data['categoria_motivo']??''));
+        if(!isset($categories[$category]))throw new RuntimeException('Selecione um motivo de Segurança Pública válido.');
+        $reason=trim((string)($data['motivo']??''));
+        $note=trim((string)($data['observacao']??''));
+        $date=trim((string)($data['data_ocorrencia']??date('Y-m-d')));
+        if($reason===''||mb_strlen($reason)<10)throw new RuntimeException('Descreva o motivo de Segurança Pública com pelo menos 10 caracteres.');
+        if(mb_strlen($reason)>500)throw new RuntimeException('O motivo deve ter no máximo 500 caracteres.');
+        $dt=\DateTimeImmutable::createFromFormat('Y-m-d',$date);if(!$dt||$dt->format('Y-m-d')!==$date)throw new RuntimeException('Data da ocorrência inválida.');
+        $previous=(string)$object['status'];
+        $this->pdo->beginTransaction();
+        try{
+            $this->pdo->prepare('UPDATE objetos_territoriais SET status=?,atualizado_por_usuario_id=?,atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$status,Auth::id(),$id,$this->municipioId]);
+            $st=$this->pdo->prepare('INSERT INTO historico_status_territorial(municipio_id,objeto_territorial_id,status_anterior,status_novo,categoria_motivo,motivo,observacao,data_ocorrencia,usuario_id,criado_em) VALUES(?,?,?,?,?,?,?,?,?,NOW())');
+            $st->execute([$this->municipioId,$id,$previous,$status,$category,$reason,$note?:null,$date,Auth::id()]);
+            $this->pdo->commit();
+        }catch(\Throwable $e){if($this->pdo->inTransaction())$this->pdo->rollBack();throw $e;}
+        Audit::log('situacao_seguranca_territorial_alterada','Situação de Segurança Pública de '.$object['nome'].' alterada de '.$previous.' para '.$status.'. Motivo: '.$categories[$category].' — '.$reason,$this->municipioId);
+    }
+
+    public function securityReasonCategories(): array
+    {
+        return [
+            'INCIDENCIA_CRIMINAL'=>'Incidência criminal / aumento de ocorrências',
+            'RECORRENCIA_OCORRENCIAS'=>'Ponto recorrente de ocorrências',
+            'RISCO_ENTORNO'=>'Risco de Segurança Pública no entorno',
+            'DESORDEM_URBANA'=>'Desordem urbana com impacto na segurança',
+            'VULNERABILIDADE_LOCAL'=>'Vulnerabilidade do local / equipamento',
+            'ILUMINACAO_VISIBILIDADE'=>'Iluminação ou visibilidade com impacto na segurança',
+            'PATRULHAMENTO'=>'Necessidade de reforço de patrulhamento',
+            'EVENTO_TEMPORARIO'=>'Evento ou situação temporária de Segurança Pública',
+            'MEDIDA_PREVENTIVA'=>'Medida preventiva / monitoramento de Segurança Pública',
+            'SITUACAO_NORMALIZADA'=>'Situação de Segurança Pública normalizada / resolvida',
+            'OUTRO_SEGURANCA_PUBLICA'=>'Outro motivo de Segurança Pública',
+        ];
     }
 
     public function toggleObject(int $id): void
@@ -200,6 +247,11 @@ final class TerritorialService
             (SELECT v.fase_id FROM vinculos_territoriais v WHERE v.municipio_id=o.municipio_id AND v.objeto_territorial_id=o.id AND v.tipo_vinculo="FASE" ORDER BY v.id DESC LIMIT 1) fase_id,
             (SELECT f.ordem FROM vinculos_territoriais v JOIN fases f ON f.id=v.fase_id AND f.municipio_id=v.municipio_id WHERE v.municipio_id=o.municipio_id AND v.objeto_territorial_id=o.id AND v.tipo_vinculo="FASE" ORDER BY v.id DESC LIMIT 1) fase_ordem,
             (SELECT f.aba FROM vinculos_territoriais v JOIN fases f ON f.id=v.fase_id AND f.municipio_id=v.municipio_id WHERE v.municipio_id=o.municipio_id AND v.objeto_territorial_id=o.id AND v.tipo_vinculo="FASE" ORDER BY v.id DESC LIMIT 1) fase_aba
+            ,(SELECT h.categoria_motivo FROM historico_status_territorial h WHERE h.municipio_id=o.municipio_id AND h.objeto_territorial_id=o.id ORDER BY h.id DESC LIMIT 1) status_categoria_motivo
+            ,(SELECT h.motivo FROM historico_status_territorial h WHERE h.municipio_id=o.municipio_id AND h.objeto_territorial_id=o.id ORDER BY h.id DESC LIMIT 1) status_motivo
+            ,(SELECT h.observacao FROM historico_status_territorial h WHERE h.municipio_id=o.municipio_id AND h.objeto_territorial_id=o.id ORDER BY h.id DESC LIMIT 1) status_observacao
+            ,(SELECT h.data_ocorrencia FROM historico_status_territorial h WHERE h.municipio_id=o.municipio_id AND h.objeto_territorial_id=o.id ORDER BY h.id DESC LIMIT 1) status_data_ocorrencia
+            ,(SELECT u.nome FROM historico_status_territorial h LEFT JOIN usuarios u ON u.id=h.usuario_id WHERE h.municipio_id=o.municipio_id AND h.objeto_territorial_id=o.id ORDER BY h.id DESC LIMIT 1) status_usuario_nome
             FROM objetos_territoriais o JOIN camadas_territoriais c ON c.id=o.camada_id AND c.municipio_id=o.municipio_id LEFT JOIN secretarias s ON s.id=o.secretaria_id AND s.municipio_id=o.municipio_id LEFT JOIN secretarias cs ON cs.id=c.secretaria_id AND cs.municipio_id=c.municipio_id LEFT JOIN departamentos d ON d.id=o.departamento_id AND d.municipio_id=o.municipio_id WHERE o.municipio_id=?';$params=[$this->municipioId];
         if(!Auth::isPlatformAdmin())$sql.=' AND o.ativo=1 AND c.ativo=1';
         if($this->scope==='secretaria'){
@@ -207,7 +259,11 @@ final class TerritorialService
             $sql.=' AND (COALESCE(o.secretaria_id,c.secretaria_id) IS NULL OR COALESCE(o.secretaria_id,c.secretaria_id)=?)';$params[]=$sid;
             if($did){$sql.=' AND (o.departamento_id IS NULL OR o.departamento_id=?)';$params[]=$did;}
         }
-        $sql.=' ORDER BY c.ordem,c.nome,o.nome';return $this->all($sql,$params);
+        $sql.=' ORDER BY c.ordem,c.nome,o.nome';$rows=$this->all($sql,$params);
+        $history=$this->all('SELECT h.*,u.nome usuario_nome FROM historico_status_territorial h LEFT JOIN usuarios u ON u.id=h.usuario_id WHERE h.municipio_id=? ORDER BY h.objeto_territorial_id,h.id DESC',[$this->municipioId]);
+        $byObject=[];foreach($history as $h)$byObject[(int)$h['objeto_territorial_id']][]=$h;
+        foreach($rows as &$row)$row['status_historico']=$byObject[(int)$row['id']]??[];unset($row);
+        return $rows;
     }
 
     private function visiblePhases(): array

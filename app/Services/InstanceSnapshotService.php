@@ -12,7 +12,7 @@ use ZipArchive;
 final class InstanceSnapshotService
 {
     private PDO $pdo; private int $mid; private array $tenant;
-    private array $archiveTables=['municipios','parametros_instancia','secretarias','departamentos','usuarios','fases','fase_secretarias','tipos_documento','requisitos_documentais','modelos_documentos','documentos_enviados','historico_documentos','cronograma_processos','cronograma_fases','historico_fases','notificacoes','camadas_territoriais','objetos_territoriais','vinculos_territoriais','importacoes_estrutura','auditoria'];
+    private array $archiveTables=['municipios','parametros_instancia','secretarias','departamentos','usuarios','fases','fase_secretarias','tipos_documento','requisitos_documentais','modelos_documentos','documentos_enviados','historico_documentos','cronograma_processos','cronograma_fases','historico_fases','notificacoes','camadas_territoriais','objetos_territoriais','historico_status_territorial','vinculos_territoriais','importacoes_estrutura','auditoria'];
     private array $restoreEntityTables=['secretarias','departamentos','fases','tipos_documento','requisitos_documentais','camadas_territoriais','objetos_territoriais'];
 
     public function __construct()

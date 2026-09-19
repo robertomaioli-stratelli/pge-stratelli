@@ -12,7 +12,7 @@ $checks=[
 foreach($checks as $label=>$sql){$n=(int)$pdo->query($sql)->fetchColumn();if($label==='Administrador Stratelli'){echo"[".($n>0?'OK':'ERRO')."] {$label}: {$n}\n";if($n<1)$errors[]=$label;}else{echo"[".($n===0?'OK':'ERRO')."] {$label}: {$n}\n";if($n>0)$errors[]=$label;}}
 foreach($pdo->query("SELECT m.id,m.nome,(SELECT COUNT(*) FROM usuarios u WHERE u.municipio_id=m.id AND u.grupo='GESTOR' AND u.ativo=1) gestores FROM municipios m WHERE m.ativo=1") as $m){$ok=(int)$m['gestores']>=1;echo'['.($ok?'OK':'ERRO')."] {$m['nome']} - gestores ativos: {$m['gestores']}\n";if(!$ok)$errors[]='Gestor '.$m['nome'];}
 
-$requiredTables=['camadas_territoriais','objetos_territoriais','vinculos_territoriais','notificacoes','historico_fases','tentativas_login','password_reset_tokens','parametros_instancia','importacoes_estrutura','pontos_restauracao_instancia','arquivamentos_etapa'];
+$requiredTables=['camadas_territoriais','objetos_territoriais','historico_status_territorial','vinculos_territoriais','notificacoes','historico_fases','tentativas_login','password_reset_tokens','parametros_instancia','importacoes_estrutura','pontos_restauracao_instancia','arquivamentos_etapa'];
 $db=(string)$pdo->query('SELECT DATABASE()')->fetchColumn();
 foreach($requiredTables as $table){$st=$pdo->prepare('SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=? AND TABLE_NAME=?');$st->execute([$db,$table]);$ok=(int)$st->fetchColumn()===1;echo'['.($ok?'OK':'ERRO')."] Estrutura {$table}: ".($ok?'disponível':'ausente')."\n";if(!$ok)$errors[]='Tabela '.$table;}
 

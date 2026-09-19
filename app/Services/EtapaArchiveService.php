@@ -18,7 +18,7 @@ final class EtapaArchiveService
         'municipios','parametros_instancia','secretarias','departamentos','usuarios','fases','fase_secretarias',
         'tipos_documento','requisitos_documentais','modelos_documentos','documentos_enviados','historico_documentos',
         'cronograma_processos','cronograma_fases','historico_fases','notificacoes','camadas_territoriais',
-        'objetos_territoriais','vinculos_territoriais','importacoes_estrutura','auditoria'
+        'objetos_territoriais','historico_status_territorial','vinculos_territoriais','importacoes_estrutura','auditoria'
     ];
 
     public function __construct()

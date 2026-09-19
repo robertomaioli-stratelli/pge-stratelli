@@ -1,58 +1,58 @@
 {
-  "patch": "STRATELLI_V5_patch_PGE_branding_v1",
-  "created_at": "2026-09-02T17:32:22",
-  "changed_files": [
+  "patch": "PGE_patch_seguranca_territorial_v1",
+  "created_at": "2026-09-18T13:44:20",
+  "files": [
     {
-      "path": "app/Services/MailService.php",
-      "sha256": "c4186927729d9c5cd1c070dfea8a6761d1a0690a5a7032d64b6e64895e7a3c2d"
+      "path": "LEIA-ME_PATCH.txt",
+      "sha256": "a34a0a041c3de20ba37ca95ac08c4671c2a8159dd518d6bf6feda4d9bb040fd6"
     },
     {
-      "path": "app/Services/NotificationService.php",
-      "sha256": "36ac771205460ce1032e0db364262268c55368295f3713960483d778fd2d7f7a"
+      "path": "app/Controllers/TenantController.php",
+      "sha256": "4f2774d9b22529424e2be65def1d0f3911a262964c1f91842ee74a593044638e"
     },
     {
-      "path": "app/Views/auth/forgot_password.php",
-      "sha256": "1f85846c52634bf4acc77b090bc6b458e8c9e39177b1961778cc7968fd2405f2"
+      "path": "app/Services/EtapaArchiveService.php",
+      "sha256": "80b583c5221fcee37b60ef7c19d80b79aa4fb3fcbf72ec2109f25aea928431fe"
     },
     {
-      "path": "app/Views/auth/login.php",
-      "sha256": "442d481e1028c055491dc804c64f1fc583e9125fc0e935c84cf9096ac9f88fc3"
+      "path": "app/Services/InstanceSnapshotService.php",
+      "sha256": "d5c2f783d54c8abd2c5a64aeeb0d484ad0cddb5536df82e8cec654d8e2b2b6c9"
     },
     {
-      "path": "app/Views/auth/reset_password.php",
-      "sha256": "73503dd899f8b79b1193cdeca3ec79ee70165ebf4c0890b63396a213fe03ae93"
+      "path": "app/Services/TerritorialService.php",
+      "sha256": "302796c78c3bc7d8e2dca342c6aaec076cb799f54df31cf1c7e7968af1b89788"
     },
     {
-      "path": "app/Views/errors/error.php",
-      "sha256": "74373a2be7e8428684c9b3680a08b9bf76c79a4b4fdaa0ceb9e9bc361d569a43"
+      "path": "app/Services/TerritorialStatusSchema.php",
+      "sha256": "5efd9ddf80512b9e44aa35e94725d394005e87d07e40414c49525fa970e14c3a"
     },
     {
       "path": "app/Views/layouts/app.php",
-      "sha256": "226e21410234789f0ad36c4ee96b207c011707894a83c384ac5096a9407abf89"
+      "sha256": "d1cb0863bbfcd1c6cf37e78ed9a90d7a73e34bfca0131594fff4fb5de7313cbb"
     },
     {
-      "path": "app/Views/layouts/guest.php",
-      "sha256": "a1ea139c861fa942172a398724f864aada11387dc0ed92820dcb3713b9147783"
+      "path": "app/Views/tenant/territorio.php",
+      "sha256": "20d7b8b5f2b554500168651cd370957db5043a13fe16dd5a305748c73326037f"
     },
     {
-      "path": "app/Views/search/index.php",
-      "sha256": "965dcc53fa75835d047eb239aab29a21165fc8f183833e47d86613cd6391c80f"
+      "path": "bin/check.php",
+      "sha256": "97f5627c2c1c5d867ccc2f47ec48a13c5d3c50f99786c921d072ca687893435b"
     },
     {
-      "path": "app/Views/tenant/configuracoes.php",
-      "sha256": "eea57105922ba971409ff89f2c3d3fb5d7a1ecced3f4d11b9f6cce64bb1e5a72"
+      "path": "database/schema.sql",
+      "sha256": "3e8f0a7d08b5d58bf11215c02e3a563f7347358c5aab4e98ddc22b1bdafaf56a"
     },
     {
-      "path": "app/Views/tenant/partials/process_preview.php",
-      "sha256": "ae207fdedec56c42ccd51d2aeadf45020b127838e84238cc1d33928fe0d1faa8"
+      "path": "database/upgrade_seguranca_territorial_v1.sql",
+      "sha256": "0800159b9a109838e872289b3f16272cea6a4b11146593880fd70a7c92093e0b"
     },
     {
-      "path": "app/Views/tenant/sla_secretarias.php",
-      "sha256": "426159a4fec320cb05cdae688b30b6c942243b71f1db20f161df5bd07a8a8f30"
+      "path": "public/assets/production.css",
+      "sha256": "84c794679e4f6408f03e3ba5f6c70220a59e6a17460b2cb1825efe08d2c38952"
     },
     {
-      "path": "config/app.php",
-      "sha256": "041d241feba82d3bef1373d465afab0165bc61ed536e0c528539a3bae98260fb"
+      "path": "routes.php",
+      "sha256": "cc2b536a828a2de534e535523c16b0fb9a617fdf98e088e633c9bb36bc18edf9"
     }
   ]
 }

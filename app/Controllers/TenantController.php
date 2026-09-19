@@ -161,6 +161,12 @@ final class TenantController
         Response::redirect('/'.Tenant::current()['slug'].'/territorio?modo=configuracao');
     }
 
+    public function territorialSecurityStatus(string $municipio,string $id): void
+    {
+        $this->csrf();try{(new TerritorialService())->changeSecurityStatus((int)$id,$_POST);Session::flash('ok','Situação de Segurança Pública registrada com sucesso.');}catch(\Throwable $e){Session::flash('erro',$e->getMessage());}
+        Response::redirect('/'.Tenant::current()['slug'].'/territorio?objeto='.(int)$id);
+    }
+
     public function territorialToggleObject(string $municipio,string $id): void
     {
         $this->csrf();try{(new TerritorialService())->toggleObject((int)$id);Session::flash('ok','Status do objeto territorial alterado.');}catch(\Throwable $e){Session::flash('erro',$e->getMessage());}

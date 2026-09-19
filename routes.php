@@ -63,6 +63,7 @@ $router->post('/{municipio}/territorio/camadas/salvar',[TenantController::class,
 $router->post('/{municipio}/territorio/camadas/{id}/alternar',[TenantController::class,'territorialToggleLayer'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/territorio/geocodificar',[TenantController::class,'territorialGeocode'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/territorio/objetos/salvar',[TenantController::class,'territorialSaveObject'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/territorio/objetos/{id}/situacao-seguranca',[TenantController::class,'territorialSecurityStatus'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/territorio/objetos/{id}/alternar',[TenantController::class,'territorialToggleObject'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/territorio/importar',[TenantController::class,'territorialImport'],['auth','tenant','platform_admin']);
 $router->get('/{municipio}/relatorios',[TenantController::class,'relatorios'],['auth','tenant']);

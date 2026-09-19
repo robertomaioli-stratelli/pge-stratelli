@@ -14,7 +14,7 @@ $instanceHeaderText='#FFFFFF';if(preg_match('/^#([0-9A-Fa-f]{6})$/',$instancePri
 $instanceNotificationsEnabled=$platform||!$tenant||!empty($instanceParams['notificacoes_ativas']);
 ?>
 <!doctype html><html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>INPACTA | <?=Format::h($title)?></title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/assets/mvp-base.css?v=4206"><link rel="stylesheet" href="/assets/production.css?v=4211"><link rel="stylesheet" href="/assets/global-search.css?v=4206"><link rel="stylesheet" href="/assets/tenant-theme.css?v=4209"><link rel="stylesheet" href="/assets/municipality-profile.css?v=42010"></head>
+<title>INPACTA | <?=Format::h($title)?></title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/assets/mvp-base.css?v=4206"><link rel="stylesheet" href="/assets/production.css?v=4215"><link rel="stylesheet" href="/assets/global-search.css?v=4206"><link rel="stylesheet" href="/assets/tenant-theme.css?v=4209"><link rel="stylesheet" href="/assets/municipality-profile.css?v=42010"></head>
 <body class="<?=$tenant?'tenant-theme-active tenant-decoration-'.Format::h($instanceHeaderDecoration):''?>" style="--navy:<?=Format::h($instancePrimary)?>;--navy2:<?=Format::h($instanceSecondary)?>;--preview-accent:<?=Format::h($instanceSecondary)?>;--tenant-primary:<?=Format::h($instancePrimary)?>;--tenant-secondary:<?=Format::h($instanceSecondary)?>;--tenant-header-text:<?=Format::h($instanceHeaderText)?>"><div class="app production-app" id="appShell">
 <aside class="side" id="menuLateral">
     <div class="brand"><div class="mark">IN</div><div>Sistema de<br>Governança<br><small>de Proteção Municipal</small></div></div>
