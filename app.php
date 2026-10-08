@@ -14,10 +14,10 @@ $instanceHeaderText='#FFFFFF';if(preg_match('/^#([0-9A-Fa-f]{6})$/',$instancePri
 $instanceNotificationsEnabled=$platform||!$tenant||!empty($instanceParams['notificacoes_ativas']);
 ?>
 <!doctype html><html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>INPACTA | <?=Format::h($title)?></title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/assets/mvp-base.css?v=4206"><link rel="stylesheet" href="/assets/production.css?v=4242"><link rel="stylesheet" href="/assets/global-search.css?v=4206"><link rel="stylesheet" href="/assets/tenant-theme.css?v=4209"><link rel="stylesheet" href="/assets/municipality-profile.css?v=42010"><link rel="stylesheet" href="/assets/dark-theme.css?v=4242"><script>(function(){try{var t=localStorage.getItem('pgeTheme');if(t==='dark')document.documentElement.classList.add('theme-dark');}catch(e){}})();</script></head>
+<title>INPACTA | <?=Format::h($title)?></title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/assets/mvp-base.css?v=4206"><link rel="stylesheet" href="/assets/production.css?v=4223"><link rel="stylesheet" href="/assets/global-search.css?v=4206"><link rel="stylesheet" href="/assets/tenant-theme.css?v=4209"><link rel="stylesheet" href="/assets/municipality-profile.css?v=42010"></head>
 <body class="<?=$tenant?'tenant-theme-active tenant-decoration-'.Format::h($instanceHeaderDecoration):''?>" style="--navy:<?=Format::h($instancePrimary)?>;--navy2:<?=Format::h($instanceSecondary)?>;--preview-accent:<?=Format::h($instanceSecondary)?>;--tenant-primary:<?=Format::h($instancePrimary)?>;--tenant-secondary:<?=Format::h($instanceSecondary)?>;--tenant-header-text:<?=Format::h($instanceHeaderText)?>"><div class="app production-app" id="appShell">
 <aside class="side" id="menuLateral">
-    <div class="brand"><div class="mark">IN</div><div>PGE<br><small>Plataforma de Governança Executiva</small></div></div>
+    <div class="brand"><div class="mark">IN</div><div>Sistema de<br>Governança<br><small>de Proteção Municipal</small></div></div>
     <div class="user"><div class="avatar"><?=Format::h(strtoupper(substr($user['nome'],0,1)))?></div><div><b><?=Format::h($user['nome'])?></b><br><span><?=Format::h($user['email'])?></span><br><span class="role <?=$platform?'stratelli':($scope==='secretaria'?'secretaria':'')?>"><?=Format::h($platform?'ADMINISTRADOR STRATELLI':($scope==='secretaria'?'SECRETARIA':$user['grupo']))?></span></div></div>
     <nav class="menu">
     <?php if($platform&&!$tenant):?>
@@ -74,7 +74,6 @@ $instanceNotificationsEnabled=$platform||!$tenant||!empty($instanceParams['notif
             </div>
         </div>
         <button class="header-action-button" type="button" id="collapseMenuButton" onclick="toggleMenu()">▣ Recolher menu</button>
-        <button class="header-action-button theme-toggle-button" type="button" id="themeToggleButton" onclick="toggleTheme()" aria-label="Alternar tema" title="Alternar entre tema claro e dark"><span class="theme-toggle-icon" id="themeToggleIcon">☾</span><span id="themeToggleLabel">Dark</span></button>
         <button class="header-action-button" type="button" onclick="window.print()">▣ Imprimir</button>
         <?php if($tenant):?><?php $municipalityHeaderHref=$platform?'/admin/municipios/'.(int)$tenant['id']:'/'.rawurlencode((string)$tenant['slug']).'/municipio';$municipalityHeaderLabel=$platform?'Editar cadastro do município':'Consultar dados do município';?><a class="header-info-chip municipality-header-chip municipality-header-link" href="<?=Format::h($municipalityHeaderHref)?>" title="<?=Format::h($municipalityHeaderLabel)?>"><?php if(!empty($tenant['brasao_path'])):?><img class="header-municipality-coat" src="/media/municipios/<?=$tenant['id']?>/brasao?v=<?=substr(sha1((string)$tenant['brasao_path']),0,12)?>" loading="eager" decoding="async" alt="Brasão de <?=Format::h($tenant['nome'])?>"><?php else:?><span class="header-municipality-coat placeholder">▥</span><?php endif;?><span class="municipality-header-copy"><small>Município</small><b><?=Format::h($tenant['nome'].' - '.$tenant['uf'])?></b></span><span class="municipality-header-access"><?=$platform?'✎':'›'?></span></a><?php endif;?>
         <?php if($scope==='secretaria'):?><span class="header-info-chip">▤ Secretaria <b><?=Format::h($user['secretaria_sigla']?:$user['secretaria_nome'])?></b></span><?php endif;?>
@@ -91,20 +90,6 @@ $instanceNotificationsEnabled=$platform||!$tenant||!empty($instanceParams['notif
 <div class="content production-content"><?php if(!empty($erro)):?><div class="flash error"><?=Format::h($erro)?></div><?php endif;?><?php if(!empty($ok)):?><div class="flash ok"><?=Format::h($ok)?></div><?php endif;?><?=$content?></div></main>
 </div>
 <script>
-function currentTheme(){return document.documentElement.classList.contains('theme-dark')?'dark':'light';}
-function applyTheme(theme,persist){
-    const dark=theme==='dark';
-    document.documentElement.classList.toggle('theme-dark',dark);
-    document.body.classList.toggle('theme-dark',dark);
-    const icon=document.getElementById('themeToggleIcon');
-    const label=document.getElementById('themeToggleLabel');
-    const btn=document.getElementById('themeToggleButton');
-    if(icon)icon.textContent=dark?'☀':'☾';
-    if(label)label.textContent=dark?'Claro':'Dark';
-    if(btn){btn.setAttribute('aria-pressed',dark?'true':'false');btn.title=dark?'Mudar para tema claro':'Mudar para tema dark';}
-    if(persist!==false){try{localStorage.setItem('pgeTheme',dark?'dark':'light')}catch(e){}}
-}
-function toggleTheme(){applyTheme(currentTheme()==='dark'?'light':'dark',true);}
 function toggleMenu(){
     const app=document.getElementById('appShell');
     if(!app)return;
@@ -203,7 +188,6 @@ let globalSearchTimer=null;
 let globalSearchAbort=null;
 
 document.addEventListener('DOMContentLoaded',()=>{
-    applyTheme(currentTheme(),false);
     const app=document.getElementById('appShell');
     try{if(localStorage.getItem('inpactaMenuRecolhido')==='1')app?.classList.add('menu-collapsed')}catch(e){}
 

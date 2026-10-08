@@ -1,14 +1,18 @@
-{
-  "patch": "PGE_patch_corrige_icones_territoriais_v1",
-  "created_at": "2026-09-19T17:26:01",
-  "files": [
-    {
-      "path": "LEIA-ME_PATCH.txt",
-      "sha256": "1dd2c0f0e462f85f151a10ca3e4eb383cfdea7bc69c2702251728b46ffcc9a55"
-    },
-    {
-      "path": "app/Views/tenant/territorio.php",
-      "sha256": "750c10ddef7f32ff6232413e216df188bdc57f28dc3b6a0fa25fc9a012721ebd"
-    }
-  ]
-}
+[
+  {
+    "path": "LEIA-ME_PATCH.txt",
+    "sha256": "ff07d237cb6ccdb953ef43fb4a403a594ee1a199d42fedead3e38cd980055453"
+  },
+  {
+    "path": "app/Views/layouts/app.php",
+    "sha256": "25aab2ef30bd8da643e51a10926e5eea1b7adbb550c18a169bae2528b0c2827a"
+  },
+  {
+    "path": "public/assets/dark-theme.css",
+    "sha256": "8b193e901880c10f353ff74b685d033e40568673adc977500ce008f722359582"
+  },
+  {
+    "path": "public/assets/production.css",
+    "sha256": "02c5f764f83f5e0f125e26f919ef5308d425cd74218a8b526737ee5eb870195a"
+  }
+]

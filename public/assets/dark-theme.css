@@ -1,0 +1,1550 @@
+/* PGE v4.23.0 — Tema Dark global da área autenticada */
+:root.theme-dark{color-scheme:dark;--dark-bg:#0b1220;--dark-surface:#111b2d;--dark-surface-2:#17243a;--dark-surface-3:#1d2d46;--dark-border:#31445f;--dark-text:#edf4ff;--dark-muted:#aebed3;--dark-soft:#8397b1;--dark-link:#80b7ff;--dark-input:#0e192a;--dark-shadow:0 12px 30px rgba(0,0,0,.30)}
+html.theme-dark,html.theme-dark body{background:#0b1220!important;color:#edf4ff!important}
+html.theme-dark body,html.theme-dark .app,html.theme-dark .main,html.theme-dark .production-content,html.theme-dark .module-page{background:#0b1220!important;color:#edf4ff!important}
+html.theme-dark body{--ink:#edf4ff;--muted:#aebed3;--line:#31445f;--soft:#17243a;--card:#111b2d;--white:#111b2d}
+/* menu e cabeçalho */
+html.theme-dark .side{background:#0a1322!important;border-color:#263954!important;color:#edf4ff!important;box-shadow:8px 0 28px rgba(0,0,0,.18)!important}
+html.theme-dark .brand,html.theme-dark .user,html.theme-dark .profilebox{color:#edf4ff!important;border-color:#2c405c!important}
+html.theme-dark .user span,html.theme-dark .profilebox small{color:#aebed3!important}
+html.theme-dark .menu .mi{color:#c9d7e9!important;border-color:transparent!important}
+html.theme-dark .menu .mi:hover{background:#172944!important;color:#fff!important}
+html.theme-dark .menu .mi.active{background:#213858!important;color:#fff!important;border-color:#42658e!important}
+html.theme-dark .top,html.theme-dark .app-header,html.theme-dark .production-header{background:#101a2b!important;border-color:#2c405c!important;color:#edf4ff!important;box-shadow:0 6px 20px rgba(0,0,0,.18)!important}
+html.theme-dark .production-header-title strong{color:#f5f8ff!important}
+html.theme-dark .header-action-button,html.theme-dark .header-info-chip,html.theme-dark .tenant-pill,html.theme-dark .notification-button{background:#17243a!important;color:#eaf2ff!important;border-color:#3a506d!important}
+html.theme-dark .header-action-button:hover,html.theme-dark .header-info-chip:hover,html.theme-dark .notification-button:hover{background:#213552!important;border-color:#5c7ca5!important}
+html.theme-dark .theme-toggle-button{min-width:92px;justify-content:center;gap:7px;background:#17243a!important}
+html.theme-dark .theme-toggle-icon{font-size:16px;line-height:1}
+/* superfícies gerais */
+html.theme-dark .card,html.theme-dark [class$="-card"],html.theme-dark [class*=" card"],html.theme-dark .config-card,html.theme-dark .module-hero,html.theme-dark .module-kpi,html.theme-dark .kpi,html.theme-dark .panel,html.theme-dark .box,html.theme-dark .section-card,html.theme-dark .workflow-card,html.theme-dark .phase-tree-card{background:#111b2d!important;color:#edf4ff!important;border-color:#30445f!important;box-shadow:var(--dark-shadow)!important}
+html.theme-dark .module-hero h1,html.theme-dark .module-hero h2,html.theme-dark h1,html.theme-dark h2,html.theme-dark h3,html.theme-dark h4,html.theme-dark h5,html.theme-dark strong,html.theme-dark b{color:inherit}
+html.theme-dark p,html.theme-dark small,html.theme-dark .muted,html.theme-dark .help,html.theme-dark .hint,html.theme-dark .subtitle{color:#aebed3!important}
+html.theme-dark a{color:#80b7ff}
+html.theme-dark hr{border-color:#31445f!important}
+/* formulários */
+html.theme-dark input:not([type=checkbox]):not([type=radio]),html.theme-dark select,html.theme-dark textarea,html.theme-dark .input,html.theme-dark .form-control{background:#0e192a!important;color:#f3f7ff!important;border-color:#3a506d!important;box-shadow:none!important}
+html.theme-dark input::placeholder,html.theme-dark textarea::placeholder{color:#7f93ad!important;opacity:1}
+html.theme-dark input:focus,html.theme-dark select:focus,html.theme-dark textarea:focus{border-color:#70aef8!important;outline:2px solid rgba(74,144,226,.20)!important}
+html.theme-dark label,html.theme-dark .field label{color:#cbd9ea!important}
+html.theme-dark input[type=file]::file-selector-button{background:#203653!important;color:#eef5ff!important;border:1px solid #496787!important}
+/* botões */
+html.theme-dark .btn:not(.danger):not(.success):not(.primary),html.theme-dark button.mini-link,html.theme-dark .mini-link:not(.primary){background:#1b2b43!important;color:#edf4ff!important;border-color:#405a79!important}
+html.theme-dark .btn:hover,html.theme-dark .mini-link:hover{filter:brightness(1.12)}
+/* tabelas e listas */
+html.theme-dark table{color:#eaf2ff!important;border-color:#31445f!important}
+html.theme-dark thead th,html.theme-dark table th{background:#17243a!important;color:#dce9f8!important;border-color:#31445f!important}
+html.theme-dark tbody td,html.theme-dark table td{background:#111b2d!important;color:#e5edf8!important;border-color:#2b3e58!important}
+html.theme-dark tbody tr:hover td{background:#172840!important}
+html.theme-dark .table-scroll,html.theme-dark .table-wrap,html.theme-dark .history-table-wrap{border-color:#31445f!important}
+/* abas */
+html.theme-dark .local-form-tabs,html.theme-dark .config-subtabs{background:#0d1727!important;border-color:#31445f!important}
+html.theme-dark .local-form-tab,html.theme-dark .config-subtab{color:#bcd0e7!important}
+html.theme-dark .local-form-tab:hover,html.theme-dark .config-subtab:hover{background:#1b2c45!important}
+html.theme-dark .local-form-tab.active,html.theme-dark .config-subtab.active{background:#7547e8!important;color:#fff!important}
+/* busca global e notificações */
+html.theme-dark .inp-global-panel,html.theme-dark .notification-panel{background:#101b2d!important;border-color:#3a506d!important;color:#edf4ff!important;box-shadow:0 18px 50px rgba(0,0,0,.48)!important}
+html.theme-dark .inp-global-panel-head,html.theme-dark .inp-global-panel-footer,html.theme-dark .notification-panel-head,html.theme-dark .notification-panel-actions{background:#152238!important;border-color:#31445f!important}
+html.theme-dark .inp-global-panel-form,html.theme-dark .inp-global-panel-body,html.theme-dark .notification-list{background:#101b2d!important}
+html.theme-dark .inp-global-hint,html.theme-dark .notification-empty{color:#aebed3!important}
+html.theme-dark .notification-item{background:#111d30!important;border-color:#2c405b!important;color:#edf4ff!important}
+html.theme-dark .notification-item:hover,html.theme-dark .notification-item.is-unread{background:#1a2b45!important}
+/* configurações, chips, metadados */
+html.theme-dark .municipality-section-head,html.theme-dark .municipality-basic-data,html.theme-dark .municipality-basic-data>span,html.theme-dark .municipality-upload-box,html.theme-dark .phase-config-summary,html.theme-dark .document-config-summary{background:#152238!important;color:#edf4ff!important;border-color:#31445f!important}
+html.theme-dark .municipality-section-head p,html.theme-dark .municipality-basic-data small{color:#9eb1c9!important}
+html.theme-dark .municipality-basic-data b{color:#eef5ff!important}
+html.theme-dark .municipality-coat,html.theme-dark .municipality-detail-coat,html.theme-dark .macro-client-coat,html.theme-dark .header-municipality-coat{background:#f6f8fb!important}
+/* cronograma: superfícies neutras em dark; cores semânticas são preservadas */
+html.theme-dark .contract-preview{background:#101a2b!important;border-color:#31445f!important;color:#edf4ff!important}
+html.theme-dark .contract-preview-head{background:#101a2b!important;border-color:#31445f!important}
+html.theme-dark .contract-preview-head h2{color:#ff5c58!important}
+html.theme-dark .contract-preview-head p{color:#aebed3!important}
+html.theme-dark .contract-preview-head-tools{border-color:#31445f!important}
+html.theme-dark .contract-preview-law,html.theme-dark .process-phase-nav-actions{background:#17243a!important;border-color:#3b526f!important;color:#d9e7f8!important}
+html.theme-dark .process-phase-nav-label,html.theme-dark .process-phase-nav-position{color:#c9d8ea!important}
+html.theme-dark .process-nav-btn{background:#20334f!important;color:#eef6ff!important;border-color:#4a6788!important}
+html.theme-dark .process-nav-btn:hover:not(:disabled){background:#2a4569!important}
+html.theme-dark .contract-preview-stage-card{background:#111b2d!important;border-color:#344b68!important}
+html.theme-dark .contract-preview-stage-card:not(.is-active):not(.is-closed):not(.is-late){color:#e9f1fb!important}
+html.theme-dark .contract-preview-stage-card .stage-progress,html.theme-dark .contract-preview-stage-card [class*="progress"]{background:#17243a!important;color:#c8d7e9!important;border-color:#31445f!important}
+/* documentos / workflow */
+html.theme-dark .secretary-group,html.theme-dark .secretary-doc-grid{background:#101a2b!important;border-color:#31445f!important}
+html.theme-dark .secretary-doc-row{background:#111b2d!important;border-color:#31445f!important;color:#edf4ff!important}
+html.theme-dark .upload-card,html.theme-dark .document-upload-card,html.theme-dark .document-card,html.theme-dark .requirement-card{background:#17243a!important;border-color:#3b526f!important;color:#edf4ff!important}
+html.theme-dark .document-name{color:#f1f6ff!important}
+/* dashboards, métricas, históricos */
+html.theme-dark .macro-client-card,html.theme-dark .macro-attention-card,html.theme-dark .history-item,html.theme-dark .audit-item,html.theme-dark .pending-item{background:#111b2d!important;border-color:#31445f!important;color:#edf4ff!important}
+html.theme-dark .macro-client-card:hover,html.theme-dark .history-item:hover,html.theme-dark .audit-item:hover{background:#16263d!important}
+/* território e mapas: controles/legendas; tiles permanecem cartográficos */
+html.theme-dark .leaflet-control,html.theme-dark .leaflet-bar a,html.theme-dark .leaflet-popup-content-wrapper,html.theme-dark .leaflet-popup-tip{background:#152238!important;color:#edf4ff!important;border-color:#405875!important}
+html.theme-dark .leaflet-bar a{color:#eaf3ff!important}
+html.theme-dark .leaflet-container{background:#0d1727!important}
+html.theme-dark .territorial-sidebar,html.theme-dark .territorial-panel,html.theme-dark .map-legend,html.theme-dark .municipality-map-legend{background:#111b2d!important;color:#d9e6f5!important;border-color:#31445f!important}
+/* modais */
+html.theme-dark .modal,html.theme-dark .modal-card,html.theme-dark .dialog,html.theme-dark [role=dialog]{background:#111b2d!important;color:#edf4ff!important;border-color:#405875!important}
+html.theme-dark .modal-backdrop{background:rgba(2,7,14,.72)!important}
+/* mensagens */
+html.theme-dark .flash{border-color:#405875!important;box-shadow:none!important}
+html.theme-dark .flash.ok{background:#102d22!important;color:#b9f4d2!important;border-color:#28734f!important}
+html.theme-dark .flash.error{background:#35191d!important;color:#ffd1d4!important;border-color:#8f3f48!important}
+/* scrollbars */
+html.theme-dark *{scrollbar-color:#4b6482 #101a2b}
+html.theme-dark *::-webkit-scrollbar-track{background:#101a2b}
+html.theme-dark *::-webkit-scrollbar-thumb{background:#4b6482;border-radius:999px;border:2px solid #101a2b}
+/* preservar legibilidade de estados semânticos */
+html.theme-dark .status,html.theme-dark .badge,html.theme-dark [class*="status-"],html.theme-dark [class*="badge-"]{border-color:rgba(255,255,255,.12)}
+html.theme-dark .status.active,html.theme-dark .badge.active,html.theme-dark .ready{color:#bff5d3!important}
+html.theme-dark .danger,html.theme-dark .error-text{color:#ffb5ba!important}
+html.theme-dark .warning{color:#ffe19a!important}
+/* impressão sempre clara */
+@media print{html.theme-dark,html.theme-dark body{background:#fff!important;color:#111!important}html.theme-dark .side,html.theme-dark .theme-toggle-button{display:none!important}}
+
+
+/* ==========================================================================
+   PGE v4.23.1 — revisão global de contraste do tema Dark
+   Regra: superfícies claras do tema clássico não podem sobreviver no Dark
+   com tipografia clara por herança.
+   ========================================================================== */
+html.theme-dark{
+  --d-bg:#091321;
+  --d-surface:#111d30;
+  --d-surface2:#17263d;
+  --d-surface3:#20334f;
+  --d-border:#344b68;
+  --d-text:#f4f8ff;
+  --d-muted:#b8c7da;
+  --d-soft:#93a8c1;
+  --d-blue:#8fc2ff;
+}
+
+/* Títulos e textos estruturais */
+html.theme-dark .macro-section-head h2,
+html.theme-dark .macro-client-head h3,
+html.theme-dark .workdesk-list-head h2,
+html.theme-dark .workdesk-item-top h3,
+html.theme-dark .workdesk-dashboard-strip b,
+html.theme-dark .dashboard-phase-main h2,
+html.theme-dark .dashboard-schedule-anchor b,
+html.theme-dark .dashboard-schedule-anchor strong,
+html.theme-dark .production-content h1,
+html.theme-dark .production-content h2,
+html.theme-dark .production-content h3{
+  color:var(--d-text)!important;
+}
+html.theme-dark .macro-section-head p,
+html.theme-dark .macro-client-head h3 small,
+html.theme-dark .macro-client-location,
+html.theme-dark .workdesk-list-head p,
+html.theme-dark .workdesk-meta,
+html.theme-dark .workdesk-item-body p,
+html.theme-dark .workdesk-dashboard-strip span,
+html.theme-dark .dashboard-phase-main p,
+html.theme-dark .dashboard-phase-deadline p,
+html.theme-dark .dashboard-schedule-anchor p{
+  color:var(--d-muted)!important;
+}
+
+/* Macro dashboard: seções que no clássico eram brancas */
+html.theme-dark .macro-section,
+html.theme-dark .macro-section-head,
+html.theme-dark .macro-client-card,
+html.theme-dark .macro-attention-section{
+  background:var(--d-surface)!important;
+  border-color:var(--d-border)!important;
+  color:var(--d-text)!important;
+}
+html.theme-dark .macro-section-head{
+  background:#142238!important;
+}
+html.theme-dark .macro-section-count,
+html.theme-dark .macro-live-badge{
+  background:#1b2d47!important;
+  border-color:#405a79!important;
+  color:#dceaff!important;
+}
+
+/* Cartões de atenção: mantém semântica sem usar fundo creme/branco */
+html.theme-dark .macro-attention-card{
+  background:#292416!important;
+  border-color:#6f5925!important;
+  color:#fff3c9!important;
+}
+html.theme-dark .macro-attention-card.critical{
+  background:#2c191d!important;
+  border-color:#71353c!important;
+  color:#ffd9dc!important;
+}
+html.theme-dark .macro-attention-card p{color:#d9cba9!important}
+html.theme-dark .macro-attention-card.critical p{color:#dfb8bc!important}
+
+/* Cartão do município e seus blocos internos */
+html.theme-dark .macro-client-card{background:#111d30!important}
+html.theme-dark .macro-client-location{color:#a8bdd5!important}
+html.theme-dark .macro-client-head h3{color:#f5f8ff!important}
+html.theme-dark .macro-client-head h3 small{color:#c3d1e2!important}
+html.theme-dark .macro-current-phase>div,
+html.theme-dark .macro-doc-grid>div,
+html.theme-dark .macro-next-action{
+  background:#17263d!important;
+  border-color:#3b526f!important;
+  color:#edf5ff!important;
+}
+html.theme-dark .macro-current-phase small,
+html.theme-dark .macro-current-phase span,
+html.theme-dark .macro-deadline-box small,
+html.theme-dark .macro-doc-grid small,
+html.theme-dark .macro-next-action small,
+html.theme-dark .macro-progress-block>div:first-child{
+  color:#aebfd3!important;
+}
+html.theme-dark .macro-current-phase b{color:#f3f7ff!important}
+html.theme-dark .macro-deadline-box.attention{
+  background:#2b2515!important;border-color:#786128!important;color:#ffe5a2!important;
+}
+html.theme-dark .macro-deadline-box.overdue{
+  background:#30191d!important;border-color:#7b3840!important;color:#ffd2d6!important;
+}
+html.theme-dark .macro-doc-grid .approved{background:#13291f!important;border-color:#2f6d4b!important}
+html.theme-dark .macro-doc-grid .waiting{background:#14253c!important;border-color:#355d8d!important}
+html.theme-dark .macro-doc-grid .correction{background:#2a2415!important;border-color:#715b27!important}
+html.theme-dark .macro-doc-grid .pending{background:#301a1d!important;border-color:#773940!important}
+html.theme-dark .macro-doc-grid .approved b{color:#73e0a0!important}
+html.theme-dark .macro-doc-grid .waiting b{color:#82b9ff!important}
+html.theme-dark .macro-doc-grid .correction b{color:#ffd36f!important}
+html.theme-dark .macro-doc-grid .pending b{color:#ff8f96!important}
+html.theme-dark .macro-client-secondary span,
+html.theme-dark .macro-territorial-metrics span{
+  background:#1a2a42!important;border-color:#3a526f!important;color:#c7d6e8!important;
+}
+
+/* Dashboard municipal: foco, prazo e marco inicial */
+html.theme-dark .dashboard-schedule-anchor,
+html.theme-dark .dashboard-phase-focus,
+html.theme-dark .dashboard-phase-main,
+html.theme-dark .dashboard-phase-deadline{
+  background:#111d30!important;
+  border-color:#344b68!important;
+  color:#f4f8ff!important;
+}
+html.theme-dark .phase-focus-counters div{
+  background:#17263d!important;border-color:#3b526f!important;color:#f4f8ff!important;
+}
+html.theme-dark .phase-focus-counters small,
+html.theme-dark .phase-focus-progress>div:first-child{
+  color:#aebfd3!important;
+}
+html.theme-dark .phase-focus-track{background:#263a55!important}
+html.theme-dark .dashboard-schedule-anchor input{
+  background:#0d192a!important;color:#f4f8ff!important;border-color:#45617f!important;
+}
+
+/* Controle de prazo / caixas cinza-claro que estavam com texto branco */
+html.theme-dark .deadline-card,
+html.theme-dark .deadline-panel,
+html.theme-dark .deadline-summary,
+html.theme-dark .deadline-grid>div,
+html.theme-dark [class*="deadline-"][class*="box"],
+html.theme-dark [class*="deadline-"][class*="item"]{
+  background:#17263d!important;
+  border-color:#3b526f!important;
+  color:#f4f8ff!important;
+}
+html.theme-dark .deadline-grid small,
+html.theme-dark .deadline-grid label,
+html.theme-dark [class*="deadline"] small,
+html.theme-dark [class*="deadline"] label{
+  color:#aebfd3!important;
+}
+html.theme-dark [class*="deadline"] b,
+html.theme-dark [class*="deadline"] strong{
+  color:#f4f8ff!important;
+}
+
+/* Blocos informativos como Base Legal / Leitura da Prévia */
+html.theme-dark .legal-card,
+html.theme-dark .legal-box,
+html.theme-dark .preview-reading,
+html.theme-dark .preview-reading-card,
+html.theme-dark .info-card,
+html.theme-dark .info-box{
+  background:#15243a!important;
+  border-color:#3b526f!important;
+  color:#eef5ff!important;
+}
+html.theme-dark .legal-card p,
+html.theme-dark .legal-box p,
+html.theme-dark .preview-reading p,
+html.theme-dark .info-card p,
+html.theme-dark .info-box p{
+  color:#b8c7da!important;
+}
+
+/* Perfil do usuário: não deixar cartão branco com texto quase branco */
+html.theme-dark .profilebox,
+html.theme-dark .user-profile,
+html.theme-dark .user-card,
+html.theme-dark .account-card{
+  background:#15243a!important;
+  border-color:#3b526f!important;
+  color:#f4f8ff!important;
+}
+html.theme-dark .profilebox b,
+html.theme-dark .profilebox strong,
+html.theme-dark .user-profile b,
+html.theme-dark .user-card b{color:#f4f8ff!important}
+html.theme-dark .profilebox small,
+html.theme-dark .user-profile small,
+html.theme-dark .user-card small{color:#afc0d5!important}
+
+/* Central de pendências / faixa de alerta */
+html.theme-dark .workdesk-dashboard-strip{
+  background:#14243a!important;
+  border-color:#3c5877!important;
+  color:#f4f8ff!important;
+}
+html.theme-dark .workdesk-dashboard-strip.has-actions{
+  background:#292315!important;
+  border-color:#745a24!important;
+}
+html.theme-dark .workdesk-dashboard-strip.is-clear{
+  background:#12291e!important;
+  border-color:#2e6d49!important;
+}
+html.theme-dark .workdesk-dashboard-strip small{color:#b7c6d8!important}
+html.theme-dark .workdesk-dashboard-strip.has-actions small{color:#dccb9d!important}
+html.theme-dark .workdesk-dashboard-strip b{color:#f5f8ff!important}
+html.theme-dark .workdesk-dashboard-strip.has-actions b{color:#ffe4a3!important}
+html.theme-dark .workdesk-dashboard-strip span{color:#bdcad9!important}
+
+/* Minha Mesa */
+html.theme-dark .workdesk-action-total,
+html.theme-dark .workdesk-kpi,
+html.theme-dark .workdesk-list-card,
+html.theme-dark .workdesk-list-head,
+html.theme-dark .workdesk-toolbar,
+html.theme-dark .workdesk-item,
+html.theme-dark .workdesk-pagination-bar{
+  background:#111d30!important;border-color:#344b68!important;color:#f4f8ff!important;
+}
+html.theme-dark .workdesk-toolbar{background:#142238!important}
+html.theme-dark .workdesk-item:hover{background:#172840!important}
+html.theme-dark .workdesk-item.correction,
+html.theme-dark .workdesk-item.attention{background:#282315!important}
+html.theme-dark .workdesk-item.pending,
+html.theme-dark .workdesk-item.danger{background:#2d191d!important}
+html.theme-dark .workdesk-item.waiting{background:#14243a!important}
+html.theme-dark .workdesk-item.neutral{background:#151f30!important}
+html.theme-dark .workdesk-kpi small,
+html.theme-dark .workdesk-kpi span,
+html.theme-dark .workdesk-action-total small,
+html.theme-dark .workdesk-action-total span,
+html.theme-dark .workdesk-pagination-bar{color:#afc0d5!important}
+html.theme-dark .workdesk-kpi b,
+html.theme-dark .workdesk-action-total b{color:#f5f8ff!important}
+html.theme-dark .workdesk-search,
+html.theme-dark .workdesk-toolbar select,
+html.theme-dark .workdesk-pagination button{
+  background:#0e192a!important;color:#edf5ff!important;border-color:#3b526f!important;
+}
+html.theme-dark .workdesk-search input{color:#edf5ff!important}
+
+/* Cabeçalhos das grandes áreas que apareciam quase brancos */
+html.theme-dark .macro-section-head,
+html.theme-dark .module-section-head,
+html.theme-dark .section-head,
+html.theme-dark .card-head{
+  color:#f4f8ff!important;
+}
+html.theme-dark .macro-section-head *,
+html.theme-dark .module-section-head *,
+html.theme-dark .section-head *,
+html.theme-dark .card-head *{
+  text-shadow:none!important;
+}
+
+/* Chips claros precisam de texto escuro; chips escuros precisam de texto claro */
+html.theme-dark .macro-health.critical{background:#5b2429!important;color:#ffd9dc!important}
+html.theme-dark .macro-health.attention{background:#5c4817!important;color:#ffe5a2!important}
+html.theme-dark .macro-health.implementation{background:#183d68!important;color:#cce3ff!important}
+html.theme-dark .macro-health:not(.critical):not(.attention):not(.implementation){
+  background:#153d29!important;color:#c8f5d9!important;
+}
+
+/* Fallback para superfícies clássicas explicitamente brancas/claras dentro da área autenticada.
+   Limitado a componentes conhecidos para não destruir cores semânticas. */
+html.theme-dark .macro-dashboard .macro-section,
+html.theme-dark .macro-dashboard .macro-section-head,
+html.theme-dark .macro-dashboard .macro-client-card,
+html.theme-dark .workdesk-page .workdesk-list-card,
+html.theme-dark .workdesk-page .workdesk-list-head{
+  box-shadow:0 10px 28px rgba(0,0,0,.22)!important;
+}
+
+/* Acessibilidade: links e textos auxiliares nunca podem ficar azul muito escuro no fundo dark */
+html.theme-dark .production-content a:not(.btn):not(.mi):not(.macro-attention-card){
+  color:#91c5ff;
+}
+html.theme-dark .production-content .muted,
+html.theme-dark .production-content [class*="subtitle"],
+html.theme-dark .production-content [class*="description"]{
+  color:#b4c4d7!important;
+}
+
+
+/* ==========================================================================
+   PGE v4.23.2 — AUDITORIA GLOBAL DO TEMA DARK
+   Revisão feita sobre o ZIP completo da Plataforma.
+   ========================================================================== */
+html.theme-dark{
+ --d0:#08111f;--d1:#101b2d;--d2:#16253b;--d3:#1d304b;
+ --db:#354d6b;--dt:#f3f7fd;--dm:#b8c7da;--ds:#8fa4be;
+}
+
+/* ---------- ADMIN / VISÃO MACRO ---------- */
+html.theme-dark .macro-kpis .kpi,
+html.theme-dark .macro-client-mini-grid>div,
+html.theme-dark .macro-implementation,
+html.theme-dark .macro-current-phase>div,
+html.theme-dark .macro-doc-grid>div,
+html.theme-dark .macro-next-action{
+ background:var(--d2)!important;border-color:var(--db)!important;color:var(--dt)!important;
+}
+html.theme-dark .macro-kpis .kpi small,
+html.theme-dark .macro-client-mini-grid small,
+html.theme-dark .macro-implementation p,
+html.theme-dark .macro-current-phase small,
+html.theme-dark .macro-current-phase span,
+html.theme-dark .macro-doc-grid small,
+html.theme-dark .macro-next-action small,
+html.theme-dark .macro-last-movement span,
+html.theme-dark .macro-last-movement small{color:var(--dm)!important}
+html.theme-dark .macro-kpis .kpi b,
+html.theme-dark .macro-client-mini-grid b,
+html.theme-dark .macro-implementation b,
+html.theme-dark .macro-current-phase b,
+html.theme-dark .macro-next-action b{color:var(--dt)!important}
+html.theme-dark .macro-implementation-icon{background:#19375d!important;color:#9bc8ff!important}
+html.theme-dark .macro-client-mini-grid>div{background:#172840!important}
+html.theme-dark .macro-client-mini-grid b{color:#f5f8ff!important}
+html.theme-dark .macro-progress-track{background:#30435d!important}
+html.theme-dark .macro-last-movement{border-color:#405773!important}
+html.theme-dark .macro-recent-item{background:var(--d1)!important;color:var(--dt)!important;border-color:#2f435e!important}
+html.theme-dark .macro-recent-item:hover{background:#172840!important}
+html.theme-dark .macro-recent-item p,
+html.theme-dark .macro-recent-time small{color:var(--dm)!important}
+html.theme-dark .macro-recent-icon{background:#1b3556!important;color:#9bc8ff!important}
+html.theme-dark .macro-filter-buttons button,
+html.theme-dark .macro-search{background:#16253b!important;border-color:#3b5574!important;color:#eaf2ff!important}
+html.theme-dark .macro-search input{color:#eef5ff!important}
+html.theme-dark .macro-empty-filter{color:var(--dm)!important}
+
+/* implantação: elimina os cartões brancos vistos em São Bernardo/Uberlândia */
+html.theme-dark .macro-client-card.implementation .macro-implementation{
+ background:#14263e!important;border-color:#31577f!important;
+}
+html.theme-dark .macro-client-card.implementation .macro-client-mini-grid>div{
+ background:#16263d!important;border-color:#3a526f!important;
+}
+html.theme-dark .macro-client-card.implementation .macro-client-mini-grid b{color:#f4f8ff!important}
+html.theme-dark .macro-client-card.implementation .macro-client-mini-grid small{color:#aebfd3!important}
+
+/* ---------- NOTIFICAÇÕES ---------- */
+html.theme-dark .notification-history-card,
+html.theme-dark .notification-history-head,
+html.theme-dark .notification-history-list,
+html.theme-dark .notification-history-item,
+html.theme-dark .notification-pagination{
+ background:var(--d1)!important;border-color:#314760!important;color:var(--dt)!important;
+}
+html.theme-dark .notification-history-item.is-unread{background:#142943!important;border-left-color:#4d9cff!important}
+html.theme-dark .notification-history-item.is-read{background:#111d30!important}
+html.theme-dark .notification-history-main{color:var(--dt)!important}
+html.theme-dark .notification-history-title b{color:#f5f8ff!important}
+html.theme-dark .notification-history-body p{color:#c0cee0!important}
+html.theme-dark .notification-history-body small,
+html.theme-dark .notification-history-head p,
+html.theme-dark .notification-pagination span,
+html.theme-dark .notification-read-label{color:#9fb2c9!important}
+html.theme-dark .notification-type-label{background:#263a54!important;color:#dce8f6!important}
+html.theme-dark .notification-new-label{background:#174a7e!important;color:#d9ebff!important}
+html.theme-dark .notification-unread-summary{background:#172b45!important;border-color:#3b5b7e!important;color:#d9eaff!important}
+html.theme-dark .notification-filter-card{background:var(--d1)!important}
+html.theme-dark .notification-filter-form label>span{color:#bdcde0!important}
+html.theme-dark .notification-empty-state{color:var(--dm)!important}
+html.theme-dark .notification-empty-state b{color:var(--dt)!important}
+/* mantém ícones semânticos legíveis no dark */
+html.theme-dark .notification-type-documento_enviado .notification-history-icon,
+html.theme-dark .notification-type-documento_enviado .notification-item-icon{background:#173b63!important;color:#a7d0ff!important}
+html.theme-dark .notification-type-prazo_vencido .notification-history-icon,
+html.theme-dark .notification-type-prazo_vencido .notification-item-icon{background:#55272b!important;color:#ffb7bc!important}
+html.theme-dark .notification-type-prazo_proximo .notification-history-icon,
+html.theme-dark .notification-type-prazo_proximo .notification-item-icon,
+html.theme-dark .notification-type-correcao .notification-history-icon,
+html.theme-dark .notification-type-correcao .notification-item-icon{background:#503d17!important;color:#ffe09a!important}
+html.theme-dark .notification-type-aprovacao .notification-history-icon,
+html.theme-dark .notification-type-fase_concluida .notification-history-icon{background:#183d2a!important;color:#9ae0b3!important}
+
+/* ---------- BUSCA GLOBAL ---------- */
+html.theme-dark .inp-global-trigger,
+html.theme-dark .inp-global-panel-form,
+html.theme-dark .inp-global-panel-footer,
+html.theme-dark .inp-global-group,
+html.theme-dark .inp-global-hint>div,
+html.theme-dark .inp-global-empty>div,
+html.theme-dark .inp-global-hint em,
+html.theme-dark .inp-search-console,
+html.theme-dark .inp-search-discovery-grid article,
+html.theme-dark .inp-search-result-summary,
+html.theme-dark .inp-search-tabs a,
+html.theme-dark .inp-search-group,
+html.theme-dark .inp-search-no-results{
+ background:var(--d1)!important;border-color:var(--db)!important;color:var(--dt)!important;
+}
+html.theme-dark .inp-global-trigger:hover,
+html.theme-dark .inp-search-tabs a:hover{background:#1a2c45!important}
+html.theme-dark .inp-global-trigger kbd{background:#20334e!important;border-color:#47617f!important;color:#d6e2f0!important}
+html.theme-dark .inp-search-no-results h2,
+html.theme-dark .inp-search-group-head h2{color:#f1f6fd!important}
+html.theme-dark .inp-search-no-results p,
+html.theme-dark .inp-search-group-head p,
+html.theme-dark .inp-search-group-head small{color:var(--dm)!important}
+
+/* ---------- PARÂMETROS DA INSTÂNCIA ---------- */
+html.theme-dark .instance-param-card,
+html.theme-dark .instance-identity-preview,
+html.theme-dark .instance-param-switch,
+html.theme-dark .instance-color-input{
+ background:var(--d1)!important;border-color:var(--db)!important;color:var(--dt)!important;
+}
+html.theme-dark .instance-param-card-head{border-color:#30445f!important}
+html.theme-dark .instance-param-card-head>span{background:#1a3557!important;color:#9bc9ff!important}
+html.theme-dark .instance-param-card-head h3,
+html.theme-dark .instance-param-switch b{color:var(--dt)!important}
+html.theme-dark .instance-param-card-head p,
+html.theme-dark .instance-param-field small,
+html.theme-dark .instance-param-switch small{color:var(--dm)!important}
+html.theme-dark .instance-param-field>span{color:#c3d2e4!important}
+html.theme-dark .instance-param-input-suffix b{background:#20324b!important;color:#c7d6e7!important}
+html.theme-dark .instance-param-fixed-rule{background:#342a14!important;border-color:#725d2a!important;color:#ffe5a2!important}
+html.theme-dark .instance-identity-content img,
+html.theme-dark .instance-identity-placeholder{background:#eaf0f7!important}
+
+/* ---------- SITUAÇÃO / PROCESSO ---------- */
+html.theme-dark .current-process-card,
+html.theme-dark .process-situation-card,
+html.theme-dark .situational-pending-section,
+html.theme-dark .current-phase-info,
+html.theme-dark .current-phase-action{
+ background:var(--d1)!important;border-color:var(--db)!important;color:var(--dt)!important;
+}
+html.theme-dark .current-phase-stat,
+html.theme-dark .process-phase-step,
+html.theme-dark .process-phase-summary,
+html.theme-dark .process-phase-summary-metric{
+ background:var(--d2)!important;border-color:var(--db)!important;color:var(--dt)!important;
+}
+html.theme-dark .current-phase-top p,
+html.theme-dark .current-phase-stat small,
+html.theme-dark .process-phase-step small,
+html.theme-dark .process-phase-summary-intro small,
+html.theme-dark .process-phase-summary-metric small,
+html.theme-dark .situational-pending-head p{color:var(--dm)!important}
+html.theme-dark .process-phase-summary-intro strong,
+html.theme-dark .process-phase-summary-metric b{color:#f3f7fd!important}
+html.theme-dark .current-phase-progress-head{color:#c5d3e4!important}
+html.theme-dark .current-phase-progress-track{background:#30435d!important}
+html.theme-dark .situational-secretary-card.not-delivered{background:#301a1e!important;border-color:#743941!important}
+html.theme-dark .situational-secretary-card.needs-correction{background:#302816!important;border-color:#715b29!important}
+html.theme-dark .situational-secretary-avatar,
+html.theme-dark .situational-doc-item{background:#17263d!important;border-color:#3b526f!important;color:var(--dt)!important}
+html.theme-dark .situational-doc-item small,
+html.theme-dark .situational-secretary-identification small{color:var(--dm)!important}
+
+/* ---------- MUNICÍPIO / PERFIL / ESTRUTURA ---------- */
+html.theme-dark .municipality-profile-card,
+html.theme-dark .municipality-map-card,
+html.theme-dark .municipality-detail-card,
+html.theme-dark .municipality-section-head,
+html.theme-dark .municipality-basic-data,
+html.theme-dark .municipality-upload-box{
+ background:var(--d1)!important;border-color:var(--db)!important;color:var(--dt)!important;
+}
+html.theme-dark .municipality-section-head h2,
+html.theme-dark .municipality-section-head h3{color:var(--dt)!important}
+html.theme-dark .municipality-section-head p{color:var(--dm)!important}
+
+/* ---------- KPIs / CARDS GENÉRICOS AUTENTICADOS ---------- */
+html.theme-dark .module-kpis .kpi,
+html.theme-dark .dashboard-kpis .kpi,
+html.theme-dark .municipality-detail-kpis .kpi,
+html.theme-dark .situational-kpis .kpi,
+html.theme-dark .macro-dashboard .kpi{
+ background:var(--d1)!important;border-color:var(--db)!important;color:var(--dt)!important;
+}
+html.theme-dark .module-kpis .kpi small,
+html.theme-dark .dashboard-kpis .kpi small,
+html.theme-dark .municipality-detail-kpis .kpi small,
+html.theme-dark .situational-kpis .kpi small,
+html.theme-dark .macro-dashboard .kpi small{color:#aebfd3!important}
+html.theme-dark .module-kpis .kpi b,
+html.theme-dark .dashboard-kpis .kpi b,
+html.theme-dark .municipality-detail-kpis .kpi b,
+html.theme-dark .situational-kpis .kpi b,
+html.theme-dark .macro-dashboard .kpi b{color:#f4f8ff!important}
+
+/* ---------- fallback seguro para superfícies de módulos conhecidos ---------- */
+html.theme-dark .module-page [style*="background:#fff"],
+html.theme-dark .module-page [style*="background: #fff"],
+html.theme-dark .macro-dashboard [style*="background:#fff"],
+html.theme-dark .macro-dashboard [style*="background: #fff"]{
+ background:var(--d1)!important;color:var(--dt)!important;border-color:var(--db)!important;
+}
+
+/* contraste mínimo de textos dentro da área principal */
+html.theme-dark .production-content :where(.card,.panel,.box,.macro-section,.module-page) > :where(h1,h2,h3,h4,h5,h6,strong,b){
+ color:#f3f7fd;
+}
+
+
+/* ==========================================================================
+   PGE v4.23.4 — SLA + Municípios + Indicadores Históricos
+   Seletores conferidos diretamente nas views do ZIP completo.
+   ========================================================================== */
+
+/* SLA — KPIs superiores que ainda permaneciam claros */
+html.theme-dark .sla-kpis{background:transparent!important}
+html.theme-dark .sla-kpi{
+ background:#142238!important;border-color:#38516f!important;color:#f4f8ff!important;
+ box-shadow:0 8px 22px rgba(0,0,0,.18)!important
+}
+html.theme-dark .sla-kpi-icon{background:#1c3554!important;color:#9dccff!important}
+html.theme-dark .sla-kpi small,
+html.theme-dark .sla-kpi span{color:#aebfd3!important}
+html.theme-dark .sla-kpi b,
+html.theme-dark .sla-kpi strong{color:#f4f8ff!important}
+html.theme-dark .sla-kpi.sla-tone-excellent{border-top-color:#36b56c!important}
+html.theme-dark .sla-kpi.sla-tone-attention{border-top-color:#e3a82e!important}
+html.theme-dark .sla-kpi.sla-tone-critical{border-top-color:#ef5c64!important}
+html.theme-dark .sla-kpi.sla-tone-good{border-top-color:#4298ef!important}
+html.theme-dark .sla-highlight{background:#142238!important;border-color:#38516f!important;color:#f4f8ff!important}
+html.theme-dark .sla-highlight small{color:#aebfd3!important}
+html.theme-dark .sla-highlight b{color:#f4f8ff!important}
+html.theme-dark .sla-highlight.best{background:#122a20!important;border-color:#2e6c49!important}
+html.theme-dark .sla-highlight.attention{background:#2c2515!important;border-color:#735b27!important}
+
+/* ADMIN > MUNICÍPIOS — hero arredondado e catálogo inteiro dark */
+html.theme-dark .municipality-admin .module-hero{
+ background:#111d30!important;
+ border:1px solid #344b68!important;
+ border-radius:18px!important;
+ padding:20px 22px!important;
+ box-shadow:0 10px 28px rgba(0,0,0,.18)!important;
+ overflow:hidden!important
+}
+html.theme-dark .municipality-admin .module-hero h1{color:#f4f8ff!important}
+html.theme-dark .municipality-admin .module-hero p{color:#b8c7da!important}
+html.theme-dark .municipality-total-chip{background:#1b2d47!important;border-color:#405a79!important;color:#dceaff!important}
+html.theme-dark .municipality-summary-card,
+html.theme-dark .municipality-catalog-card,
+html.theme-dark .municipality-create-panel,
+html.theme-dark .municipality-management-card{
+ background:#111d30!important;border-color:#344b68!important;color:#f4f8ff!important
+}
+html.theme-dark .municipality-summary-card{box-shadow:0 7px 20px rgba(0,0,0,.18)!important}
+html.theme-dark .municipality-summary-card small{color:#9fb2c9!important}
+html.theme-dark .municipality-summary-card b{color:#f4f8ff!important}
+html.theme-dark .municipality-summary-card.is-green{border-top-color:#37b66d!important}
+html.theme-dark .municipality-summary-card.is-blue{border-top-color:#388ee9!important}
+html.theme-dark .municipality-summary-card.is-readiness{border-top-color:#9859e8!important}
+html.theme-dark .municipality-summary-card.is-neutral{border-top-color:#8294aa!important}
+html.theme-dark .municipality-catalog-head,
+html.theme-dark .municipality-toolbar,
+html.theme-dark .municipality-card-head,
+html.theme-dark .municipality-management-head{background:#142238!important;border-color:#344b68!important}
+html.theme-dark .municipality-catalog-head h2,
+html.theme-dark .municipality-client-title,
+html.theme-dark .municipality-management-head h3{color:#f4f8ff!important}
+html.theme-dark .municipality-catalog-head p,
+html.theme-dark .municipality-management-head small{color:#aebfd3!important}
+html.theme-dark .municipality-management-metrics>div,
+html.theme-dark .municipality-process-card,
+html.theme-dark .municipality-readiness-card,
+html.theme-dark .municipality-summary-action{
+ background:#17263d!important;border-color:#3b526f!important;color:#f4f8ff!important
+}
+html.theme-dark .municipality-management-metrics small,
+html.theme-dark .municipality-process-main small,
+html.theme-dark .municipality-readiness-summary-copy small,
+html.theme-dark .municipality-readiness-list,
+html.theme-dark .municipality-summary-action small{color:#aebfd3!important}
+html.theme-dark .municipality-management-metrics b,
+html.theme-dark .municipality-process-main b,
+html.theme-dark .municipality-readiness-summary-copy b,
+html.theme-dark .municipality-summary-action b{color:#f4f8ff!important}
+html.theme-dark .municipality-process-count{background:#1c3554!important;border-color:#45617f!important;color:#b9d9ff!important}
+html.theme-dark .municipality-process-count.is-zero{background:#173324!important;border-color:#34704d!important;color:#a8e7bf!important}
+html.theme-dark .municipality-readiness-score{background:#1d3150!important;border-color:#45617f!important;color:#8fc2ff!important}
+html.theme-dark .municipality-readiness-progress{background:#2b405c!important}
+html.theme-dark .municipality-summary-action{background:#142943!important}
+html.theme-dark .municipality-search-field{background:#0e192a!important;border-color:#3b526f!important;color:#eef5ff!important}
+html.theme-dark .municipality-search-field input{color:#eef5ff!important}
+html.theme-dark .municipality-status-legend{background:#142238!important;border-color:#344b68!important;color:#b8c7da!important}
+html.theme-dark .municipality-legend-title{color:#f4f8ff!important}
+html.theme-dark .municipality-client-coat,
+html.theme-dark .municipality-client-fallback{background:#eaf0f7!important;color:#16395f!important}
+html.theme-dark .municipality-management-card.active{border-color:#34704d!important}
+html.theme-dark .municipality-management-card.implementation{border-color:#3e6da2!important}
+html.theme-dark .municipality-management-card.inactive{border-color:#596a7f!important}
+
+/* INDICADORES EXECUTIVOS HISTÓRICOS */
+html.theme-dark .historical-hero{
+ background:#111d30!important;border:1px solid #344b68!important;border-radius:18px!important;
+ padding:20px 22px!important;box-shadow:0 10px 28px rgba(0,0,0,.18)!important
+}
+html.theme-dark .historical-hero h1{color:#f4f8ff!important}
+html.theme-dark .historical-hero p{color:#b8c7da!important}
+html.theme-dark .historical-eyebrow{background:#1b3556!important;color:#b9d9ff!important}
+html.theme-dark .historical-period-form label{color:#c4d3e5!important}
+html.theme-dark .historical-period-form select{background:#17263d!important;border-color:#45617f!important;color:#eef5ff!important}
+html.theme-dark .historical-kpi{
+ background:#142238!important;border-color:#38516f!important;color:#f4f8ff!important;
+ box-shadow:0 7px 20px rgba(0,0,0,.18)!important
+}
+html.theme-dark .historical-kpi small{color:#9fb2c9!important}
+html.theme-dark .historical-kpi b{color:#f4f8ff!important}
+html.theme-dark .historical-kpi span,
+html.theme-dark .historical-kpi p{color:#b8c7da!important}
+html.theme-dark .historical-section,
+html.theme-dark .historical-methodology{
+ background:#111d30!important;border-color:#344b68!important;color:#f4f8ff!important
+}
+html.theme-dark .historical-section-head{background:#142238!important;border-color:#344b68!important}
+html.theme-dark .historical-section-head h2{color:#f4f8ff!important}
+html.theme-dark .historical-section-head p{color:#b8c7da!important}
+html.theme-dark .historical-section-badge{background:#1b3556!important;color:#b9d9ff!important;border-color:#3b5c80!important}
+html.theme-dark .historical-month,
+html.theme-dark .historical-ranking,
+html.theme-dark .historical-empty{background:#17263d!important;border-color:#3b526f!important;color:#f4f8ff!important}
+html.theme-dark .historical-month small,
+html.theme-dark .historical-ranking small,
+html.theme-dark .historical-empty{color:#aebfd3!important}
+html.theme-dark .historical-month b,
+html.theme-dark .historical-ranking b{color:#f4f8ff!important}
+html.theme-dark .historical-ranking-bar-wrap{background:#2c405a!important}
+html.theme-dark .historical-chart-legend{color:#b8c7da!important}
+html.theme-dark .historical-methodology summary{background:#142238!important;color:#f4f8ff!important}
+html.theme-dark .historical-methodology p{color:#b8c7da!important}
+
+/* tabela histórica */
+html.theme-dark .historical-table th{background:#17263d!important;color:#c4d3e5!important;border-color:#344b68!important}
+html.theme-dark .historical-table td{background:#111d30!important;color:#eaf2fb!important;border-color:#344b68!important}
+html.theme-dark .historical-table tbody tr:hover td{background:#172840!important}
+html.theme-dark .historical-status{background:#263a54!important;color:#dce8f6!important}
+
+/* Correção explícita para qualquer card branco residual dessas três telas */
+html.theme-dark .sla-page .card,
+html.theme-dark .municipality-admin .card,
+html.theme-dark .historical-page .card{
+ color-scheme:dark!important
+}
+
+
+/* ==========================================================================
+   PGE v4.24.0 — DARK CONSOLIDADO GLOBAL
+   Auditoria arquivo por arquivo do ZIP completo.
+   Esta camada consolida componentes ainda não cobertos pelas revisões 4.23.x.
+   ========================================================================== */
+html.theme-dark{
+ --pge-bg:#08111f;--pge-s1:#101b2d;--pge-s2:#16253b;--pge-s3:#1d304b;
+ --pge-line:#354d6b;--pge-line2:#45617f;--pge-text:#f3f7fd;
+ --pge-muted:#b8c7da;--pge-soft:#93a8c1;--pge-link:#91c5ff;
+ color-scheme:dark;
+}
+html.theme-dark body,
+html.theme-dark .production-shell,
+html.theme-dark .production-main{background:var(--pge-bg)!important;color:var(--pge-text)!important}
+
+/* ---------- base visual de módulos ---------- */
+html.theme-dark .module-page,
+html.theme-dark .historical-page,
+html.theme-dark .sla-page,
+html.theme-dark .document-audit-page,
+html.theme-dark .workdesk-page{color:var(--pge-text)}
+html.theme-dark .module-hero,
+html.theme-dark .hero,
+html.theme-dark .sla-hero,
+html.theme-dark .historical-hero{
+ background:var(--pge-s1)!important;border:1px solid var(--pge-line)!important;
+ border-radius:18px!important;color:var(--pge-text)!important;
+ box-shadow:0 10px 28px rgba(0,0,0,.18)!important
+}
+html.theme-dark .module-hero h1,html.theme-dark .module-hero h2,
+html.theme-dark .hero h1,html.theme-dark .hero h2,
+html.theme-dark .sla-hero h1,html.theme-dark .historical-hero h1{color:var(--pge-text)!important}
+html.theme-dark .module-hero p,html.theme-dark .hero p,
+html.theme-dark .sla-hero p,html.theme-dark .historical-hero p,
+html.theme-dark .module-context{color:var(--pge-muted)!important}
+html.theme-dark .card,
+html.theme-dark .config-card,
+html.theme-dark .history-card,
+html.theme-dark .report-card{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .card-title,html.theme-dark .card h2,html.theme-dark .card h3,
+html.theme-dark .config-card h2,html.theme-dark .config-card h3{color:var(--pge-text)!important}
+html.theme-dark .card p,html.theme-dark .card small,
+html.theme-dark .config-card p,html.theme-dark .config-card small{color:var(--pge-muted)!important}
+
+/* ---------- KPI global ---------- */
+html.theme-dark .kpis .kpi,
+html.theme-dark .module-kpi,
+html.theme-dark .module-kpis-grid .module-kpi,
+html.theme-dark .audit-summary-card{
+ background:var(--pge-s2)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .kpi small,html.theme-dark .kpi span,
+html.theme-dark .module-kpi small,html.theme-dark .module-kpi span,
+html.theme-dark .audit-summary-card small{color:var(--pge-muted)!important}
+html.theme-dark .kpi b,html.theme-dark .kpi strong,
+html.theme-dark .module-kpi b,html.theme-dark .module-kpi strong,
+html.theme-dark .audit-summary-card b{color:var(--pge-text)!important}
+html.theme-dark .kpi.success,html.theme-dark .module-kpi.success{background:#12291e!important;border-color:#2e6d49!important}
+html.theme-dark .kpi.warning,html.theme-dark .module-kpi.warning{background:#2b2515!important;border-color:#735b27!important}
+html.theme-dark .kpi.alert,html.theme-dark .kpi.danger,
+html.theme-dark .module-kpi.alert,html.theme-dark .module-kpi.danger{background:#30191d!important;border-color:#783940!important}
+html.theme-dark .kpi.neutral,html.theme-dark .module-kpi.neutral{background:#17263d!important}
+
+/* ---------- tabelas, formulários, filtros ---------- */
+html.theme-dark .production-table,
+html.theme-dark .config-table,
+html.theme-dark .document-catalog-table,
+html.theme-dark .document-version-table,
+html.theme-dark .phase-snapshot-table{background:var(--pge-s1)!important;color:var(--pge-text)!important}
+html.theme-dark :is(.production-table,.config-table,.document-catalog-table,.document-version-table,.phase-snapshot-table) th{
+ background:#17263d!important;color:#c6d5e7!important;border-color:var(--pge-line)!important
+}
+html.theme-dark :is(.production-table,.config-table,.document-catalog-table,.document-version-table,.phase-snapshot-table) td{
+ background:#111d30!important;color:#eaf2fb!important;border-color:var(--pge-line)!important
+}
+html.theme-dark :is(.production-table,.config-table,.document-catalog-table,.document-version-table,.phase-snapshot-table) tbody tr:hover td{
+ background:#172840!important
+}
+html.theme-dark .production-form label,
+html.theme-dark .phase-close-field label{color:#c4d3e5!important}
+html.theme-dark input:not([type=checkbox]):not([type=radio]):not([type=range]),
+html.theme-dark select,html.theme-dark textarea{
+ background:#0e192a!important;border-color:#45617f!important;color:#eef5ff!important
+}
+html.theme-dark input::placeholder,html.theme-dark textarea::placeholder{color:#788da6!important}
+html.theme-dark .check-line{color:#c4d3e5!important}
+
+/* ---------- abas/configuração/admin ---------- */
+html.theme-dark .config-tabs,
+html.theme-dark .admin-config-selector,
+html.theme-dark .admin-config-tenant,
+html.theme-dark .admin-config-info-grid>div{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .config-tabs a{background:#17263d!important;border-color:#3b526f!important;color:#c8d6e7!important}
+html.theme-dark .config-tabs a.active{background:#5530b9!important;border-color:#7b5add!important;color:#fff!important}
+html.theme-dark .admin-config-tenant-head{background:#142238!important;border-color:var(--pge-line)!important}
+html.theme-dark .admin-config-tenant-identity b,
+html.theme-dark .admin-config-info-grid b{color:var(--pge-text)!important}
+html.theme-dark .admin-config-tenant-identity small,
+html.theme-dark .admin-config-info-grid small{color:var(--pge-muted)!important}
+html.theme-dark .admin-config-coat-placeholder{background:#1b3556!important;color:#9dccff!important}
+
+/* ---------- documentos / auditoria ---------- */
+html.theme-dark .document-audit-notice,
+html.theme-dark .document-phase-list,
+html.theme-dark .document-local-panels,
+html.theme-dark .document-version-history,
+html.theme-dark .current-document-certificate,
+html.theme-dark .document-audit-summary-grid>div{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .phase-document-section,
+html.theme-dark .delivery-overview-card,
+html.theme-dark .delivery-document-item{
+ background:var(--pge-s2)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .delivery-document-title,
+html.theme-dark .phase-document-head{color:var(--pge-text)!important}
+html.theme-dark .delivery-document-meta,
+html.theme-dark .delivery-document-detail,
+html.theme-dark .document-send-note{color:var(--pge-muted)!important}
+html.theme-dark .document-model-state,
+html.theme-dark .document-integrity-mini{background:#1b2d47!important;border-color:#405a79!important;color:#dceaff!important}
+
+/* ---------- workflow / árvore de fases e atos ---------- */
+html.theme-dark .phase-tree-phase,
+html.theme-dark .phase-tree-act,
+html.theme-dark .phase-summary,
+html.theme-dark .phase-formal-control,
+html.theme-dark .phase-formal-history,
+html.theme-dark .phase-snapshot-details,
+html.theme-dark .phase-access-locked,
+html.theme-dark .secretaria-no-documents{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .phase-tree-phase-head,
+html.theme-dark .phase-summary-head,
+html.theme-dark .phase-formal-head{background:#142238!important;border-color:var(--pge-line)!important}
+html.theme-dark .phase-tree-name,html.theme-dark .phase-tree-title,
+html.theme-dark .phase-tree-act-title,html.theme-dark .phase-formal-head h3{color:var(--pge-text)!important}
+html.theme-dark .phase-tree-meta,html.theme-dark .phase-tree-act-meta,
+html.theme-dark .phase-formal-note,html.theme-dark .phase-snapshot-meta,
+html.theme-dark .phase-access-locked-meta,html.theme-dark .secretaria-no-documents-meta{color:var(--pge-muted)!important}
+html.theme-dark .phase-tree-act{background:#17263d!important}
+html.theme-dark .phase-tree-act-order{background:#1b3556!important;color:#b9d9ff!important}
+html.theme-dark .phase-close-dialog{background:#101b2d!important;border-color:#45617f!important;color:var(--pge-text)!important}
+html.theme-dark .phase-close-dialog-head,
+html.theme-dark .phase-close-dialog-summary{background:#142238!important;border-color:var(--pge-line)!important}
+html.theme-dark .phase-close-dialog-warning{background:#2b2515!important;border-color:#735b27!important;color:#ffe4a3!important}
+html.theme-dark .phase-close-dialog-summary-item{background:#17263d!important;border-color:#3b526f!important}
+
+/* ---------- relatórios ---------- */
+html.theme-dark .report-catalog .report-card{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .report-card h2,html.theme-dark .report-card h3{color:var(--pge-text)!important}
+html.theme-dark .report-card p{color:var(--pge-muted)!important}
+html.theme-dark .report-card-icon{background:#1b3556!important;color:#9dccff!important}
+html.theme-dark .report-card-featured{background:#142943!important}
+
+/* ---------- usuários / segurança / auditoria ---------- */
+html.theme-dark .users-grid-card,
+html.theme-dark .security-audit-card,
+html.theme-dark .security-change-warning{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .users-grid-heading,
+html.theme-dark .security-audit-filter{background:#142238!important;border-color:var(--pge-line)!important}
+html.theme-dark .security-change-warning{background:#2b2515!important;color:#ffe4a3!important}
+html.theme-dark .security-audit-search{background:#0e192a!important;border-color:#45617f!important;color:#eef5ff!important}
+
+/* ---------- município detalhado / somente leitura ---------- */
+html.theme-dark .municipality-detail-hero,
+html.theme-dark .municipality-readonly-hero,
+html.theme-dark .municipality-readonly-card,
+html.theme-dark .municipality-module-card,
+html.theme-dark .municipality-perimeter-row,
+html.theme-dark .municipality-territorial-row{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .municipality-readonly-card-head{background:#142238!important;border-color:var(--pge-line)!important}
+html.theme-dark .municipality-readonly-data-grid>div,
+html.theme-dark .municipality-metrics>div,
+html.theme-dark .municipality-upload-grid>div{
+ background:#17263d!important;border-color:#3b526f!important;color:var(--pge-text)!important
+}
+html.theme-dark .municipality-readonly-data-grid small,
+html.theme-dark .municipality-module-copy p,
+html.theme-dark .municipality-perimeter-copy p,
+html.theme-dark .municipality-territorial-row p{color:var(--pge-muted)!important}
+html.theme-dark .municipality-module-icon,
+html.theme-dark .municipality-perimeter-icon{background:#1b3556!important;color:#9dccff!important}
+
+/* ---------- territorial: catálogo, admin, tabela, popups ---------- */
+html.theme-dark .territorial-admin-section,
+html.theme-dark .territorial-config-card,
+html.theme-dark .territorial-object-catalog,
+html.theme-dark .territorial-sidebar,
+html.theme-dark .territorial-map-toolbar{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .territorial-admin-row,
+html.theme-dark .territorial-layer-item,
+html.theme-dark .territorial-filter-block,
+html.theme-dark .territorial-live-summary{background:#17263d!important;border-color:#3b526f!important;color:var(--pge-text)!important}
+html.theme-dark .territorial-admin-row small,
+html.theme-dark .territorial-layer-item small,
+html.theme-dark .territorial-live-summary small{color:var(--pge-muted)!important}
+
+/* ---------- importação / snapshots ---------- */
+html.theme-dark .structure-import-card,
+html.theme-dark .structure-preview-card,
+html.theme-dark .structure-import-history,
+html.theme-dark .instance-snapshot-section,
+html.theme-dark .instance-snapshot-card{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .structure-import-card-head,
+html.theme-dark .structure-preview-head,
+html.theme-dark .structure-import-history-head,
+html.theme-dark .instance-snapshot-head,
+html.theme-dark .instance-snapshot-list-head{background:#142238!important;border-color:var(--pge-line)!important}
+html.theme-dark .instance-snapshot-item{background:#17263d!important;border-color:#3b526f!important}
+html.theme-dark .instance-snapshot-item-title,
+html.theme-dark .instance-snapshot-card h4{color:var(--pge-text)!important}
+html.theme-dark .instance-snapshot-item-main small,
+html.theme-dark .instance-snapshot-card p{color:var(--pge-muted)!important}
+
+/* ---------- notificações: painel e página ---------- */
+html.theme-dark .notification-center,
+html.theme-dark .notification-page-hero,
+html.theme-dark .notification-filter-buttons,
+html.theme-dark .notification-page-actions{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .notification-search-field{background:#0e192a!important;border-color:#45617f!important;color:#eef5ff!important}
+
+/* ---------- SLA consolidado ---------- */
+html.theme-dark .sla-kpi,
+html.theme-dark .sla-rank-card,
+html.theme-dark .sla-highlight,
+html.theme-dark .sla-table-card{
+ background:#142238!important;border-color:#38516f!important;color:var(--pge-text)!important
+}
+html.theme-dark .sla-kpi small,html.theme-dark .sla-rank-card small{color:var(--pge-muted)!important}
+html.theme-dark .sla-kpi b,html.theme-dark .sla-rank-card b{color:var(--pge-text)!important}
+
+/* ---------- históricos consolidado ---------- */
+html.theme-dark .historical-kpi,
+html.theme-dark .historical-section,
+html.theme-dark .historical-methodology,
+html.theme-dark .historical-month,
+html.theme-dark .historical-ranking{
+ background:var(--pge-s1)!important;border-color:var(--pge-line)!important;color:var(--pge-text)!important
+}
+html.theme-dark .historical-kpi small,
+html.theme-dark .historical-section p,
+html.theme-dark .historical-month small,
+html.theme-dark .historical-ranking small{color:var(--pge-muted)!important}
+
+/* ---------- estados e mensagens ---------- */
+html.theme-dark .flash.ok,html.theme-dark .notice.ok{background:#12291e!important;border-color:#2e6d49!important;color:#b8edcb!important}
+html.theme-dark .flash.error,html.theme-dark .notice.error{background:#30191d!important;border-color:#783940!important;color:#ffc8cc!important}
+html.theme-dark .notice,html.theme-dark .flash{border-color:var(--pge-line)!important}
+html.theme-dark .notice.purple{background:#251d3d!important;border-color:#634c93!important;color:#e1d5ff!important}
+
+/* ---------- paginação / chips / links ---------- */
+html.theme-dark .municipality-pagination-bar,
+html.theme-dark .municipality-pagination,
+html.theme-dark .workdesk-pagination-bar{background:#142238!important;border-color:var(--pge-line)!important;color:var(--pge-muted)!important}
+html.theme-dark a:not(.btn):not(.mini-link){color:var(--pge-link)}
+html.theme-dark hr{border-color:var(--pge-line)!important}
+
+/* ---------- último guarda-corpo: componentes neutros jamais branco no dark ---------- */
+html.theme-dark :is(
+ .admin-config-selector,.admin-config-tenant,.config-card,.history-card,.report-card,
+ .users-grid-card,.security-audit-card,.document-audit-notice,.document-phase-list,
+ .phase-tree-phase,.phase-tree-act,.phase-summary,.phase-formal-control,.phase-formal-history,
+ .municipality-readonly-card,.municipality-module-card,.territorial-config-card,
+ .structure-import-card,.structure-preview-card,.structure-import-history,.instance-snapshot-card,
+ .notification-center,.sla-kpi,.sla-rank-card,.historical-kpi,.historical-section
+){box-shadow:0 8px 22px rgba(0,0,0,.16)!important}
+
+/* scrollbars coerentes com o tema */
+html.theme-dark *{scrollbar-color:#48627f #101b2d}
+html.theme-dark *::-webkit-scrollbar-track{background:#101b2d}
+html.theme-dark *::-webkit-scrollbar-thumb{background:#48627f;border:2px solid #101b2d}
+
+
+/* ==========================================================================
+   PGE v4.24.1 — Dashboard / Auditoria / Configurações / Menu
+   + correção de layout de Usuários e Notificações
+   Revisão sobre o ZIP completo v4.24.0 enviado pelo usuário.
+   ========================================================================== */
+
+/* HERO/CABEÇALHOS DE PÁGINA
+   v4.24.0 transformou module-hero em card no Dark, mas faltava área interna.
+   Isso fazia títulos encostarem/ultrapassarem visualmente a borda. */
+html.theme-dark .module-hero,
+html.theme-dark .notification-page-hero,
+html.theme-dark .security-audit-page .module-hero,
+html.theme-dark .admin-config-hub>.module-hero{
+  padding:18px 20px!important;
+  min-height:auto!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+html.theme-dark .module-hero>div,
+html.theme-dark .module-hero h1,
+html.theme-dark .module-hero p{min-width:0!important;max-width:100%!important}
+html.theme-dark .module-hero h1{
+  margin:0 0 6px!important;
+  line-height:1.18!important;
+  overflow-wrap:anywhere!important;
+}
+html.theme-dark .module-hero p{
+  margin:0!important;
+  line-height:1.45!important;
+  overflow-wrap:anywhere!important;
+}
+
+/* MENU LATERAL */
+html.theme-dark .production-app .side{
+  background:#091525!important;
+  border-right-color:#2e435f!important;
+  color:#eef5ff!important;
+}
+html.theme-dark .production-app .brand{
+  color:#f6f9ff!important;
+}
+html.theme-dark .production-app .brand small{color:#b8c8db!important}
+html.theme-dark .production-app .user{
+  background:#142238!important;
+  border:1px solid #344d6b!important;
+  color:#f4f8ff!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.16)!important;
+}
+html.theme-dark .production-app .user .avatar{
+  background:#203653!important;
+  color:#dceaff!important;
+}
+html.theme-dark .production-app .user b{
+  color:#f4f8ff!important;
+  overflow-wrap:anywhere!important;
+}
+html.theme-dark .production-app .user span:not(.role){color:#aebfd3!important}
+html.theme-dark .production-app .user .role.stratelli{
+  background:#322451!important;
+  color:#ddccff!important;
+}
+html.theme-dark .production-app .profilebox{
+  background:#142238!important;
+  border:1px solid #344d6b!important;
+  color:#f4f8ff!important;
+}
+html.theme-dark .production-app .profilebox b{color:#f4f8ff!important}
+html.theme-dark .production-app .profilebox small{color:#aebfd3!important}
+html.theme-dark .production-app .menu .mi{
+  color:#cbd9ea!important;
+  border:1px solid transparent!important;
+}
+html.theme-dark .production-app .menu .mi:hover{
+  background:#172944!important;
+  border-color:#304a69!important;
+  color:#fff!important;
+}
+html.theme-dark .production-app .menu .mi.active{
+  background:#1d3554!important;
+  border-color:#48698f!important;
+  color:#fff!important;
+}
+html.theme-dark .production-app .logout-button{color:#ffb8b8!important}
+html.theme-dark .production-app .logout-button:hover{
+  background:#321b20!important;
+  color:#ffd2d2!important;
+}
+
+/* NOTIFICAÇÕES */
+html.theme-dark .notification-page-hero{
+  background:#111d30!important;
+  border-color:#344b68!important;
+}
+html.theme-dark .notification-page-actions{
+  background:transparent!important;
+  border:0!important;
+}
+html.theme-dark .notification-history-head{
+  background:#142238!important;
+  border-color:#344b68!important;
+  padding:16px 18px!important;
+}
+html.theme-dark .notification-history-head h2{color:#f4f8ff!important;margin:0 0 4px!important}
+html.theme-dark .notification-history-head p{color:#aebfd3!important;margin:0!important}
+html.theme-dark .notification-filter-card{
+  background:#111d30!important;
+  border-color:#344b68!important;
+}
+html.theme-dark .notification-filter-form label>span{color:#c3d2e4!important}
+html.theme-dark .notification-filter-form input,
+html.theme-dark .notification-filter-form select{
+  background:#0d192a!important;
+  border-color:#45617f!important;
+  color:#eef5ff!important;
+}
+
+/* USUÁRIOS — formulário e grid */
+html.theme-dark .users-grid-card{
+  background:#111d30!important;
+  border-color:#344b68!important;
+  overflow:hidden!important;
+}
+html.theme-dark .users-grid-heading{
+  background:#142238!important;
+  border:1px solid #344b68!important;
+  border-radius:12px!important;
+  padding:14px 16px!important;
+  margin-bottom:14px!important;
+  box-sizing:border-box!important;
+}
+html.theme-dark .users-grid-heading>div{min-width:0!important}
+html.theme-dark .users-grid-heading h2{
+  margin:0 0 4px!important;
+  color:#f4f8ff!important;
+  line-height:1.2!important;
+  overflow-wrap:anywhere!important;
+}
+html.theme-dark .users-grid-heading p{color:#aebfd3!important}
+html.theme-dark .users-grid-total{
+  background:#1b3556!important;
+  border-color:#3b5c80!important;
+  color:#d9eaff!important;
+}
+html.theme-dark .users-search-field{color:#c4d3e5!important}
+html.theme-dark .users-search-input-wrap{
+  background:#0d192a!important;
+  border-color:#45617f!important;
+}
+html.theme-dark .users-search-input-wrap span{color:#9eb4cd!important}
+html.theme-dark .users-search-input-wrap input{
+  color:#eef5ff!important;
+  background:transparent!important;
+}
+html.theme-dark .users-color-toggle{
+  background:#17263d!important;
+  border-color:#3b526f!important;
+}
+html.theme-dark .users-color-toggle b{color:#eef5ff!important}
+html.theme-dark .users-color-toggle small{color:#aebfd3!important}
+html.theme-dark .users-grid-color-legend .legend-item{
+  background:#17263d!important;
+  border-color:#3b526f!important;
+  color:#d6e2f0!important;
+}
+html.theme-dark .users-grid-empty{
+  background:#142238!important;
+  border-color:#45617f!important;
+  color:#b8c7da!important;
+}
+html.theme-dark .users-grid-range{color:#aebfd3!important}
+html.theme-dark .users-page-button{
+  background:#17263d!important;
+  border-color:#3b526f!important;
+  color:#cfe2f7!important;
+}
+html.theme-dark .users-page-button:hover:not(:disabled){
+  background:#203653!important;
+  border-color:#5b7da5!important;
+  color:#fff!important;
+}
+html.theme-dark .users-page-button.is-current{
+  background:#176fdd!important;
+  border-color:#176fdd!important;
+  color:#fff!important;
+}
+html.theme-dark .users-sort-button span{color:#9fb2c9!important}
+html.theme-dark .users-sort-button.is-active,
+html.theme-dark .users-sort-button.is-active span{color:#91c5ff!important}
+
+/* Quando "colorir linhas por município" estiver ligado, a paleta clara não pode
+   transformar as linhas da tabela em cartões brancos no Dark. */
+html.theme-dark .users-management-table tbody.is-colored tr[data-municipio]:not([data-municipio="Plataforma"])>td{
+  background:#14243a!important;
+}
+html.theme-dark .users-management-table tbody.is-colored tr[data-municipio]:not([data-municipio="Plataforma"]):nth-child(even)>td{
+  background:#172840!important;
+}
+html.theme-dark .users-management-table tbody.is-colored tr:not([data-municipio="Plataforma"]):hover>td{
+  box-shadow:inset 0 0 0 9999px rgba(94,156,224,.08)!important;
+}
+
+/* AUDITORIA */
+html.theme-dark .security-audit-card{
+  background:#111d30!important;
+  border-color:#344b68!important;
+  overflow:hidden!important;
+}
+html.theme-dark .security-audit-filter{
+  background:#142238!important;
+  border:1px solid #344b68!important;
+  border-radius:12px!important;
+  padding:14px!important;
+}
+html.theme-dark .security-audit-filter label{color:#c4d3e5!important}
+html.theme-dark .security-audit-filter input[type="search"],
+html.theme-dark .security-audit-filter select{
+  background:#0d192a!important;
+  border-color:#45617f!important;
+  color:#eef5ff!important;
+}
+html.theme-dark .security-audit-grid-meta{color:#aebfd3!important}
+html.theme-dark .security-audit-grid-meta b{color:#91c5ff!important}
+html.theme-dark .security-audit-sort{color:#c4d3e5!important}
+html.theme-dark .security-audit-sort:hover{
+  background:#1b2d47!important;
+  color:#fff!important;
+}
+html.theme-dark .security-audit-sort.active{
+  background:#203653!important;
+  color:#9dccff!important;
+}
+html.theme-dark .security-audit-sort i{color:#93a8c1!important}
+html.theme-dark .security-audit-table code{
+  background:#0d192a!important;
+  color:#cfe2f7!important;
+  border:1px solid #344b68!important;
+  border-radius:6px!important;
+  padding:3px 5px!important;
+}
+html.theme-dark .security-badge{background:#263a54!important;color:#dce8f6!important}
+html.theme-dark .security-badge.cat-seguranca{background:#322451!important;color:#ddccff!important}
+html.theme-dark .security-badge.cat-acesso_dados{background:#183d68!important;color:#b9d9ff!important}
+html.theme-dark .security-badge.cat-administracao{background:#153d29!important;color:#a8e7bf!important}
+html.theme-dark .security-severity{background:#263a54!important;color:#cbd9e8!important}
+html.theme-dark .security-severity.sev-atencao{background:#503d17!important;color:#ffe09a!important}
+html.theme-dark .security-severity.sev-alerta{background:#55272b!important;color:#ffb7bc!important}
+html.theme-dark .security-audit-table details summary{color:#c9b5ff!important}
+
+/* CONFIGURAÇÕES STRATELLI */
+html.theme-dark .admin-config-selector{
+  background:#111d30!important;
+  border-color:#344b68!important;
+}
+html.theme-dark .admin-config-selector h2{color:#f4f8ff!important}
+html.theme-dark .admin-config-selector p{color:#aebfd3!important}
+html.theme-dark .admin-config-municipality-form label{color:#c4d3e5!important}
+html.theme-dark .admin-config-municipality-form select{
+  background:#0d192a!important;
+  border-color:#45617f!important;
+  color:#eef5ff!important;
+}
+html.theme-dark .admin-config-tenant{
+  background:#111d30!important;
+  border-color:#344b68!important;
+}
+html.theme-dark .admin-config-tenant-head{
+  background:#142238!important;
+  border-color:#344b68!important;
+}
+html.theme-dark .admin-config-tenant-identity h2{color:#f4f8ff!important}
+html.theme-dark .admin-config-tenant-identity p,
+html.theme-dark .admin-config-tenant-identity small{color:#aebfd3!important}
+html.theme-dark .admin-config-tabs a{
+  background:#17263d!important;
+  border-color:#3b526f!important;
+  color:#eef5ff!important;
+}
+html.theme-dark .admin-config-tabs a span{color:#aebfd3!important}
+html.theme-dark .admin-config-tabs a:hover{
+  background:#203653!important;
+  border-color:#5d79a0!important;
+}
+html.theme-dark .admin-config-info-grid article{
+  background:#17263d!important;
+  border-color:#3b526f!important;
+  color:#eef5ff!important;
+}
+html.theme-dark .admin-config-info-grid article b{color:#f4f8ff!important}
+html.theme-dark .admin-config-info-grid article p{color:#aebfd3!important}
+
+/* DASHBOARD — reforço das superfícies que mais recebem estilos locais */
+html.theme-dark .dashboard-hero,
+html.theme-dark .dashboard-actions,
+html.theme-dark .dashboard-process-summary,
+html.theme-dark .dashboard-territory-card,
+html.theme-dark .dashboard-schedule-anchor,
+html.theme-dark .dashboard-phase-focus{
+  border-color:#344b68!important;
+  color:#f4f8ff!important;
+}
+html.theme-dark .dashboard-actions,
+html.theme-dark .dashboard-process-summary,
+html.theme-dark .dashboard-territory-card,
+html.theme-dark .dashboard-schedule-anchor{
+  background:#111d30!important;
+}
+
+/* Botões neutros e mini-links dentro das áreas revisadas */
+html.theme-dark :is(.notification-page,.security-audit-page,.admin-config-hub,.users-management-page) .btn:not(.primary):not(.danger),
+html.theme-dark :is(.notification-page,.security-audit-page,.admin-config-hub,.users-management-page) .mini-link:not(.primary):not(.danger){
+  background:#17263d!important;
+  border-color:#3b526f!important;
+  color:#d8e6f5!important;
+}
+
+
+/* ==========================================================================
+   PGE v4.24.2 — Configurações / Secretarias / Importação / Territorial
+   ========================================================================== */
+
+/* Parâmetros da instância — barra fixa inferior */
+html.theme-dark .instance-params-savebar{
+ background:rgba(17,29,48,.97)!important;
+ border-color:#3b526f!important;
+ box-shadow:0 14px 34px rgba(0,0,0,.30)!important;
+ color:#f4f8ff!important;
+}
+html.theme-dark .instance-params-savebar b{color:#f4f8ff!important}
+html.theme-dark .instance-params-savebar span{color:#aebfd3!important}
+
+/* Fases / atos — estados vazios e árvore */
+html.theme-dark .phase-tree-empty{
+ background:#17263d!important;
+ border-color:#3b526f!important;
+ color:#aebfd3!important;
+}
+html.theme-dark .phase-tree-empty::before{color:#8fa5bf!important}
+
+/* Secretarias e Departamentos */
+html.theme-dark .secretaria-phase-links{
+ background:#0e192a!important;
+ border-color:#344b68!important;
+}
+html.theme-dark .secretaria-phase-link{
+ background:#17263d!important;
+ border-color:#3b526f!important;
+ color:#eef5ff!important;
+}
+html.theme-dark .secretaria-phase-check{
+ color:#f4f8ff!important;
+}
+html.theme-dark .secretaria-phase-check b{
+ color:#f4f8ff!important;
+ line-height:1.3!important;
+}
+html.theme-dark .secretaria-activity-links{
+ border-color:#344b68!important;
+}
+html.theme-dark .secretaria-activity-links label{
+ background:#142238!important;
+ border-color:#344b68!important;
+ color:#d8e5f4!important;
+}
+html.theme-dark .secretaria-activity-links label:hover{
+ background:#1c304c!important;
+ border-color:#537296!important;
+}
+html.theme-dark .secretaria-activity-links small{color:#93a8c1!important}
+html.theme-dark .secretaria-phase-links input[type=checkbox],
+html.theme-dark .secretaria-activity-links input[type=checkbox]{
+ accent-color:#4a9cff!important;
+}
+
+/* Importação e Backup — CSS específico structure-import.css tinha várias superfícies claras */
+html.theme-dark .structure-import-page{color:#f4f8ff!important}
+html.theme-dark .structure-import-hero{
+ background:#111d30!important;border-color:#344b68!important;color:#f4f8ff!important
+}
+html.theme-dark .structure-import-hero h2,
+html.theme-dark .structure-import-card-head h3,
+html.theme-dark .structure-preview-head h3,
+html.theme-dark .structure-import-history-head h3,
+html.theme-dark .instance-snapshot-head h3,
+html.theme-dark .instance-snapshot-list-head h4{color:#f4f8ff!important}
+html.theme-dark .structure-import-hero p,
+html.theme-dark .structure-import-card-head p,
+html.theme-dark .structure-preview-head p,
+html.theme-dark .structure-import-history-head p,
+html.theme-dark .instance-snapshot-head p,
+html.theme-dark .instance-snapshot-list-head p{color:#aebfd3!important}
+html.theme-dark .structure-import-hero-badge,
+html.theme-dark .structure-import-card,
+html.theme-dark .structure-preview-card,
+html.theme-dark .structure-import-history,
+html.theme-dark .instance-snapshot-section{
+ background:#111d30!important;border-color:#344b68!important;color:#f4f8ff!important
+}
+html.theme-dark .structure-import-card.accent{border-top-color:#4a9cff!important}
+html.theme-dark .structure-import-card-icon,
+html.theme-dark .instance-snapshot-card-icon{
+ background:#1b3556!important;color:#9dccff!important
+}
+html.theme-dark .structure-import-card-head small,
+html.theme-dark .instance-snapshot-eyebrow{color:#93a8c1!important}
+html.theme-dark .structure-import-form>label,
+html.theme-dark .instance-snapshot-card form label{color:#c4d3e5!important}
+html.theme-dark .structure-import-form label small{color:#93a8c1!important}
+html.theme-dark .structure-import-checks label{
+ background:#17263d!important;border-color:#3b526f!important
+}
+html.theme-dark .structure-import-checks b{color:#eef5ff!important}
+html.theme-dark .structure-import-checks small{color:#aebfd3!important}
+html.theme-dark .structure-template-download{
+ background:#142943!important;border-color:#3b5c80!important;color:#9dccff!important
+}
+html.theme-dark .structure-template-download small{color:#aebfd3!important}
+html.theme-dark .structure-import-safety,
+html.theme-dark .instance-snapshot-shield{
+ background:#12291e!important;border-color:#2e6d49!important
+}
+html.theme-dark .structure-import-safety b,
+html.theme-dark .instance-snapshot-shield b{color:#a8e7bf!important}
+html.theme-dark .structure-import-safety p,
+html.theme-dark .instance-snapshot-shield small{color:#9bc8ac!important}
+html.theme-dark .structure-import-safety-tags em{
+ background:#173d29!important;color:#a8e7bf!important
+}
+html.theme-dark .structure-import-empty{
+ background:#142238!important;border-color:#45617f!important;color:#aebfd3!important
+}
+html.theme-dark .instance-snapshot-card{
+ background:#17263d!important;border-color:#3b526f!important
+}
+html.theme-dark .instance-snapshot-card.primary{
+ background:#142943!important;border-color:#3b5c80!important
+}
+html.theme-dark .instance-snapshot-card small{color:#93a8c1!important}
+html.theme-dark .instance-snapshot-card h4{color:#f4f8ff!important}
+html.theme-dark .instance-snapshot-card p{color:#aebfd3!important}
+html.theme-dark .instance-snapshot-policy{
+ background:#2b2515!important;border-color:#735b27!important;color:#ffe4a3!important
+}
+html.theme-dark .instance-snapshot-list-head>span{
+ background:#1b2d47!important;color:#c6d8eb!important
+}
+html.theme-dark .instance-snapshot-item{
+ background:#17263d!important;border-color:#3b526f!important
+}
+html.theme-dark .instance-snapshot-item.automatic{
+ background:#12291e!important;border-color:#2e6d49!important
+}
+html.theme-dark .instance-snapshot-state-icon{
+ background:#1b3556!important;color:#9dccff!important
+}
+html.theme-dark .instance-snapshot-item.automatic .instance-snapshot-state-icon{
+ background:#173d29!important;color:#a8e7bf!important
+}
+html.theme-dark .instance-snapshot-item-title b{color:#f4f8ff!important}
+html.theme-dark .instance-snapshot-item-title span,
+html.theme-dark .instance-snapshot-metrics span{
+ background:#203149!important;color:#c5d5e6!important
+}
+html.theme-dark .instance-snapshot-item-main small{color:#93a8c1!important}
+
+/* Inteligência Territorial — cards de contexto e administração */
+html.theme-dark .territory-info-card{
+ background:#111d30!important;border-color:#344b68!important;color:#f4f8ff!important
+}
+html.theme-dark .territory-info-card h2{color:#f4f8ff!important}
+html.theme-dark .territory-info-list span{
+ background:#17263d!important;border-color:#3b526f!important
+}
+html.theme-dark .territory-info-list small{color:#93a8c1!important}
+html.theme-dark .territory-info-list b{color:#eef5ff!important}
+html.theme-dark .territorial-admin-section{
+ background:#111d30!important;border-color:#344b68!important;color:#f4f8ff!important
+}
+html.theme-dark .territorial-admin-section>.module-section-head{
+ background:#142238!important;border-color:#344b68!important
+}
+html.theme-dark .territorial-admin-section>.module-section-head h2{color:#f4f8ff!important}
+html.theme-dark .territorial-admin-section>.module-section-head p{color:#aebfd3!important}
+html.theme-dark .territorial-admin-section>.module-section-head .module-context{
+ background:#1b3556!important;border-color:#3b5c80!important;color:#b9d9ff!important
+}
+html.theme-dark .territory-future-card{
+ background:#111d30!important;border-color:#344b68!important
+}
+html.theme-dark .territory-future-card h2{color:#f4f8ff!important}
+html.theme-dark .territory-future-card p{color:#aebfd3!important}
+html.theme-dark .territory-future-icon{background:#1b3556!important;color:#9dccff!important}
+
+/* territorial workspace — reforço contra regras claras do production.css */
+html.theme-dark .territorial-sidebar-head{border-color:#344b68!important}
+html.theme-dark .territorial-sidebar-head h2,
+html.theme-dark .territorial-filter-block h3{color:#f4f8ff!important}
+html.theme-dark .territorial-sidebar-head p{color:#aebfd3!important}
+html.theme-dark .territorial-panel-toggle{
+ background:#17263d!important;border-color:#45617f!important;color:#9dccff!important
+}
+html.theme-dark .territorial-layer-item{background:#17263d!important;border-color:#3b526f!important}
+html.theme-dark .territorial-layer-item b{color:#eef5ff!important}
+html.theme-dark .territorial-layer-item small{color:#93a8c1!important}
+html.theme-dark .territorial-filter-block{border-color:#344b68!important}
+html.theme-dark .territorial-filter-block label{color:#c4d3e5!important}
+html.theme-dark .territorial-live-summary b{color:#9dccff!important}
+html.theme-dark .territorial-live-summary span{color:#aebfd3!important}

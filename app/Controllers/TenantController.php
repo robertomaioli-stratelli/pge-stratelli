@@ -161,12 +161,6 @@ final class TenantController
         Response::redirect('/'.Tenant::current()['slug'].'/territorio?modo=configuracao');
     }
 
-    public function territorialSecurityStatus(string $municipio,string $id): void
-    {
-        $this->csrf();try{(new TerritorialService())->changeSecurityStatus((int)$id,$_POST);Session::flash('ok','Situação de Segurança Pública registrada com sucesso.');}catch(\Throwable $e){Session::flash('erro',$e->getMessage());}
-        Response::redirect('/'.Tenant::current()['slug'].'/territorio?objeto='.(int)$id);
-    }
-
     public function territorialToggleObject(string $municipio,string $id): void
     {
         $this->csrf();try{(new TerritorialService())->toggleObject((int)$id);Session::flash('ok','Status do objeto territorial alterado.');}catch(\Throwable $e){Session::flash('erro',$e->getMessage());}
@@ -233,14 +227,21 @@ final class TenantController
         $section=(string)($_GET['secao']??'fases');
         $data['secao']=in_array($section,['parametros','fases','secretarias','tipos','documentos','importacao'],true)?$section:'fases';
         $data['parametrosInstancia']=(new \App\Services\InstanceParameterService())->forMunicipio($mid,true);
+        $data['atividadesFase']=$pdo->prepare('SELECT a.*,f.ordem AS fase_ordem,f.aba AS fase_aba,f.titulo AS fase_titulo FROM atividades_fase a JOIN fases f ON f.id=a.fase_id AND f.municipio_id=a.municipio_id WHERE a.municipio_id=? ORDER BY f.ordem,a.ordem,a.id');
+        $data['atividadesFase']->execute([$mid]);$data['atividadesFase']=$data['atividadesFase']->fetchAll();
+        $data['editarAtividade']=null;$atividadeEdit=(int)($_GET['editar_atividade']??0);
+        if($atividadeEdit){$st=$pdo->prepare('SELECT * FROM atividades_fase WHERE id=? AND municipio_id=?');$st->execute([$atividadeEdit,$mid]);$data['editarAtividade']=$st->fetch()?:null;}
         foreach(['fase','secretaria','departamento','tipo','requisito'] as $entity){
             $key='editar_'.$entity;$value=(int)($_GET[$key]??0);$data['editar'.ucfirst($entity)]=null;
             if(!$value)continue;
             $table=match($entity){'fase'=>'fases','secretaria'=>'secretarias','departamento'=>'departamentos','tipo'=>'tipos_documento',default=>'requisitos_documentais'};
             $st=$pdo->prepare("SELECT * FROM {$table} WHERE id=? AND municipio_id=?");$st->execute([$value,$mid]);$data['editar'.ucfirst($entity)]=$st->fetch()?:null;
         }
-        $data['faseIdsSecretaria']=[];
-        if(!empty($data['editarSecretaria'])){$st=$pdo->prepare('SELECT fase_id FROM fase_secretarias WHERE municipio_id=? AND secretaria_id=?');$st->execute([$mid,$data['editarSecretaria']['id']]);$data['faseIdsSecretaria']=array_map('intval',$st->fetchAll(\PDO::FETCH_COLUMN));}
+        $data['faseIdsSecretaria']=[];$data['atividadeIdsSecretaria']=[];
+        if(!empty($data['editarSecretaria'])){
+            $st=$pdo->prepare('SELECT fase_id FROM fase_secretarias WHERE municipio_id=? AND secretaria_id=?');$st->execute([$mid,$data['editarSecretaria']['id']]);$data['faseIdsSecretaria']=array_map('intval',$st->fetchAll(\PDO::FETCH_COLUMN));
+            $st=$pdo->prepare('SELECT atividade_id FROM atividade_secretarias WHERE municipio_id=? AND secretaria_id=?');$st->execute([$mid,$data['editarSecretaria']['id']]);$data['atividadeIdsSecretaria']=array_map('intval',$st->fetchAll(\PDO::FETCH_COLUMN));
+        }
         if($data['secao']==='importacao'){
             $importService=new StructureImportService();
             $data['municipiosOrigem']=$importService->sourceMunicipalities();
@@ -366,6 +367,10 @@ final class TenantController
 
     public function configSavePhase(string $municipio): void {$this->configAction(fn($s)=>$s->savePhase($_POST),'Fase salva com sucesso.','fases');}
     public function configTogglePhase(string $municipio,string $id): void {$this->configAction(fn($s)=>$s->togglePhase((int)$id),'Status da fase alterado.','fases');}
+    public function configSaveActivity(string $municipio): void {$this->configAction(fn($s)=>$s->saveActivity($_POST),'Ato/atividade salvo com sucesso.','fases');}
+    public function configToggleActivity(string $municipio,string $id): void {$this->configAction(fn($s)=>$s->toggleActivity((int)$id),'Status do ato/atividade alterado.','fases');}
+    public function completeActivity(string $municipio,string $id): void {$this->csrf();try{(new \App\Services\ActivityProgressService())->setCompleted((int)$id,true);Session::flash('ok','Ato/atividade concluído.');}catch(\Throwable $e){Session::flash('erro',$e->getMessage());}Response::redirect('/'.Tenant::current()['slug'].'/dashboard');}
+    public function reopenActivity(string $municipio,string $id): void {$this->csrf();try{(new \App\Services\ActivityProgressService())->setCompleted((int)$id,false);Session::flash('ok','Ato/atividade reaberto.');}catch(\Throwable $e){Session::flash('erro',$e->getMessage());}Response::redirect('/'.Tenant::current()['slug'].'/dashboard');}
     public function configSaveSecretaria(string $municipio): void {$this->configAction(fn($s)=>$s->saveSecretaria($_POST),'Secretaria e vínculos salvos.','secretarias');}
     public function configToggleSecretaria(string $municipio,string $id): void {$this->configAction(fn($s)=>$s->toggleSecretaria((int)$id),'Status da secretaria alterado.','secretarias');}
     public function configSaveDepartamento(string $municipio): void {$this->configAction(fn($s)=>$s->saveDepartamento($_POST),'Departamento salvo.','secretarias');}

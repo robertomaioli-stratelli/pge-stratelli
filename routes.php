@@ -63,7 +63,6 @@ $router->post('/{municipio}/territorio/camadas/salvar',[TenantController::class,
 $router->post('/{municipio}/territorio/camadas/{id}/alternar',[TenantController::class,'territorialToggleLayer'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/territorio/geocodificar',[TenantController::class,'territorialGeocode'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/territorio/objetos/salvar',[TenantController::class,'territorialSaveObject'],['auth','tenant','platform_admin']);
-$router->post('/{municipio}/territorio/objetos/{id}/situacao-seguranca',[TenantController::class,'territorialSecurityStatus'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/territorio/objetos/{id}/alternar',[TenantController::class,'territorialToggleObject'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/territorio/importar',[TenantController::class,'territorialImport'],['auth','tenant','platform_admin']);
 $router->get('/{municipio}/relatorios',[TenantController::class,'relatorios'],['auth','tenant']);
@@ -89,6 +88,10 @@ $router->post('/{municipio}/cronograma/fases/{fase}/reabrir',[TenantController::
 $router->post('/{municipio}/configuracoes/parametros/salvar',[TenantController::class,'configSaveParameters'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/configuracoes/fases/salvar',[TenantController::class,'configSavePhase'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/configuracoes/fases/{id}/alternar',[TenantController::class,'configTogglePhase'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/atividades/salvar',[TenantController::class,'configSaveActivity'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/configuracoes/atividades/{id}/alternar',[TenantController::class,'configToggleActivity'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/atividades/{id}/concluir',[TenantController::class,'completeActivity'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/atividades/{id}/reabrir',[TenantController::class,'reopenActivity'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/configuracoes/secretarias/salvar',[TenantController::class,'configSaveSecretaria'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/configuracoes/secretarias/{id}/alternar',[TenantController::class,'configToggleSecretaria'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/configuracoes/departamentos/salvar',[TenantController::class,'configSaveDepartamento'],['auth','tenant','platform_admin']);

@@ -35,20 +35,11 @@ final class PhaseClosureService
 
     public function eligibility(int $phaseId): array
     {
-        $phase=$this->phase($phaseId);
-        $docs=$this->phaseDocuments($phaseId,true);
-        $total=count($docs);$approved=0;$waiting=0;$correction=0;$missing=0;
-        foreach($docs as $d){
-            $status=(string)($d['documento_status']??'');
-            if($status==='APROVADO')$approved++;
-            elseif($status==='AGUARDANDO')$waiting++;
-            elseif($status==='CORRECAO')$correction++;
-            else$missing++;
-        }
-        $eligible=$total===0 || $approved===$total;
-        return compact('phase','total','approved','waiting','correction','missing','eligible');
+        $phase=$this->phase($phaseId);$docs=$this->phaseDocuments($phaseId,true);
+        $st=$this->pdo->prepare('SELECT * FROM atividades_fase WHERE municipio_id=? AND fase_id=? AND ativo=1 ORDER BY ordem,id');$st->execute([$this->mid,$phaseId]);$activities=$st->fetchAll(PDO::FETCH_ASSOC);
+        if($activities){$latest=[];foreach($docs as$d){if(!empty($d['requisito_id']))$latest[(int)$d['requisito_id']]=['status'=>$d['documento_status']??null];}$req=[];foreach($docs as$d)$req[]=['id'=>(int)$d['requisito_id'],'atividade_id'=>(int)($d['atividade_id']??0),'ativo'=>1,'obrigatorio'=>(int)$d['obrigatorio']];$metrics=(new ActivityProgressService())->metrics($activities,$req,$latest);$total=count($activities);$completed=count(array_filter($activities,fn($a)=>!empty($metrics[(int)$a['id']]['concluida'])));$eligible=$total>0&&$completed===$total;return ['phase'=>$phase,'total'=>$total,'approved'=>$completed,'waiting'=>$total-$completed,'correction'=>0,'missing'=>$total-$completed,'eligible'=>$eligible,'unit'=>'atividades'];}
+        $total=count($docs);$approved=0;$waiting=0;$correction=0;$missing=0;foreach($docs as$d){$status=(string)($d['documento_status']??'');if($status==='APROVADO')$approved++;elseif($status==='AGUARDANDO')$waiting++;elseif($status==='CORRECAO')$correction++;else$missing++;}$eligible=$total===0||$approved===$total;return compact('phase','total','approved','waiting','correction','missing','eligible')+['unit'=>'documentos'];
     }
-
     public function current(int $phaseId): ?array
     {
         $st=$this->pdo->prepare('SELECT c.*,uc.nome concluido_por_nome,uc.email concluido_por_email,ur.nome reaberto_por_nome,ur.email reaberto_por_email
@@ -81,7 +72,7 @@ final class PhaseClosureService
         $this->assertClosureDate($phase,$date);
         $eligibility=$this->eligibility($phaseId);
         if(!$eligibility['eligible']){
-            throw new RuntimeException('A fase ainda não pode ser encerrada: '.$eligibility['approved'].' de '.$eligibility['total'].' documento(s) obrigatório(s) estão aprovados.');
+            throw new RuntimeException('A fase ainda não pode ser encerrada: '.$eligibility['approved'].' de '.$eligibility['total'].' '.(($eligibility['unit']??'documentos')==='atividades'?'ato(s)/atividade(s)':'documento(s) obrigatório(s)').' estão concluídos/aprovados.');
         }
         $lastApproval=$this->lastMandatoryApprovalDate($phaseId);if($lastApproval&&$date<$lastApproval)throw new RuntimeException('A data de encerramento não pode ser anterior à última aprovação documental obrigatória ('.$lastApproval.').');
         [$snapshot,$hash]=$this->snapshot($phase,$eligibility);
@@ -166,7 +157,7 @@ final class PhaseClosureService
 
     private function phaseDocuments(int $phaseId,bool $mandatoryOnly): array
     {
-        $sql='SELECT r.id requisito_id,r.nome requisito_nome,r.descricao requisito_descricao,r.ordem requisito_ordem,r.obrigatorio,r.perfil_envio,s.nome secretaria_nome,dpt.nome departamento_nome,t.nome tipo_nome,
+        $sql='SELECT r.id requisito_id,r.atividade_id,r.nome requisito_nome,r.descricao requisito_descricao,r.ordem requisito_ordem,r.obrigatorio,r.perfil_envio,s.nome secretaria_nome,dpt.nome departamento_nome,t.nome tipo_nome,
             mdl.id modelo_id,mdl.versao modelo_versao,mdl.arquivo_original modelo_arquivo_original,mdl.arquivo_salvo modelo_arquivo_salvo,mdl.checksum_sha256 modelo_checksum_sha256,mdl.mime_type modelo_mime_type,mdl.tamanho modelo_tamanho,mdl.criado_em modelo_criado_em,
             doc.id documento_id,doc.versao documento_versao,doc.arquivo_original,doc.arquivo_salvo documento_arquivo_salvo,doc.status documento_status,doc.checksum_sha256,doc.mime_type,doc.tamanho,doc.enviado_em,doc.validado_em,ue.nome enviado_por_nome,uv.nome validado_por_nome
             FROM requisitos_documentais r

@@ -13,6 +13,7 @@ final class WorkflowService
     private int $municipioId;
     private array $user;
     private string $scope;
+    private array $currentActivities=[];
 
     public function __construct()
     {
@@ -40,7 +41,11 @@ final class WorkflowService
             WHERE s.municipio_id=? GROUP BY s.id ORDER BY s.nome',[$mid]);
         $departamentos=$this->all('SELECT d.*,s.nome secretaria_nome FROM departamentos d JOIN secretarias s ON s.id=d.secretaria_id AND s.municipio_id=d.municipio_id WHERE d.municipio_id=? ORDER BY s.nome,d.nome',[$mid]);
         $tiposDocumento=$this->all('SELECT * FROM tipos_documento WHERE municipio_id=? ORDER BY nome',[$mid]);
-        $requisitosTodos=$this->all('SELECT r.*,f.ordem fase_ordem,f.aba fase_aba,f.titulo fase_titulo,s.nome secretaria_nome,s.sigla secretaria_sigla,
+        $atividadesFase=$this->all('SELECT a.*,f.ordem fase_ordem,f.aba fase_aba FROM atividades_fase a JOIN fases f ON f.id=a.fase_id AND f.municipio_id=a.municipio_id WHERE a.municipio_id=? ORDER BY f.ordem,a.ordem,a.id',[$mid]);
+        $this->currentActivities=$atividadesFase;
+        $atividadeSecretarias=$this->all('SELECT atividade_id,secretaria_id FROM atividade_secretarias WHERE municipio_id=?',[$mid]);
+        $atividadeIdsDaSecretaria=[];if($this->scope==='secretaria'){$sid=(int)($this->user['secretaria_id']??0);foreach($atividadeSecretarias as$as)if((int)$as['secretaria_id']===$sid)$atividadeIdsDaSecretaria[(int)$as['atividade_id']]=true;}
+        $requisitosTodos=$this->all('SELECT r.*,f.ordem fase_ordem,f.aba fase_aba,f.titulo fase_titulo,a.ordem atividade_ordem,a.titulo atividade_titulo,a.codigo atividade_codigo,s.nome secretaria_nome,s.sigla secretaria_sigla,
             d.nome departamento_nome,t.nome tipo_nome,t.extensoes,
             (SELECT m.id FROM modelos_documentos m WHERE m.municipio_id=r.municipio_id AND m.requisito_id=r.id AND m.ativo=1 ORDER BY m.id DESC LIMIT 1) modelo_id,
             (SELECT m.arquivo_original FROM modelos_documentos m WHERE m.municipio_id=r.municipio_id AND m.requisito_id=r.id AND m.ativo=1 ORDER BY m.id DESC LIMIT 1) modelo_nome,
@@ -49,6 +54,7 @@ final class WorkflowService
             (SELECT m.criado_em FROM modelos_documentos m WHERE m.municipio_id=r.municipio_id AND m.requisito_id=r.id AND m.ativo=1 ORDER BY m.id DESC LIMIT 1) modelo_data
             FROM requisitos_documentais r
             JOIN fases f ON f.id=r.fase_id AND f.municipio_id=r.municipio_id
+            LEFT JOIN atividades_fase a ON a.id=r.atividade_id AND a.municipio_id=r.municipio_id
             JOIN secretarias s ON s.id=r.secretaria_id AND s.municipio_id=r.municipio_id
             LEFT JOIN departamentos d ON d.id=r.departamento_id AND d.municipio_id=r.municipio_id
             JOIN tipos_documento t ON t.id=r.tipo_documento_id AND t.municipio_id=r.municipio_id
@@ -59,17 +65,13 @@ final class WorkflowService
             SELECT requisito_id,MAX(id) max_id FROM documentos_enviados WHERE municipio_id=? GROUP BY requisito_id
         ) x ON x.max_id=d.id LEFT JOIN usuarios ue ON ue.id=d.enviado_por_usuario_id LEFT JOIN usuarios uv ON uv.id=d.validado_por_usuario_id WHERE d.municipio_id=?',[$mid,$mid]) as $d) $ultimosDocs[(int)$d['requisito_id']]=$d;
 
-        $fasesVisiveis=array_values(array_filter($fasesTodas,function($f) use($requisitosTodos){
-            if(!(int)$f['ativo']) return false;
-            if($this->scope==='stratelli') return true;
-            if((int)$f['exclusivo_stratelli']) return false;
-            if($this->scope==='secretaria'){
-                foreach($requisitosTodos as $r){
-                    if((int)$r['fase_id']===(int)$f['id'] && (int)$r['ativo']===1 && $r['perfil_envio']==='MUNICIPIO' && $this->commonOwnsRequirement($r)) return true;
-                }
-                return false;
-            }
-            return true;
+        $activityProgress=new ActivityProgressService();
+        $atividadeMetricas=$activityProgress->metrics($atividadesFase,$requisitosTodos,$ultimosDocs);
+        $faseMetricasAtividades=$activityProgress->phaseMetrics($atividadesFase,$atividadeMetricas);
+
+        $fasesVisiveis=array_values(array_filter($fasesTodas,function($f) use($requisitosTodos,$atividadesFase,$atividadeIdsDaSecretaria){
+            if(!(int)$f['ativo'])return false;if($this->scope==='stratelli')return true;if((int)$f['exclusivo_stratelli'])return false;
+            if($this->scope==='secretaria'){foreach($atividadesFase as$a)if((int)$a['fase_id']===(int)$f['id']&&isset($atividadeIdsDaSecretaria[(int)$a['id']]))return true;foreach($requisitosTodos as$r)if((int)$r['fase_id']===(int)$f['id']&&(int)$r['ativo']===1&&$r['perfil_envio']==='MUNICIPIO'&&$this->commonOwnsRequirement($r))return true;return false;}return true;
         }));
 
         $requisitosVisiveis=array_values(array_filter($requisitosTodos,function($r){
@@ -77,6 +79,11 @@ final class WorkflowService
             if($this->scope==='stratelli') return true;
             if($this->scope==='municipio') return $r['perfil_envio']==='MUNICIPIO';
             return $r['perfil_envio']==='MUNICIPIO' && $this->commonOwnsRequirement($r);
+        }));
+
+        $atividadesVisiveis=array_values(array_filter($atividadesFase,function($a) use($requisitosVisiveis,$atividadeIdsDaSecretaria){
+            if(!(int)$a['ativo'])return false;if($this->scope!=='secretaria')return true;if(isset($atividadeIdsDaSecretaria[(int)$a['id']]))return true;
+            foreach($requisitosVisiveis as$r)if((int)($r['atividade_id']??0)===(int)$a['id'])return true;return false;
         }));
 
         $totalDocs=count($requisitosVisiveis);$totalEnviados=$totalAprovados=$totalCorrecoes=$aguardando=0;
@@ -199,7 +206,7 @@ final class WorkflowService
         $documentosPorFasePagina=$this->documentCatalog($requisitosCatalogo,$ultimosDocs);
         $documentosPagina=[];foreach($documentosPorFasePagina as $g)foreach($g['itens'] as $i)$documentosPagina[]=$i;
 
-        return compact('fasesTodas','fasesVisiveis','fasesSituacionais','faseGlobalAtual','faseGlobalAtualStatus','faseAcesso','faseSituacional','faseSituacionalStatus','faseAtualId','atividade','atividadePodeAcessar','secretarias','departamentos','tiposDocumento','requisitosTodos','requisitosVisiveis','requisitosFase','ultimosDocs','totalDocs','totalEnviados','totalAprovados','totalCorrecoes','aguardando','progresso','dataInicioProcesso','cronogramaPorFase','diaAtualProjeto','maxDiaCronograma','percentualHojeGantt','prazoDashboard','dashboardRequisitosFase','dashboardFaseTotal','dashboardFaseEnviados','dashboardFaseAprovados','dashboardFaseCorrecoes','dashboardFaseAguardando','dashboardFaseNaoEntregues','dashboardSecretariasPendentes','dashboardTotalPendencias','dashboardFaseProgresso','dashboardFasesConcluidas','dashboardQtdFases','dashboardResumoCard','secretariaTemDocumentosFaseAtual','workflowCounts','gruposDocumentosFase','prazoAtividade','workflowPrazoEntregaTexto','workflowPrazoEntregaComplemento','workflowPrazoEntregaClasse','resumoEntregasFase','summary','secretariasResumoFase','secretariasPendentesFase','statusAtual','faseVisualClass','faseStatusLabel','faseFechamento','faseFormalmenteEncerrada','faseElegibilidade','faseElegivelEncerramento','faseHistoricoFormal','faseSnapshot','historicoFase','historicoFasePagina','logsPorPagina','totalLogsFase','totalPaginasLog','paginaLog','notificacoes','notificacaoContagemAtiva','parametrosInstancia','relatorioFases','relatorioSecretarias','documentosPorFasePagina','documentosPagina') + ['scope'=>$this->scope,'tenant'=>Tenant::current(),'user'=>$this->user];
+        return compact('fasesTodas','fasesVisiveis','atividadesFase','atividadesVisiveis','atividadeMetricas','faseMetricasAtividades','fasesSituacionais','faseGlobalAtual','faseGlobalAtualStatus','faseAcesso','faseSituacional','faseSituacionalStatus','faseAtualId','atividade','atividadePodeAcessar','secretarias','departamentos','tiposDocumento','requisitosTodos','requisitosVisiveis','requisitosFase','ultimosDocs','totalDocs','totalEnviados','totalAprovados','totalCorrecoes','aguardando','progresso','dataInicioProcesso','cronogramaPorFase','diaAtualProjeto','maxDiaCronograma','percentualHojeGantt','prazoDashboard','dashboardRequisitosFase','dashboardFaseTotal','dashboardFaseEnviados','dashboardFaseAprovados','dashboardFaseCorrecoes','dashboardFaseAguardando','dashboardFaseNaoEntregues','dashboardSecretariasPendentes','dashboardTotalPendencias','dashboardFaseProgresso','dashboardFasesConcluidas','dashboardQtdFases','dashboardResumoCard','secretariaTemDocumentosFaseAtual','workflowCounts','gruposDocumentosFase','prazoAtividade','workflowPrazoEntregaTexto','workflowPrazoEntregaComplemento','workflowPrazoEntregaClasse','resumoEntregasFase','summary','secretariasResumoFase','secretariasPendentesFase','statusAtual','faseVisualClass','faseStatusLabel','faseFechamento','faseFormalmenteEncerrada','faseElegibilidade','faseElegivelEncerramento','faseHistoricoFormal','faseSnapshot','historicoFase','historicoFasePagina','logsPorPagina','totalLogsFase','totalPaginasLog','paginaLog','notificacoes','notificacaoContagemAtiva','parametrosInstancia','relatorioFases','relatorioSecretarias','documentosPorFasePagina','documentosPagina') + ['scope'=>$this->scope,'tenant'=>Tenant::current(),'user'=>$this->user];
     }
 
     public function historyData(): array
@@ -255,9 +262,10 @@ final class WorkflowService
 
     private function phaseStatus(array $phase,array $requirements,array $latest): string
     {
-        $docs=array_values(array_filter($requirements,fn($r)=>(int)$r['fase_id']===(int)$phase['id']&&(int)$r['ativo']===1&&(int)$r['obrigatorio']===1));if(!$docs)return'ready';$sent=$approved=$corrections=0;
-        foreach($docs as $r){$d=$latest[(int)$r['id']]??null;if($d){$sent++;if($d['status']==='APROVADO')$approved++;elseif($d['status']==='CORRECAO')$corrections++;}}
-        if($approved===count($docs))return'ready';if($corrections>0)return'correction';if($sent>0)return'run';return'pending';
+        $fid=(int)$phase['id'];
+        $activities=array_values(array_filter($this->currentActivities??[],fn($a)=>(int)$a['fase_id']===$fid&&(int)$a['ativo']===1));
+        if($activities){$metrics=(new ActivityProgressService())->metrics($activities,$requirements,$latest);$done=0;$hasCorrection=false;$hasRun=false;foreach($activities as$a){$m=$metrics[(int)$a['id']]??[];if(!empty($m['concluida']))$done++;if(($m['status']??'')==='CORRECAO')$hasCorrection=true;if(in_array(($m['status']??''),['EM_ANDAMENTO','CONCLUIDA'],true))$hasRun=true;}if($done===count($activities))return'ready';if($hasCorrection)return'correction';if($hasRun)return'run';return'pending';}
+        $docs=array_values(array_filter($requirements,fn($r)=>(int)$r['fase_id']===$fid&&(int)$r['ativo']===1&&(int)$r['obrigatorio']===1));if(!$docs)return'ready';$sent=$approved=$corrections=0;foreach($docs as$r){$d=$latest[(int)$r['id']]??null;if($d){$sent++;if($d['status']==='APROVADO')$approved++;elseif($d['status']==='CORRECAO')$corrections++;}}if($approved===count($docs))return'ready';if($corrections>0)return'correction';if($sent>0)return'run';return'pending';
     }
 
     private function groupDocuments(array $requirements,array $latest): array
