@@ -2,6 +2,7 @@
 use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\TenantController;
+use App\Controllers\DeadlineController;
 use App\Controllers\MediaController;
 use App\Controllers\NotificationController;
 use App\Controllers\SearchController;
@@ -62,6 +63,7 @@ $router->post('/{municipio}/configuracoes/estrutura/salvar',[StructureController
 $router->post('/{municipio}/hierarquia/salvar',[HierarchyController::class,'save'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/hierarquia/atividades/{id}/status',[HierarchyController::class,'status'],['auth','tenant','platform_admin']);
 $router->get('/{municipio}/workflow',[TenantController::class,'workflow'],['auth','tenant']);
+$router->post('/{municipio}/cronograma/prazos/regra',[DeadlineController::class,'save'],['auth','tenant','platform_admin']);
 $router->get('/{municipio}/workflow/fase/{fase}',[TenantController::class,'workflowPhase'],['auth','tenant']);
 $router->post('/{municipio}/etapa-1/arquivar',[TenantController::class,'archiveEtapa1'],['auth','tenant','platform_admin']);
 $router->get('/{municipio}/etapa-1/arquivamento/download',[TenantController::class,'downloadEtapa1Archive'],['auth','tenant','platform_admin']);

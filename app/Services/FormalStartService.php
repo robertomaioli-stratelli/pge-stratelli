@@ -44,6 +44,10 @@ final class FormalStartService
             (new FileStorage())->discard($file['path']);
             throw $e;
         }
+        // Prazo operacional: recalculo apos a transacao do documento formal.
+        // Uma falha no recalculo nao desfaz a formalizacao registrada.
+        try { (new DeadlineAutomationService())->recalculate($mid); }
+        catch (\Throwable $ex) { error_log('[PGE V32 prazo] '.$ex->getMessage()); }
         Audit::log('INICIO_FORMAL_REGISTRADO','Início formal registrado em '.$date.' pelo documento '.$reference,$mid,['categoria'=>'ADMINISTRACAO','severidade'=>'ATENCAO','checksum_sha256'=>$file['checksum']]);
     }
 
