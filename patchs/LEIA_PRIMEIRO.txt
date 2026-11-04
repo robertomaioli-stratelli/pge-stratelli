@@ -1,0 +1,24 @@
+PGE STRATELLI — PATCH V11: ETAPA SEM PROCESSO SUPERIOR
+
+Escopo: instalação V10 com banco V6/V7 já migrado.
+
+Arquivos a substituir (preservar caminhos):
+  app/Services/OperationalHierarchyService.php
+  app/Views/tenant/estrutura.php
+
+1. Faça cópia dos dois arquivos atuais.
+2. Extraia os dois arquivos nas pastas correspondentes da sua instalação.
+3. NÃO execute SQL: o banco já exige processo_id e o serviço passará a criar, automaticamente, um agrupador técnico interno no primeiro cadastro da Etapa. Ele não será solicitado ao usuário.
+4. Teste como usuário da instância: Configurações > Estrutura > Etapas > Cadastrar Etapa.
+5. Confira a Fase, vincule à Etapa recém-criada e teste Ato e Atividade.
+6. Se aparecer erro 500, consulte C:\\xampp\\apache\\logs\\error.log.
+
+Comportamento:
+- O formulário de Etapa não exige Processo superior.
+- No primeiro cadastro, o sistema cria automaticamente um registro técnico pge_processos_execucao, que permanece no banco para compatibilidade com as demais telas.
+- Próximas Etapas reutilizam esse mesmo agrupador técnico.
+- Etapas previamente arquivadas não aparecem na árvore de cadastro.
+- Etapas anteriores continuam podendo ser editadas sem alterar seu processo_id.
+- Não altera credenciais, rotas, tabelas, documentos nem históricos.
+
+Validação feita: PHP lint dos dois arquivos. Sem execução em MySQL/XAMPP real.

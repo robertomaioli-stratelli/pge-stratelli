@@ -1,5 +1,6 @@
 <?php
 use App\Core\Format;
+use App\Core\PhaseNumber;
 $macroHasTerritory=(bool)array_filter($clientes,fn($c)=>!empty($c['geojson_delimitacao']));
 $healthMeta=[
     'normal'=>['label'=>'Normal','icon'=>'●'],
@@ -26,7 +27,7 @@ $macroMapClients=array_values(array_map(static function($c){
             default=>'Não informado',
         },
         'dashboard'=>'/'.rawurlencode((string)$c['slug']).'/dashboard',
-        'fase'=>$phase?'Fase '.(int)$phase['ordem'].' — '.(string)$phase['aba']:'Processo concluído',
+        'fase'=>$phase?'Fase '.PhaseNumber::from($phase).' — '.(string)($phase['aba']?:preg_replace('/^\s*[0-9]+\s*[.\-–)]\s*/u','',(string)$phase['titulo'])):'Processo concluído',
         'progresso'=>(int)($c['progresso']??0),
         'prazo'=>(string)($c['prazo_rotulo']??'—'),
         'proxima_acao'=>(string)($c['proxima_acao']??'—'),
@@ -41,6 +42,23 @@ $macroMapClients=array_values(array_map(static function($c){
 .macro-portfolio-map-wrap{position:relative;min-height:520px;background:#eaf1f7}
 @media(max-width:900px){#macroPortfolioMap{height:440px;min-height:360px}.macro-portfolio-map-wrap{min-height:440px}}
 @media(max-width:560px){#macroPortfolioMap{height:390px;min-height:330px}.macro-portfolio-map-wrap{min-height:390px}}
+
+/* V25 – mapa executivo centralizado e visualmente destacado */
+.macro-dashboard .macro-portfolio-map-section{width:100%;max-width:none;margin:22px 0 26px;border-radius:20px;overflow:hidden;border:1px solid #d6e4f1;box-shadow:0 18px 42px rgba(8,42,85,.10);background:#fff}
+.macro-dashboard .macro-portfolio-map-section .macro-section-head{padding:20px 24px 17px;background:linear-gradient(115deg,#082a55 0%,#145b9e 100%);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.macro-dashboard .macro-portfolio-map-section .macro-section-head h2{color:#fff;font-size:20px;margin:0 0 6px}
+.macro-dashboard .macro-portfolio-map-section .macro-section-head p{color:#d9eafa;line-height:1.45;margin:0}
+.macro-dashboard .macro-portfolio-map-section .macro-section-count{border-radius:999px;padding:8px 14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);color:#fff}
+.macro-dashboard .macro-portfolio-map-wrap{min-height:560px;background:#eaf2fa;overflow:hidden}
+.macro-dashboard #macroPortfolioMap{height:560px;min-height:560px;background:#eaf2fa}
+.macro-dashboard .macro-map-legend{position:absolute;z-index:650;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:10px 16px;flex-wrap:wrap;max-width:calc(100% - 30px);padding:11px 17px;border-radius:13px;background:rgba(255,255,255,.97);box-shadow:0 7px 22px rgba(7,35,68,.18);border:1px solid #dbe5ee;font-size:11px}
+.macro-dashboard .macro-map-legend strong{margin-right:7px;white-space:nowrap}
+.macro-dashboard .macro-map-legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.macro-dashboard .macro-map-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--status-color)}
+.macro-dashboard .macro-map-footnote{padding:10px 20px;text-align:center;color:#637b93;font-size:11px;background:#fbfdff}
+@media(min-width:1600px){.macro-dashboard #macroPortfolioMap,.macro-dashboard .macro-portfolio-map-wrap{height:620px;min-height:620px}}
+@media(max-width:900px){.macro-dashboard #macroPortfolioMap,.macro-dashboard .macro-portfolio-map-wrap{height:440px;min-height:440px}}
+@media(max-width:700px){.macro-dashboard .macro-portfolio-map-section .macro-section-head{padding:15px;flex-direction:column;align-items:flex-start}.macro-dashboard #macroPortfolioMap,.macro-dashboard .macro-portfolio-map-wrap{height:380px;min-height:380px}.macro-dashboard .macro-map-legend{bottom:8px;padding:8px 10px;gap:7px 11px;font-size:10px}}
 </style>
 <?php endif;?>
 <div class="module-page macro-dashboard">
@@ -130,13 +148,13 @@ $macroMapClients=array_values(array_map(static function($c){
                         <?php if(!empty($c['brasao_path'])):?><img class="macro-client-coat" src="/media/municipios/<?=$c['id']?>/brasao?v=<?=substr(sha1((string)$c['brasao_path']),0,12)?>" loading="eager" decoding="async" alt="Brasão de <?=Format::h($c['nome'])?>"><?php else:?><span class="macro-client-coat placeholder">▥</span><?php endif;?>
                         <div><span class="macro-client-location">MUNICÍPIO CLIENTE</span><h3><?=Format::h($c['nome'])?> <small>— <?=Format::h($c['uf'])?></small></h3></div>
                     </div>
-                    <span class="macro-health <?=Format::h($c['saude'])?>"><i></i><?=Format::h($health['label'])?></span>
+                    <span class="macro-health <?=Format::h($c['saude'])?>"><i></i><?=Format::h($c['saude_rotulo']??$health['label'])?></span>
                 </header>
 
                 <?php if($c['saude']==='implementation'):?>
                     <div class="macro-implementation">
                         <div class="macro-implementation-icon">◌</div>
-                        <div><b>Aguardando implantação</b><p>A estrutura operacional deste município ainda não foi iniciada.</p></div>
+                        <div><b><?=empty($c['inicio_formal_registrado'])?'Aguardando início formal':'Aguardando implantação'?></b><p><?=empty($c['inicio_formal_registrado'])?'O prazo só começará após o documento formal da Stratelli.':'A estrutura operacional deste município ainda não foi iniciada.'?></p></div>
                     </div>
                     <div class="macro-client-mini-grid">
                         <div><b><?=$c['usuarios_ativos']?></b><small>Usuários ativos</small></div>
@@ -148,7 +166,7 @@ $macroMapClients=array_values(array_map(static function($c){
                     <div class="macro-current-phase">
                         <div>
                             <small>FASE ATUAL</small>
-                            <?php if($phase):?><b>Fase <?=Format::h($phase['ordem'])?> — <?=Format::h($phase['aba'])?></b><span><?=Format::h($phase['titulo'])?></span><?php else:?><b>Processo concluído</b><span>Todas as fases foram encerradas formalmente</span><?php endif;?>
+                            <?php if($phase):?><b>Fase <?=Format::h(PhaseNumber::from($phase))?> — <?=Format::h($phase['aba'])?></b><span><?=Format::h($phase['titulo'])?></span><?php else:?><b>Processo concluído</b><span>Todas as fases foram encerradas formalmente</span><?php endif;?>
                         </div>
                         <div class="macro-deadline-box <?=Format::h($c['prazo_atual']['status']??'completed')?>"><small>SITUAÇÃO DO PRAZO</small><b><?=Format::h($c['prazo_rotulo'])?></b><span><?=Format::h($c['prazo_texto'])?></span></div>
                     </div>

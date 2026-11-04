@@ -3,6 +3,131 @@
 use App\Core\Auth;use App\Core\Csrf;use App\Core\Format;
 $slug=$tenant['slug'];$isPlatform=Auth::isPlatformAdmin();$deadline=$prazoAtividade;$today=date('Y-m-d');$parametrosInstancia=$parametrosInstancia??[];$obsEnvioObrigatoria=!empty($parametrosInstancia['observacao_envio_obrigatoria']);$obsAprovacaoObrigatoria=!empty($parametrosInstancia['observacao_aprovacao_obrigatoria']);$obsEncerramentoObrigatoria=!empty($parametrosInstancia['observacao_encerramento_obrigatoria']);$obsReaberturaObrigatoria=!empty($parametrosInstancia['observacao_reabertura_obrigatoria']);
 ?>
+<?php require __DIR__.'/partials/hierarchy_summary.php'; ?>
+<?php
+$inicioFormalPge=(new \App\Services\FormalStartService())->get((int)$tenant['id']);
+?>
+<style>
+.start-formal-card{margin:14px 0;border-radius:22px;overflow:hidden;border:1px solid #d8e3ef;background:linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);box-shadow:0 12px 28px rgba(8,42,85,.08)}
+.start-formal-head{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.9fr);gap:18px;padding:22px 22px 16px;align-items:start}
+.start-formal-hero{display:flex;gap:16px;align-items:flex-start}
+.start-formal-icon{width:58px;height:58px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;flex:0 0 58px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.start-formal-card.waiting .start-formal-icon{background:linear-gradient(135deg,#edf3fb 0%,#dce8f5 100%);color:#325476}
+.start-formal-card.started .start-formal-icon{background:linear-gradient(135deg,#e7f9ee 0%,#d2f2df 100%);color:#16804a}
+.start-formal-overline{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef4fb;border:1px solid #dbe7f3;color:#4f6780;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.start-formal-title{margin:10px 0 8px;color:#0b2f56;font-size:32px;line-height:1.1}
+.start-formal-copy{margin:0;color:#5f7388;max-width:760px;font-size:15px;line-height:1.55}
+.start-formal-timeline{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.start-formal-step{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:999px;background:#f7fbff;border:1px solid #dce7f3;color:#37597d;font-size:12px;font-weight:800}
+.start-formal-step i{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #dbe5ef;font-style:normal;font-size:11px;color:#1b4f88}
+.start-formal-side{display:grid;gap:12px}
+.start-formal-status{border-radius:18px;padding:16px 18px;border:1px solid #dce7f2;background:#fff}
+.start-formal-status-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.start-formal-status small{display:block;color:#6a7e94;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.start-formal-status b{display:block;color:#0b2f56;font-size:18px;line-height:1.25}
+.start-formal-status span{display:block;margin-top:4px;color:#64798f;font-size:13px;line-height:1.45}
+.start-formal-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900;white-space:nowrap}
+.start-formal-card.waiting .start-formal-pill{background:#eef3f7;color:#5f7388}
+.start-formal-card.started .start-formal-pill{background:#e7f8ee;color:#16804a}
+.start-formal-checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.start-formal-check{border:1px solid #e2ebf4;background:#fff;border-radius:14px;padding:12px}
+.start-formal-check strong{display:block;color:#102f52;font-size:12px;margin-bottom:5px}
+.start-formal-check span{display:block;color:#667b91;font-size:12px;line-height:1.45}
+.start-formal-formwrap{padding:0 22px 22px}
+.start-formal-form{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;padding:18px;border-top:1px solid #e7eef6;background:linear-gradient(180deg,#f9fbfe 0%,#f2f7fc 100%)}
+.start-formal-field{display:grid;grid-template-rows:auto minmax(44px,auto);gap:7px;min-width:0}
+.start-formal-field label{font-size:12px;font-weight:900;color:#183d66;text-transform:uppercase;letter-spacing:.02em}
+.start-formal-field input{width:100%;min-height:44px;border:1px solid #d2deeb;border-radius:12px;background:#fff;padding:0 12px;color:#103151;font:inherit}
+/* Campo PDF alinhado visualmente aos outros controles do formulário. */
+.start-formal-field input[type="file"]{display:block;height:44px;min-height:44px;padding:6px 10px;line-height:30px;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.start-formal-field input[type="file"]::file-selector-button{height:30px;margin:0 10px 0 0;padding:0 12px;border:1px solid #cbd9e8;border-radius:8px;background:#eef4fb;color:#123d68;font:inherit;font-size:12px;font-weight:800;cursor:pointer;vertical-align:middle}
+.start-formal-field input:focus{outline:none;border-color:#1e73db;box-shadow:0 0 0 3px rgba(30,115,219,.12)}
+.start-formal-form .col-2{grid-column:span 2}.start-formal-form .col-3{grid-column:span 3}.start-formal-form .col-4{grid-column:span 4}
+.start-formal-form .col-5{grid-column:span 5}.start-formal-form .col-12{grid-column:1 / -1}
+.start-formal-form .start-formal-submit{grid-column:1 / -1;display:flex;justify-content:flex-end;align-items:center}
+.start-formal-cta{min-height:48px;border:0;border-radius:14px;padding:0 18px;background:linear-gradient(90deg,#ff2a18 0%,#d39d0f 100%);color:#fff;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 10px 20px rgba(215,125,15,.18)}
+.start-formal-note{display:flex;align-items:center;gap:10px;width:100%;min-width:0;padding:12px 14px;border-radius:14px;background:#ffffff;border:1px dashed #d6e2ef;color:#64788d;font-size:12px;line-height:1.55}.start-formal-note>span{flex:0 0 auto}.start-formal-note>div{min-width:0;flex:1}
+.start-formal-note b{color:#12375d}
+.start-formal-download{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border-radius:12px;border:1px solid #d5e2ee;background:#fff;color:#103151;font-weight:800;text-decoration:none}
+.start-formal-side-actions{display:flex;gap:10px;flex-wrap:wrap}
+@media (max-width: 980px){.start-formal-head{grid-template-columns:1fr}.start-formal-title{font-size:26px}.start-formal-form .col-2,.start-formal-form .col-3,.start-formal-form .col-4,.start-formal-form .col-5{grid-column:1 / -1}.start-formal-form .start-formal-submit{grid-column:1 / -1;justify-content:stretch}.start-formal-cta{width:100%}}
+</style>
+<section class="start-formal-card <?= $inicioFormalPge ? 'started' : 'waiting' ?>">
+  <div class="start-formal-head">
+    <div>
+      <div class="start-formal-hero">
+        <div class="start-formal-icon"><?= $inicioFormalPge ? '✓' : '⏳' ?></div>
+        <div>
+          <span class="start-formal-overline">Marco formal do cronograma</span>
+          <h2 class="start-formal-title"><?= $inicioFormalPge ? 'Processo formalmente iniciado' : 'Aguardando início formal' ?></h2>
+          <p class="start-formal-copy"><?= $inicioFormalPge ? 'Os prazos oficiais já podem ser contabilizados. A data autorizada no documento formal passou a ser a referência para o cronograma, o Workflow e o Gantt.' : 'Nenhum prazo está em atraso. A contagem só começará quando a Stratelli registrar o documento formal de início do cronograma.' ?></p>
+        </div>
+      </div>
+      <div class="start-formal-timeline">
+        <div class="start-formal-step"><i>1</i><span>Registrar documento formal</span></div>
+        <div class="start-formal-step"><i>2</i><span>Validar data de vigência</span></div>
+        <div class="start-formal-step"><i>3</i><span>Liberar contagem dos prazos</span></div>
+      </div>
+    </div>
+    <div class="start-formal-side">
+      <div class="start-formal-status">
+        <div class="start-formal-status-top">
+          <div>
+            <small>Status atual</small>
+            <b><?= $inicioFormalPge ? 'Cronograma iniciado' : 'Aguardando autorização' ?></b>
+            <span><?= $inicioFormalPge ? 'Data-base ativa para cálculo de vencimentos e evolução do cronograma.' : 'Enquanto este registro não existir, a plataforma manterá o município sem atraso e sem contagem em curso.' ?></span>
+          </div>
+          <span class="start-formal-pill"><?= $inicioFormalPge ? 'Ativo' : 'Pendente' ?></span>
+        </div>
+      </div>
+      <?php if ($inicioFormalPge): ?>
+        <div class="start-formal-checks">
+          <div class="start-formal-check"><strong>Data de vigência</strong><span><?= Format::h(Format::date($inicioFormalPge['data_inicio'])) ?></span></div>
+          <div class="start-formal-check"><strong>Referência</strong><span><?= Format::h($inicioFormalPge['referencia']) ?></span></div>
+        </div>
+        <div class="start-formal-side-actions">
+          <a class="start-formal-download" href="/<?=Format::h($slug)?>/cronograma/inicio-formal/documento">Baixar documento formal</a>
+        </div>
+      <?php else: ?>
+        <div class="start-formal-checks">
+          <div class="start-formal-check"><strong>Requisito</strong><span>Documento PDF assinado pela Stratelli.</span></div>
+          <div class="start-formal-check"><strong>Efeito</strong><span>Passa a habilitar o cálculo de prazos em toda a plataforma.</span></div>
+        </div>
+      <?php endif; ?>
+    </div>
+  </div>
+  <?php if (!$inicioFormalPge && $isPlatform): ?>
+    <div class="start-formal-formwrap">
+      <form method="post" enctype="multipart/form-data" action="/<?=Format::h($slug)?>/cronograma/inicio-formal" class="start-formal-form">
+        <input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>">
+        <div class="start-formal-field col-2">
+          <label>Data de vigência</label>
+          <input type="date" name="data_inicio" max="<?=date('Y-m-d')?>" required>
+        </div>
+        <div class="start-formal-field col-3">
+          <label>Documento / referência</label>
+          <input type="text" name="referencia" maxlength="180" placeholder="Ex.: Ofício 123/2026" required>
+        </div>
+        <div class="start-formal-field col-3">
+          <label>Documento assinado (PDF)</label>
+          <input type="file" name="documento_inicio" accept="application/pdf,.pdf" required>
+        </div>
+        <div class="start-formal-field col-4">
+          <label>Observação</label>
+          <input type="text" name="observacao" maxlength="2000" placeholder="Opcional">
+        </div>
+        <div class="col-12">
+          <div class="start-formal-note"><span>ℹ</span><div><b>Importante:</b> a confirmação deste registro ativará a contagem oficial do cronograma, do Workflow e do Gráfico Gantt a partir da data informada acima.</div></div>
+        </div>
+        <div class="start-formal-submit">
+          <button class="start-formal-cta" type="submit" onclick="return confirm('Confirma a data e o documento formal de início? O cronograma passará a contar a partir desta data.')">Registrar início formal</button>
+        </div>
+      </form>
+    </div>
+  <?php endif; ?>
+</section>
+
+
 <div class="hero"><div><h1>Workflow de Contratação / Fases</h1><p>Envio dos documentos e acompanhamento do processo</p></div><div class="notice <?=$scope==='stratelli'?'purple':''?>"><?=$scope==='municipio'?'Como Gestor Municipal, você acompanha e envia documentos de todas as secretarias vinculadas ao processo.':($scope==='secretaria'?'Acesso restrito aos documentos de responsabilidade de '.Format::h($user['secretaria_nome']??'sua secretaria').'. A fase atual é única para todas as secretarias e segue o andamento global definido pela Stratelli.':'Todas as fases, secretarias, tipos e modelos podem ser administrados no menu Configurações.')?></div></div>
 
 <?php if(!$atividadePodeAcessar):?>
@@ -49,7 +174,7 @@ $slug=$tenant['slug'];$isPlatform=Auth::isPlatformAdmin();$deadline=$prazoAtivid
 <section class="card phase-summary <?=Format::h($faseVisualClass)?>"><div class="phase-summary-head"><h2>Fase <?=Format::h($atividade['ordem'])?> - <?=Format::h($atividade['titulo'])?></h2><span class="statusbox <?=Format::h($faseVisualClass)?>"><?=Format::h($faseStatusLabel)?></span></div><p><?=Format::h($atividade['descricao'])?></p><div class="details-row"><div class="detail <?=$scope==='secretaria'?'deadline-'.Format::h($workflowPrazoEntregaClasse):''?>"><small><?=$scope==='secretaria'?'Prazo para entrega':'Prazo'?></small><?php if($scope==='secretaria'):?><b><?=Format::h($workflowPrazoEntregaTexto)?></b><?php if($workflowPrazoEntregaComplemento):?><span class="detail-note"><?=Format::h($workflowPrazoEntregaComplemento)?></span><?php endif;?><?php else:?><b>Dia <?=Format::h($atividade['dia_inicio'])?> ao <?=Format::h($atividade['dia_fim'])?></b><?php endif;?></div><div class="detail"><small>Responsável</small><b><?=Format::h($atividade['responsavel'])?></b></div><div class="detail"><small>Duração</small><b><?=max(1,(int)$atividade['dia_fim']-(int)$atividade['dia_inicio']+1)?> dia(s)</b></div><div class="detail"><small>Entregável</small><b><?=Format::h($atividade['entregavel'])?></b></div></div></section>
 
 <section class="card deadline-control-card <?=Format::h($deadline['status']??'blocked')?>"><div class="deadline-control-head"><div><h2>Controle de prazo da Fase <?=Format::h($atividade['ordem'])?></h2><p>O prazo utiliza os <?=Format::h($deadline['duracao']??1)?> dia(s) cadastrados no Gantt e começa no dia seguinte ao encerramento formal da fase anterior.</p></div><span class="deadline-status-pill <?=Format::h($deadline['status']??'blocked')?>"><?=Format::h($deadline['rotulo']??'—')?></span></div><div class="deadline-control-grid"><div class="deadline-control-item"><small>Início do processo</small><b><?=Format::h(Format::date($dataInicioProcesso))?></b></div><div class="deadline-control-item"><small>Início desta fase</small><b><?=Format::h(Format::date($deadline['inicio']??null))?></b></div><div class="deadline-control-item"><small>Data limite</small><b><?=Format::h(Format::date($deadline['fim']??null))?></b></div><div class="deadline-control-item"><small>Encerramento formal</small><b><?=Format::h(Format::date($deadline['conclusao_real']??null))?></b></div><div class="deadline-control-item"><small>Situação</small><b><?=Format::h($deadline['texto']??'—')?></b></div></div><?php if(!empty($deadline['provisorio'])):?><span class="deadline-provisional">Datas provisórias: a fase anterior ainda não foi encerrada formalmente.</span><?php endif;?><div class="deadline-control-progress"><div class="deadline-time-head"><span>Prazo consumido até <?=Format::h(Format::date($today))?></span><strong><?=Format::h($deadline['percentual_tempo']??0)?>%</strong></div><div class="deadline-time-track <?=Format::h($deadline['status']??'blocked')?>"><span style="width:<?=Format::h($deadline['percentual_tempo']??0)?>%"></span><em><?=Format::h($deadline['percentual_tempo']??0)?>%</em></div></div>
-<?php if($isPlatform):?><div class="deadline-control-actions phase-start-only"><form method="post" action="/<?=Format::h($slug)?>/cronograma/inicio"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><input type="hidden" name="fase_id" value="<?=$atividade['id']?>"><label>Marco inicial do processo<input type="date" name="data_inicio" value="<?=Format::h($dataInicioProcesso)?>" required></label><button class="btn neutral">Atualizar início</button></form></div><?php endif;?></section>
+<?php if($isPlatform && !$inicioFormalPge):?><p class="deadline-provisional">Os prazos serão definidos após o registro do documento formal acima.</p><?php endif;?></section>
 
 <section id="governanca-fase" class="card phase-formal-control <?=$faseFormalmenteEncerrada?'is-closed':($faseElegivelEncerramento?'is-ready':'is-pending')?>">
 <div class="phase-formal-head"><div><small>GOVERNANÇA DA FASE</small><h2><?=$faseFormalmenteEncerrada?'Fase formalmente encerrada':($faseElegivelEncerramento?'Fase pronta para encerramento formal':'Encerramento formal da fase')?></h2><p><?=$faseFormalmenteEncerrada?'O conteúdo documental desta fase está bloqueado. Alterações exigem reabertura auditada.':($faseElegivelEncerramento?'Os documentos obrigatórios atingiram 100% de aprovação. A fase permanece atual até o encerramento formal pela Stratelli.':'O encerramento só será liberado quando todos os documentos obrigatórios estiverem aprovados.')?></p></div><span class="phase-formal-badge"><?=$faseFormalmenteEncerrada?'ENCERRADA':($faseElegivelEncerramento?'100% DOCUMENTAL':'AGUARDANDO DOCUMENTOS')?></span></div>
@@ -60,7 +185,7 @@ $slug=$tenant['slug'];$isPlatform=Auth::isPlatformAdmin();$deadline=$prazoAtivid
 <?php if($isPlatform):?><form class="phase-reopen-form" method="post" action="/<?=Format::h($slug)?>/cronograma/fases/<?=$atividade['id']?>/reabrir"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><input type="hidden" name="fase_id" value="<?=$atividade['id']?>"><label>Motivo da reabertura <span><?=$obsReaberturaObrigatoria?'obrigatório':'opcional'?></span><textarea name="motivo_reabertura" rows="2" maxlength="1000" <?=$obsReaberturaObrigatoria?'required':''?> placeholder="Explique por que a fase precisa ser reaberta e quais alterações serão realizadas."></textarea></label><button class="btn correct" type="submit">↺ Reabrir fase</button></form><?php endif;?>
 <?php else:?>
 <div class="phase-formal-readiness"><div><strong><?=$faseElegibilidade['approved']?> / <?=$faseElegibilidade['total']?></strong><span>documentos obrigatórios aprovados</span></div><div><strong><?=$faseElegibilidade['waiting']?></strong><span>aguardando validação</span></div><div><strong><?=$faseElegibilidade['correction']?></strong><span>em correção</span></div><div><strong><?=$faseElegibilidade['missing']?></strong><span>não enviados</span></div></div>
-<?php if($faseElegivelEncerramento):?><?php if($isPlatform):?><?php $closureMinDate=(string)($deadline['inicio']??$dataInicioProcesso);$closureDateAvailable=$closureMinDate<=$today;?><?php if($closureDateAvailable):?><form class="phase-close-form" method="post" action="/<?=Format::h($slug)?>/cronograma/fases/<?=$atividade['id']?>/encerrar"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><input type="hidden" name="fase_id" value="<?=$atividade['id']?>"><label>Data do encerramento<input type="date" name="data_conclusao" value="<?=Format::h($today)?>" min="<?=Format::h($closureMinDate)?>" max="<?=Format::h($today)?>" required></label><label>Responsável<input type="text" value="<?=Format::h($user['nome']??'Stratelli')?>" readonly></label><label class="phase-close-observation">Observação do encerramento <span><?=$obsEncerramentoObrigatoria?'obrigatória':'opcional'?></span><textarea name="observacao" rows="2" maxlength="1000" <?=$obsEncerramentoObrigatoria?'required':''?> placeholder="Registre a decisão, conferências realizadas ou contexto do encerramento."></textarea></label><button class="btn approve" type="submit">✓ Confirmar encerramento formal</button></form><?php else:?><div class="phase-formal-waiting"><span>◷</span><div><b>Documentação pronta, aguardando início operacional</b><p>O encerramento formal poderá ser registrado a partir de <?=Format::h(Format::date($closureMinDate))?>, conforme o cronograma da fase.</p></div></div><?php endif;?><?php else:?><div class="phase-formal-waiting"><span>◎</span><div><b>Documentação concluída</b><p>A fase aguarda o encerramento formal pela Stratelli. Até esse ato, a próxima fase permanece bloqueada.</p></div></div><?php endif;?><?php endif;?>
+<?php if($faseElegivelEncerramento && $inicioFormalPge):?><?php if($isPlatform):?><?php $closureMinDate=(string)($deadline['inicio']??$dataInicioProcesso);$closureDateAvailable=$closureMinDate<=$today;?><?php if($closureDateAvailable):?><form class="phase-close-form" method="post" action="/<?=Format::h($slug)?>/cronograma/fases/<?=$atividade['id']?>/encerrar"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><input type="hidden" name="fase_id" value="<?=$atividade['id']?>"><label>Data do encerramento<input type="date" name="data_conclusao" value="<?=Format::h($today)?>" min="<?=Format::h($closureMinDate)?>" max="<?=Format::h($today)?>" required></label><label>Responsável<input type="text" value="<?=Format::h($user['nome']??'Stratelli')?>" readonly></label><label class="phase-close-observation">Observação do encerramento <span><?=$obsEncerramentoObrigatoria?'obrigatória':'opcional'?></span><textarea name="observacao" rows="2" maxlength="1000" <?=$obsEncerramentoObrigatoria?'required':''?> placeholder="Registre a decisão, conferências realizadas ou contexto do encerramento."></textarea></label><button class="btn approve" type="submit">✓ Confirmar encerramento formal</button></form><?php else:?><div class="phase-formal-waiting"><span>◷</span><div><b>Documentação pronta, aguardando início operacional</b><p>O encerramento formal poderá ser registrado a partir de <?=Format::h(Format::date($closureMinDate))?>, conforme o cronograma da fase.</p></div></div><?php endif;?><?php else:?><div class="phase-formal-waiting"><span>◎</span><div><b>Documentação concluída</b><p>A fase aguarda o encerramento formal pela Stratelli. Até esse ato, a próxima fase permanece bloqueada.</p></div></div><?php endif;?><?php endif;?>
 <?php endif;?>
 <?php if($faseHistoricoFormal):?><details class="phase-formal-history"><summary>Histórico formal da fase · <?=count($faseHistoricoFormal)?> evento(s)</summary><div class="phase-formal-history-list"><?php foreach($faseHistoricoFormal as$hf):?><article class="<?=$hf['evento']==='REABERTURA'?'reopen':'close'?>"><span><?=$hf['evento']==='REABERTURA'?'↺':'✓'?></span><div><b><?=$hf['evento']==='REABERTURA'?'Fase reaberta':'Fase encerrada'?></b><small><?=Format::h(Format::dateTime($hf['criado_em']))?> · <?=Format::h($hf['usuario_nome']??'Sistema')?></small><?php if(!empty($hf['observacao'])):?><p><?=Format::h($hf['observacao'])?></p><?php endif;?><?php if(!empty($hf['snapshot_sha256'])):?><code>Snapshot <?=Format::h(substr($hf['snapshot_sha256'],0,16))?>…</code><?php endif;?></div></article><?php endforeach;?></div></details><?php endif;?>
 </section>

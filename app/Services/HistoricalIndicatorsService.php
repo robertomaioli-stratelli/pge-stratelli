@@ -166,6 +166,7 @@ final class HistoricalIndicatorsService
     {
         $stageName=(new InstanceParameterService())->stageName($mid);
         $st=$this->pdo->prepare('SELECT data_inicio FROM cronograma_processos WHERE municipio_id=?');$st->execute([$mid]);$processStart=$st->fetchColumn()?:null;
+        if (!(new FormalStartService())->get($mid)) $processStart=null;
         $st=$this->pdo->prepare('SELECT id,ordem,aba,titulo,dia_inicio,dia_fim FROM fases WHERE municipio_id=? AND ativo=1 ORDER BY ordem,id');$st->execute([$mid]);$phases=$st->fetchAll(PDO::FETCH_ASSOC);
         $st=$this->pdo->prepare('SELECT * FROM cronograma_fases WHERE municipio_id=?');$st->execute([$mid]);$closures=[];foreach($st->fetchAll(PDO::FETCH_ASSOC) as $c)$closures[(int)$c['fase_id']]=$c;
         $rows=[];$prevClosure=null;$allClosed=!empty($phases);$lastRow=null;

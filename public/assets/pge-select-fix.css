@@ -1,0 +1,146 @@
+/* PGE V18 – correção robusta para selects na área Documentos e Modelos.
+   Mantém o <select> original para submissão do formulário e usa UI customizada
+   somente onde o popup nativo vinha renderizando texto cortado. */
+html body select:not([multiple]) {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  text-indent: 0 !important;
+  text-align: left;
+  text-align-last: left;
+  direction: ltr;
+}
+html body select:not([multiple]) option,
+html body select:not([multiple]) optgroup {
+  direction: ltr;
+  text-indent: 0 !important;
+  padding-left: 6px;
+  box-sizing: border-box;
+}
+html body .field,
+html body .production-form label,
+html body .instance-param-field {
+  min-width: 0;
+}
+
+/* Apenas para selects customizados na área de Documentos e Modelos. */
+.pge-native-select-hidden {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.pge-custom-select {
+  position: relative;
+  width: 100%;
+}
+.pge-custom-select-btn {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #d8e2ee;
+  border-radius: 9px;
+  background: #fff;
+  padding: 10px 38px 10px 12px;
+  color: #102d50;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.pge-custom-select-btn::after {
+  content: '▾';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #5c6f86;
+  font-size: 12px;
+  pointer-events: none;
+}
+.pge-custom-select.is-open .pge-custom-select-btn,
+.pge-custom-select-btn:focus {
+  outline: none;
+  border-color: #176fdd;
+  box-shadow: 0 0 0 3px rgba(23,111,221,.10);
+}
+.pge-custom-select.is-disabled .pge-custom-select-btn {
+  background: #f4f7fa;
+  color: #7e8ea1;
+  cursor: not-allowed;
+}
+.pge-custom-select-panel {
+  display: none;
+  position: absolute;
+  z-index: 1200;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid #d8e2ee;
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(8,42,85,.14);
+  overflow: hidden;
+}
+.pge-custom-select.is-open .pge-custom-select-panel { display: block; }
+.pge-custom-select-search-wrap {
+  padding: 10px;
+  border-bottom: 1px solid #edf1f6;
+  background: #f9fbfe;
+}
+.pge-custom-select-search {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #d7e2ee;
+  border-radius: 9px;
+  background: #fff;
+  padding: 0 10px;
+  color: #102d50;
+  font: inherit;
+}
+.pge-custom-select-list {
+  max-height: 280px;
+  overflow: auto;
+  padding: 6px;
+}
+.pge-custom-select-option {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  border-radius: 8px;
+  padding: 9px 10px;
+  color: #102d50;
+  font: inherit;
+  cursor: pointer;
+  white-space: normal;
+  line-height: 1.35;
+}
+.pge-custom-select-option:hover,
+.pge-custom-select-option:focus {
+  background: #eef5ff;
+  color: #0d4f96;
+  outline: none;
+}
+.pge-custom-select-option.is-selected {
+  background: #176fdd;
+  color: #fff;
+}
+.pge-custom-select-option.is-placeholder {
+  color: #6d7f93;
+}
+.pge-custom-select-option[disabled] {
+  opacity: .55;
+  cursor: not-allowed;
+}
+.pge-custom-select-empty {
+  padding: 10px 12px;
+  color: #6d7f93;
+  font-size: 12px;
+}

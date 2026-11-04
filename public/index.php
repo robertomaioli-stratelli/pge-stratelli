@@ -44,6 +44,9 @@ try {
     $router = require $root . '/routes.php';
     $router->dispatch($_SERVER['REQUEST_METHOD'] ?? 'GET', $_SERVER['REQUEST_URI'] ?? '/');
 } catch (Throwable $e) {
-    $debug=filter_var(getenv('APP_DEBUG')?:'false',FILTER_VALIDATE_BOOLEAN);
-    Response::abort(500,$debug?$e->getMessage():'Ocorreu um erro interno.');
+    // Identificador de incidente para correlacionar a tela com o log do Apache.
+    $incidentId = bin2hex(random_bytes(5));
+    error_log('[PGE incidente ' . $incidentId . '] ' . get_class($e) . ': ' . $e->getMessage()
+        . ' em ' . $e->getFile() . ':' . $e->getLine() . PHP_EOL . $e->getTraceAsString());
+    Response::abort(500, 'Ocorreu um erro interno. Referência: ' . $incidentId);
 }

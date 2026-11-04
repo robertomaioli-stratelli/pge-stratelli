@@ -5,6 +5,9 @@ use App\Controllers\TenantController;
 use App\Controllers\MediaController;
 use App\Controllers\NotificationController;
 use App\Controllers\SearchController;
+use App\Controllers\ProcessModelController;
+use App\Controllers\HierarchyController;
+use App\Controllers\StructureController;
 use App\Core\Response;
 use App\Core\Router;
 
@@ -47,11 +50,17 @@ $router->post('/admin/usuarios/{id}',[AdminController::class,'updateUsuario'],['
 $router->post('/admin/usuarios/{id}/senha',[AdminController::class,'updateUsuarioSenha'],['auth','platform_admin']);
 $router->post('/admin/usuarios/{id}/status',[AdminController::class,'toggleUsuario'],['auth','platform_admin']);
 $router->post('/admin/usuarios/{id}/recuperacao',[AdminController::class,'recoveryUsuario'],['auth','platform_admin']);
+$router->get('/admin/modelos-processos',[ProcessModelController::class,'index'],['auth','platform_admin']);
+$router->post('/admin/modelos-processos/salvar',[ProcessModelController::class,'save'],['auth','platform_admin']);
 $router->get('/admin/configuracoes',[AdminController::class,'configuracoes'],['auth','platform_admin']);
 
 $router->get('/{municipio}/dashboard',[TenantController::class,'dashboard'],['auth','tenant']);
 $router->get('/{municipio}/municipio',[TenantController::class,'municipioCadastro'],['auth','tenant']);
 $router->get('/{municipio}/pendencias',[TenantController::class,'pendencias'],['auth','tenant']);
+$router->get('/{municipio}/hierarquia',[HierarchyController::class,'index'],['auth','tenant']);
+$router->post('/{municipio}/configuracoes/estrutura/salvar',[StructureController::class,'save'],['auth','tenant']);
+$router->post('/{municipio}/hierarquia/salvar',[HierarchyController::class,'save'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/hierarquia/atividades/{id}/status',[HierarchyController::class,'status'],['auth','tenant','platform_admin']);
 $router->get('/{municipio}/workflow',[TenantController::class,'workflow'],['auth','tenant']);
 $router->get('/{municipio}/workflow/fase/{fase}',[TenantController::class,'workflowPhase'],['auth','tenant']);
 $router->post('/{municipio}/etapa-1/arquivar',[TenantController::class,'archiveEtapa1'],['auth','tenant','platform_admin']);
@@ -71,7 +80,7 @@ $router->get('/{municipio}/relatorios/historicos/exportar',[TenantController::cl
 $router->get('/{municipio}/relatorios/sla',[TenantController::class,'slaSecretarias'],['auth','tenant']);
 $router->get('/{municipio}/relatorios/sla/exportar',[TenantController::class,'exportSlaSecretarias'],['auth','tenant']);
 $router->get('/{municipio}/historico',[TenantController::class,'historico'],['auth','tenant']);
-$router->get('/{municipio}/configuracoes',[TenantController::class,'configuracoes'],['auth','tenant','platform_admin']);
+$router->get('/{municipio}/configuracoes',[TenantController::class,'configuracoes'],['auth','tenant']);
 
 $router->post('/{municipio}/workflow/documentos/{requisito}/enviar',[TenantController::class,'uploadDocument'],['auth','tenant']);
 $router->post('/{municipio}/workflow/modelos/{requisito}/enviar',[TenantController::class,'uploadModel'],['auth','tenant','platform_admin']);
@@ -80,6 +89,8 @@ $router->get('/{municipio}/arquivos/modelos/{requisito}',[TenantController::clas
 $router->get('/{municipio}/arquivos/documentos/{documento}',[TenantController::class,'downloadDocument'],['auth','tenant']);
 $router->get('/{municipio}/arquivos/historico/{historico}',[TenantController::class,'downloadHistory'],['auth','tenant']);
 
+$router->post('/{municipio}/cronograma/inicio-formal',[TenantController::class,'registerFormalStart'],['auth','tenant','platform_admin']);
+$router->get('/{municipio}/cronograma/inicio-formal/documento',[TenantController::class,'downloadFormalStart'],['auth','tenant']);
 $router->post('/{municipio}/cronograma/inicio',[TenantController::class,'saveScheduleStart'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/cronograma/fases/{fase}/encerrar',[TenantController::class,'concludePhase'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/cronograma/fases/{fase}/concluir',[TenantController::class,'concludePhase'],['auth','tenant','platform_admin']); // compatibilidade v4.16 e anteriores

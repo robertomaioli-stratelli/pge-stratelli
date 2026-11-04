@@ -5,6 +5,8 @@ $items=$desk['items']??[];$stats=$desk['stats']??[];$isStratelli=($scope??'')===
 $titleDesk=$isStratelli?'Central de Pendências':'Minha Mesa';
 $subtitle=$isStratelli?'Ações que exigem atuação da Stratelli nesta instância e itens que merecem acompanhamento.':'Tudo o que exige sua atuação, organizado por prioridade e respeitando seu escopo de acesso.';
 ?>
+<?php require __DIR__.'/partials/hierarchy_summary.php'; ?>
+
 <div class="module-page workdesk-page">
     <div class="module-hero workdesk-hero">
         <div><h1><?=$titleDesk?></h1><p><?=Format::h($subtitle)?></p></div>

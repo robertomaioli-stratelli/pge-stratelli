@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Core\Database;
 use App\Core\Format;
+use App\Core\PhaseNumber;
 use PDO;
 
 final class MacroDashboardService
@@ -95,20 +96,23 @@ final class MacroDashboardService
         $last=$this->one('SELECT criado_em,evento FROM historico_documentos WHERE municipio_id=? ORDER BY criado_em DESC,id DESC LIMIT 1',[$mid]);
         if(!$last)$last=$this->one('SELECT criado_em,"Cadastro da instância" evento FROM municipios WHERE id=?',[$mid]);
 
+        $inicioFormal=(new FormalStartService())->get($mid);
         $statusDb=(string)($m['status']??'IMPLANTACAO');
         $health='normal';$healthLabel='Normal';$category='andamento';
         if($statusDb==='NEGOCIACAO'){$health='implementation';$healthLabel='Negociação';$category='implantacao';}
         elseif($statusDb==='APRESENTACAO'){$health='implementation';$healthLabel='Apresentação';$category='implantacao';}
-        elseif($statusDb==='IMPLANTACAO'||!$phases){$health='implementation';$healthLabel='Implantação';$category='implantacao';}
+        elseif(($statusDb==='IMPLANTACAO'&&!$inicioFormal)||!$phases){$health='implementation';$healthLabel='Implantação';$category='implantacao';}
         elseif($statusDb==='DESATIVADO'){$health='critical';$healthLabel='Desativado';$category='atencao';}
         elseif($completed===count($phases)&&count($phases)>0){$health='completed';$healthLabel='Concluído';$category='concluido';}
         elseif(($currentDeadline['status']??'')==='overdue'){$health='critical';$healthLabel='Crítico';}
         elseif(in_array(($currentDeadline['status']??''),['attention'],true)||$corrections>0){$health='attention';$healthLabel='Atenção';}
 
+        if(!$inicioFormal && !in_array($statusDb,['SUSPENSO','DESATIVADO'],true)){$health='implementation';$healthLabel='Aguardando início';$category='implantacao';}
         if($statusDb==='SUSPENSO'){$health='critical';$healthLabel='Suspenso';$category='atencao';}
         elseif(in_array($health,['attention','critical'],true))$category='atencao';
 
-        if($faseProntaEncerramento&&$current)$nextAction='Encerrar formalmente a Fase '.(int)$current['ordem'];
+        if(!$inicioFormal)$nextAction='Registrar documento formal de início pela Stratelli';
+        elseif($faseProntaEncerramento&&$current)$nextAction='Encerrar formalmente a Fase '.PhaseNumber::from($current);
         elseif($waiting>0)$nextAction='Validar '.$waiting.' documento'.($waiting===1?' recebido':'s recebidos');
         elseif($corrections>0)$nextAction='Acompanhar '.$corrections.' correção'.($corrections===1?' pendente':'ões pendentes');
         elseif($pending>0)$nextAction='Acompanhar '.$pending.' documento'.($pending===1?' pendente':'s pendentes');
@@ -137,6 +141,7 @@ final class MacroDashboardService
             'saude_rotulo'=>$healthLabel,
             'categoria'=>$category,
             'proxima_acao'=>$nextAction,
+            'inicio_formal_registrado'=>(bool)$inicioFormal,
             'ultima_movimentacao'=>$last['criado_em']??null,
             'ultima_movimentacao_evento'=>$last['evento']??'—',
         ];
@@ -146,7 +151,13 @@ final class MacroDashboardService
     {
         if(!$phases)return [[],0,null];
         $crono=$this->one('SELECT * FROM cronograma_processos WHERE municipio_id=?',[$mid]);
-        $start=(string)($crono['data_inicio']??date('Y-m-d'));
+        $inicioFormal=(new FormalStartService())->get($mid);
+        if (!$inicioFormal) {
+            $schedule=[]; $completed=0; $current=$phases[0]??null;
+            foreach ($phases as $f) $schedule[(int)$f['id']]=['inicio'=>null,'fim'=>null,'conclusao_real'=>null,'status'=>'not-started','rotulo'=>'AGUARDANDO INÍCIO','texto'=>'O prazo ainda não começou. Aguardando documento formal da Stratelli.'];
+            return [$schedule,$completed,$current];
+        }
+        $start=(string)$inicioFormal['data_inicio'];
         $manual=[];foreach($this->all('SELECT * FROM cronograma_fases WHERE municipio_id=?',[$mid]) as $r)$manual[(int)$r['fase_id']]=$r;
         $schedule=[];$prevDeadline=null;$prevConclusion=null;$completed=0;$current=null;
         foreach($phases as $i=>$f){

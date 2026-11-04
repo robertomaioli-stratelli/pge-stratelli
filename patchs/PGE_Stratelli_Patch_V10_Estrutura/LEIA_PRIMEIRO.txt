@@ -1,0 +1,17 @@
+PATCH V10 — SOMENTE ARQUIVOS ALTERADOS
+
+1) FAÇA BACKUP EXTERNO COMPLETO: dump SQL e pasta storage/uploads. Teste restaurar em homologação.
+2) Confirme que a versão atual é V9 com migrações V6/V7/V9 aplicadas e configuração de banco correta.
+3) Substitua no seu projeto APENAS os arquivos presentes neste ZIP, preservando config/database.php e .env.
+4) Na cópia de homologação, importe database/migrations/V10_QUADRO_SINOPTICO_REINICIO.sql.
+5) O SQL está configurado para @v10_slug = 'maringa'. Altere o valor explicitamente caso deseje outro município. Não execute duas vezes.
+6) Faça login como um usuário ativo do município. Abra /maringa/configuracoes?secao=estrutura.
+7) Verifique exatamente: 1 ETAPA, 6 FASES, 24 ATOS, 11 ATIVIDADES. Edite e cadastre cada um; teste usuários comuns com permissão de acesso ao município.
+8) Verifique dashboard, workflow, documentos e relatórios antes de promover à produção. Documentos históricos permanecem, mas requisitos legados ficam inativos.
+
+OBSERVAÇÕES:
+- A limpeza é lógica, não DROP/TRUNCATE. Excluir fisicamente históricos e anexos não é seguro.
+- O script arquiva os processos antigos do município-alvo e cria um processo com uma etapa contendo a planilha.
+- Acesso de cadastro: qualquer usuário autenticado que tenha acesso à instância; usuários de outros municípios não obtêm acesso.
+- Registros de modelos globais continuam restritos ao administrador; esta tela edita registros operacionais do município.
+- Só foram executados testes de sintaxe PHP e conferência dos dados da planilha; banco real e testes do navegador devem ser feitos em homologação.

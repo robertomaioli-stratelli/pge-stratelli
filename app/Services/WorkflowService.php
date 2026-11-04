@@ -31,7 +31,7 @@ final class WorkflowService
         $parametrosInstancia=(new InstanceParameterService())->forMunicipio($mid);
         $secretariaId=(int)($this->user['secretaria_id']??0);
         $departamentoId=(int)($this->user['departamento_id']??0);
-        $fasesTodas=$this->all('SELECT * FROM fases WHERE municipio_id=? ORDER BY ordem,id',[$mid]);
+        $fasesTodas=$this->all('SELECT f.*,e.processo_id AS pge_processo_id,e.numero AS pge_etapa_numero FROM fases f LEFT JOIN pge_etapas_execucao e ON e.id=f.etapa_execucao_id AND e.municipio_id=f.municipio_id WHERE f.municipio_id=? ORDER BY e.processo_id,e.numero,f.ordem,f.id',[$mid]);
         $secretarias=$this->all('SELECT s.*,
             GROUP_CONCAT(CONCAT(f.ordem,": ",f.aba) ORDER BY f.ordem SEPARATOR " • ") fases_vinculadas,
             GROUP_CONCAT(f.id ORDER BY f.ordem) fase_ids
@@ -109,9 +109,9 @@ final class WorkflowService
         if(!$faseGlobalAtual&&$fasesTodas){$ativos=array_values(array_filter($fasesTodas,fn($f)=>(int)$f['ativo']===1));if($ativos){$faseGlobalAtual=end($ativos);$faseGlobalAtualStatus='done';}}
 
         // Controle de acesso sequencial: uma fase só é liberada quando TODAS as anteriores estiverem formalmente encerradas.
-        $faseAcesso=[];$anterioresConcluidas=true;$idsVisiveis=array_map(fn($f)=>(int)$f['id'],$fasesVisiveis);
+        $faseAcesso=[];$anterioresConcluidas=true;$processoAcessoAnterior=null;$idsVisiveis=array_map(fn($f)=>(int)$f['id'],$fasesVisiveis);
         foreach(array_values(array_filter($fasesTodas,fn($f)=>(int)$f['ativo']===1)) as $f){
-            $fid=(int)$f['id'];$visivel=in_array($fid,$idsVisiveis,true);$pode=$this->scope==='stratelli'?true:($visivel&&$anterioresConcluidas);
+            $fid=(int)$f['id'];$processoAtual=(int)($f['pge_processo_id']??0);if($processoAcessoAnterior!==null && $processoAtual!==$processoAcessoAnterior)$anterioresConcluidas=true;$processoAcessoAnterior=$processoAtual;$visivel=in_array($fid,$idsVisiveis,true);$pode=$this->scope==='stratelli'?true:($visivel&&$anterioresConcluidas);
             $motivo='';
             if(!$visivel)$motivo=$this->scope==='secretaria'?'Fase sem documentos atribuídos à sua unidade.':'Fase indisponível para este perfil.';
             elseif(!$pode)$motivo='A fase anterior ainda não foi encerrada formalmente pela Stratelli.';
@@ -240,14 +240,21 @@ final class WorkflowService
     private function buildSchedule(array $phases,array $requirements,array $latest): array
     {
         $mid=$this->municipioId;
-        $crono=$this->one('SELECT * FROM cronograma_processos WHERE municipio_id=?',[$mid]);
-        if(!$crono){$this->pdo->prepare('INSERT INTO cronograma_processos(municipio_id,data_inicio,criado_em,atualizado_em) VALUES(?,CURDATE(),NOW(),NOW())')->execute([$mid]);$crono=$this->one('SELECT * FROM cronograma_processos WHERE municipio_id=?',[$mid]);}
-        $start=(string)($crono['data_inicio']??date('Y-m-d'));$today=date('Y-m-d');
+        $inicioFormal=(new FormalStartService())->get($mid);
+        $start=$inicioFormal ? (string)$inicioFormal['data_inicio'] : '';
+        $today=date('Y-m-d');
+        if (!$inicioFormal) {
+            $schedule=[];
+            foreach (array_values(array_filter($phases,fn($f)=>(int)$f['ativo']===1)) as $f) {
+                $schedule[(int)$f['id']]=['fase_id'=>(int)$f['id'],'duracao'=>0,'inicio'=>null,'fim'=>null,'conclusao_real'=>null,'bloqueada'=>true,'status'=>'not-started','rotulo'=>'AGUARDANDO INÍCIO','texto'=>'A contagem somente começa após o documento formal de início da Stratelli.','dias_restantes'=>null,'dias_desvio'=>0,'percentual_tempo'=>0,'provisorio'=>true,'registro_manual'=>null];
+            }
+            return ['', $schedule, 0, 90, 0.0];
+        }
         $manual=[];foreach($this->all('SELECT * FROM cronograma_fases WHERE municipio_id=?',[$mid]) as $r)$manual[(int)$r['fase_id']]=$r;
-        $schedule=[];$prevDeadline=null;$prevConclusion=null;$attentionDays=(new InstanceParameterService())->deadlineAlertDays($mid);
+        $schedule=[];$prevDeadline=null;$prevConclusion=null;$prevProcesso=null;$attentionDays=(new InstanceParameterService())->deadlineAlertDays($mid);
         foreach(array_values(array_filter($phases,fn($f)=>(int)$f['ativo']===1)) as $i=>$f){
-            $duration=max(1,(int)$f['dia_fim']-(int)$f['dia_inicio']+1);$m=$manual[(int)$f['id']]??null;$closed=$m&&strtoupper((string)($m['status']??'ENCERRADA'))==='ENCERRADA';$real=$closed?($m['data_conclusao_real']??null):null;
-            if($i===0){$phaseStart=$start;$blocked=false;}elseif($prevConclusion){$phaseStart=$this->addDays($prevConclusion,1);$blocked=false;}else{$phaseStart=$this->addDays((string)$prevDeadline,1);$blocked=true;}
+            $processoAtual=(int)($f['pge_processo_id']??0);if($prevProcesso!==null && $processoAtual!==$prevProcesso){$prevDeadline=null;$prevConclusion=null;}$primeiraFase=$prevDeadline===null;$prevProcesso=$processoAtual;$duration=max(1,(int)$f['dia_fim']-(int)$f['dia_inicio']+1);$m=$manual[(int)$f['id']]??null;$closed=$m&&strtoupper((string)($m['status']??'ENCERRADA'))==='ENCERRADA';$real=$closed?($m['data_conclusao_real']??null):null;
+            if($primeiraFase){$phaseStart=$start;$blocked=false;}elseif($prevConclusion){$phaseStart=$this->addDays($prevConclusion,1);$blocked=false;}else{$phaseStart=$this->addDays((string)$prevDeadline,1);$blocked=true;}
             $end=$this->addDays($phaseStart,$duration-1);$daysRemaining=$this->days($today,$end);$deviation=$real?$this->days($end,$real):0;$attention=$attentionDays;
             if($real)$status=$deviation>0?'completed-late':'completed-on-time';elseif($blocked)$status='blocked';elseif($today<$phaseStart)$status='scheduled';elseif($daysRemaining<0)$status='overdue';elseif($daysRemaining<=$attention)$status='attention';else$status='on-track';
             $label=match($status){'completed-on-time'=>'ENCERRADA NO PRAZO','completed-late'=>'ENCERRADA COM ATRASO','overdue'=>'ATRASADA','attention'=>'ATENÇÃO AO PRAZO','on-track'=>'NO PRAZO','scheduled'=>'AGENDADA',default=>'AGUARDANDO FASE ANTERIOR'};

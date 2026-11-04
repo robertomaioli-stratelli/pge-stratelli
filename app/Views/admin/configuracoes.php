@@ -34,9 +34,14 @@
             <a class="btn primary" href="/<?=Format::h($slug)?>/configuracoes?secao=parametros">Abrir configurações</a>
         </div>
 
+        <section class="card" style="margin:14px 0;padding:16px;border-left:4px solid #375d8b">
+            <h2>Estrutura hierárquica do processo</h2>
+            <p>Cadastre e edite o modelo completo na sequência: <strong>Etapa → Fase → Ato → Atividade</strong>. Este catálogo define a estrutura que será instanciada para cada município.</p>
+            <a class="btn primary" href="/admin/modelos-processos">Configurar Etapas, Fases, Atos e Atividades</a>
+        </section>
         <nav class="config-tabs admin-config-tabs">
             <a href="/<?=Format::h($slug)?>/configuracoes?secao=parametros"><strong>1. Parâmetros da Instância</strong><span>Regras operacionais, módulos, etapa e identidade</span></a>
-            <a href="/<?=Format::h($slug)?>/configuracoes?secao=fases"><strong>2. Fases</strong><span><?=$stats['fases']?> cadastrada(s)</span></a>
+            <a href="/<?=Format::h($slug)?>/configuracoes?secao=estrutura"><strong>2. Etapas, Fases, Atos e Atividades</strong><span><?=$stats['fases']?> cadastrada(s)</span></a>
             <a href="/<?=Format::h($slug)?>/configuracoes?secao=secretarias"><strong>3. Secretarias e Departamentos</strong><span><?=$stats['secretarias']?> secretaria(s) · <?=$stats['departamentos']?> departamento(s)</span></a>
             <a href="/<?=Format::h($slug)?>/configuracoes?secao=tipos"><strong>4. Tipos de Documento</strong><span><?=$stats['tipos']?> tipo(s) cadastrado(s)</span></a>
             <a href="/<?=Format::h($slug)?>/configuracoes?secao=documentos"><strong>5. Documentos e Modelos</strong><span><?=$stats['documentos']?> documento(s) · <?=$stats['modelos']?> com modelo</span></a>
@@ -45,7 +50,7 @@
 
         <div class="admin-config-info-grid">
             <article><span class="admin-config-step">1</span><div><b>Parâmetros da Instância</b><p>Centralize alertas, limites de arquivo, notificações, observações obrigatórias, etapa atual e identidade visual.</p></div></article>
-            <article><span class="admin-config-step">2</span><div><b>Fases</b><p>Cadastre novas fases, ordem, prazo, responsável e entregáveis do processo.</p></div></article>
+            <article><span class="admin-config-step">2</span><div><b>Fases legadas</b><p>Cadastre os níveis operacionais do município e vincule documentos às respectivas atividades.</p></div></article>
             <article><span class="admin-config-step">3</span><div><b>Secretarias e Departamentos</b><p>Monte a estrutura administrativa e defina em quais fases cada unidade participa.</p></div></article>
             <article><span class="admin-config-step">4</span><div><b>Tipos de Documento</b><p>Defina categorias documentais e extensões de arquivos permitidas.</p></div></article>
             <article><span class="admin-config-step">5</span><div><b>Documentos e Modelos</b><p>Vincule cada documento à fase, secretaria, departamento, tipo, perfil de envio e modelo.</p></div></article>

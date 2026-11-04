@@ -1,0 +1,9 @@
+PGE V9 - DIAGNOSTICO DE ERRO 500
+
+1. Salve copia de public/index.php atual.
+2. Substitua APENAS public/index.php pelo arquivo deste pacote.
+3. Reinicie Apache e abra http://plataforma.local/ .
+4. Consulte C:\xampp\apache\logs\error.log e procure [PGE incidente XXXXX].
+5. Compartilhe a excecao, arquivo e linha, ocultando dados sensiveis.
+
+Nao altere SQL, .env, senhas ou tabelas com este patch.

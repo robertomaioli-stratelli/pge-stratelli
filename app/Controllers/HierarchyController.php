@@ -1,0 +1,9 @@
+<?php
+namespace App\Controllers;
+use App\Core\Csrf;use App\Core\Response;use App\Core\Session;use App\Core\Tenant;use App\Core\View;use App\Services\OperationalHierarchyService;use App\Services\WorkflowService;
+final class HierarchyController {
+ public function index(string $municipio):void { $service=new OperationalHierarchyService();$tree=$service->tree();$modelos=$service->modelos();$workflow=(new WorkflowService())->load();View::render('tenant/hierarquia',array_merge($workflow,['arvoreOperacional'=>$tree,'modelosOperacionais'=>$modelos,'title'=>'Processos • Etapas • Fases • Atos • Atividades','tenant'=>Tenant::current()])); }
+ public function save(string $municipio):void {$this->post(function($service){$kind=(string)($_POST['tipo']??'');if($kind==='instanciar')$service->instantiateModel((int)($_POST['modelo_id']??0),(string)($_POST['titulo']??''));elseif($kind==='processo')$service->createProcess((string)($_POST['titulo']??''));elseif($kind==='etapa')$service->createEtapa((int)($_POST['processo_id']??0),(string)($_POST['titulo']??''));elseif($kind==='fase')$service->assignFase((int)($_POST['fase_id']??0),(int)($_POST['etapa_id']??0));elseif($kind==='atividade')$service->saveAtividade($_POST);elseif($kind==='documento')$service->assignRequirement((int)($_POST['requisito_id']??0),((int)($_POST['atividade_ato_id']??0))?:null);else throw new \RuntimeException('Tipo inválido.');});}
+ public function status(string $municipio,string $id):void {$this->post(fn($s)=>$s->setAtividadeStatus((int)$id,(string)($_POST['status']??'')==='CONCLUIDA'));}
+ private function post(callable $fn):void {if(!Csrf::validate($_POST['_token']??null)){Response::abort(419,'Sessão expirada.');return;}try{$fn(new OperationalHierarchyService());Session::flash('ok','Hierarquia atualizada.');}catch(\Throwable $e){Session::flash('erro',$e->getMessage());}Response::redirect('/'.Tenant::current()['slug'].'/hierarquia');}
+}

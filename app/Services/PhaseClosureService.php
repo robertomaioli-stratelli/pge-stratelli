@@ -37,7 +37,7 @@ final class PhaseClosureService
     {
         $phase=$this->phase($phaseId);$docs=$this->phaseDocuments($phaseId,true);
         $st=$this->pdo->prepare('SELECT * FROM atividades_fase WHERE municipio_id=? AND fase_id=? AND ativo=1 ORDER BY ordem,id');$st->execute([$this->mid,$phaseId]);$activities=$st->fetchAll(PDO::FETCH_ASSOC);
-        if($activities){$latest=[];foreach($docs as$d){if(!empty($d['requisito_id']))$latest[(int)$d['requisito_id']]=['status'=>$d['documento_status']??null];}$req=[];foreach($docs as$d)$req[]=['id'=>(int)$d['requisito_id'],'atividade_id'=>(int)($d['atividade_id']??0),'ativo'=>1,'obrigatorio'=>(int)$d['obrigatorio']];$metrics=(new ActivityProgressService())->metrics($activities,$req,$latest);$total=count($activities);$completed=count(array_filter($activities,fn($a)=>!empty($metrics[(int)$a['id']]['concluida'])));$eligible=$total>0&&$completed===$total;return ['phase'=>$phase,'total'=>$total,'approved'=>$completed,'waiting'=>$total-$completed,'correction'=>0,'missing'=>$total-$completed,'eligible'=>$eligible,'unit'=>'atividades'];}
+        if($activities){$latest=[];foreach($docs as$d){if(!empty($d['requisito_id']))$latest[(int)$d['requisito_id']]=['status'=>$d['documento_status']??null];}$req=[];foreach($docs as$d)$req[]=['id'=>(int)$d['requisito_id'],'atividade_id'=>(int)($d['atividade_id']??0),'atividade_ato_id'=>(int)($d['atividade_ato_id']??0),'ativo'=>1,'obrigatorio'=>(int)$d['obrigatorio']];$metrics=(new ActivityProgressService())->metrics($activities,$req,$latest);$total=count($activities);$completed=count(array_filter($activities,fn($a)=>!empty($metrics[(int)$a['id']]['concluida'])));$eligible=$total>0&&$completed===$total;return ['phase'=>$phase,'total'=>$total,'approved'=>$completed,'waiting'=>$total-$completed,'correction'=>0,'missing'=>$total-$completed,'eligible'=>$eligible,'unit'=>'atividades'];}
         $total=count($docs);$approved=0;$waiting=0;$correction=0;$missing=0;foreach($docs as$d){$status=(string)($d['documento_status']??'');if($status==='APROVADO')$approved++;elseif($status==='AGUARDANDO')$waiting++;elseif($status==='CORRECAO')$correction++;else$missing++;}$eligible=$total===0||$approved===$total;return compact('phase','total','approved','waiting','correction','missing','eligible')+['unit'=>'documentos'];
     }
     public function current(int $phaseId): ?array
@@ -62,6 +62,7 @@ final class PhaseClosureService
     public function close(int $phaseId,string $date,string $observation): int
     {
         if(!Auth::isPlatformAdmin())throw new RuntimeException('Apenas a Stratelli pode encerrar formalmente uma fase.');
+        if (!(new FormalStartService())->get($this->mid)) throw new RuntimeException('A fase só poderá ser encerrada após o documento formal de início.');
         (new EtapaArchiveService())->assertOpen();
         if(!$this->validDate($date))throw new RuntimeException('Informe uma data de encerramento válida.');
         if($date>date('Y-m-d'))throw new RuntimeException('A data de encerramento não pode estar no futuro.');
@@ -157,7 +158,7 @@ final class PhaseClosureService
 
     private function phaseDocuments(int $phaseId,bool $mandatoryOnly): array
     {
-        $sql='SELECT r.id requisito_id,r.atividade_id,r.nome requisito_nome,r.descricao requisito_descricao,r.ordem requisito_ordem,r.obrigatorio,r.perfil_envio,s.nome secretaria_nome,dpt.nome departamento_nome,t.nome tipo_nome,
+        $sql='SELECT r.id requisito_id,r.atividade_id,r.atividade_ato_id,r.nome requisito_nome,r.descricao requisito_descricao,r.ordem requisito_ordem,r.obrigatorio,r.perfil_envio,s.nome secretaria_nome,dpt.nome departamento_nome,t.nome tipo_nome,
             mdl.id modelo_id,mdl.versao modelo_versao,mdl.arquivo_original modelo_arquivo_original,mdl.arquivo_salvo modelo_arquivo_salvo,mdl.checksum_sha256 modelo_checksum_sha256,mdl.mime_type modelo_mime_type,mdl.tamanho modelo_tamanho,mdl.criado_em modelo_criado_em,
             doc.id documento_id,doc.versao documento_versao,doc.arquivo_original,doc.arquivo_salvo documento_arquivo_salvo,doc.status documento_status,doc.checksum_sha256,doc.mime_type,doc.tamanho,doc.enviado_em,doc.validado_em,ue.nome enviado_por_nome,uv.nome validado_por_nome
             FROM requisitos_documentais r
@@ -171,17 +172,34 @@ final class PhaseClosureService
         $st=$this->pdo->prepare($sql);$st->execute([$this->mid,$phaseId]);return$st->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    private function previousPhase(array $phase,bool $onlyUnclosed): ?array
+    {
+        $stage=(int)($phase['etapa_execucao_id']??0);
+        if($stage){
+            $sql='SELECT f.ordem,f.aba,c.data_conclusao_real FROM fases f
+                JOIN pge_etapas_execucao e ON e.id=f.etapa_execucao_id AND e.municipio_id=f.municipio_id
+                JOIN pge_etapas_execucao atual ON atual.id=? AND atual.municipio_id=f.municipio_id
+                LEFT JOIN cronograma_fases c ON c.fase_id=f.id AND c.municipio_id=f.municipio_id AND c.status="ENCERRADA"
+                WHERE f.municipio_id=? AND f.ativo=1 AND e.processo_id=atual.processo_id
+                AND (e.numero<atual.numero OR (e.numero=atual.numero AND f.ordem<?))';
+            $sql.=$onlyUnclosed?' AND c.id IS NULL ORDER BY e.numero,f.ordem LIMIT 1':' AND c.id IS NOT NULL ORDER BY e.numero DESC,f.ordem DESC LIMIT 1';
+            $q=$this->pdo->prepare($sql);$q->execute([$stage,$this->mid,(int)$phase['ordem']]);return $q->fetch(PDO::FETCH_ASSOC)?:null;
+        }
+        // Compatibilidade com documentos e atos históricos sem etapa vinculada.
+        $sql='SELECT f.ordem,f.aba,c.data_conclusao_real FROM fases f LEFT JOIN cronograma_fases c ON c.fase_id=f.id AND c.municipio_id=f.municipio_id AND c.status="ENCERRADA" WHERE f.municipio_id=? AND f.ativo=1 AND f.ordem<?';
+        $sql.=$onlyUnclosed?' AND c.id IS NULL ORDER BY f.ordem LIMIT 1':' AND c.id IS NOT NULL ORDER BY f.ordem DESC LIMIT 1';
+        $q=$this->pdo->prepare($sql);$q->execute([$this->mid,(int)$phase['ordem']]);return $q->fetch(PDO::FETCH_ASSOC)?:null;
+    }
+
     private function assertPreviousPhasesClosed(array $phase): void
     {
-        $st=$this->pdo->prepare('SELECT f.ordem,f.aba FROM fases f LEFT JOIN cronograma_fases c ON c.fase_id=f.id AND c.municipio_id=f.municipio_id AND c.status="ENCERRADA" WHERE f.municipio_id=? AND f.ativo=1 AND f.ordem<? AND c.id IS NULL ORDER BY f.ordem LIMIT 1');
-        $st->execute([$this->mid,(int)$phase['ordem']]);$missing=$st->fetch(PDO::FETCH_ASSOC);
+        $missing=$this->previousPhase($phase,true);
         if($missing)throw new RuntimeException('A Fase '.$missing['ordem'].' — '.$missing['aba'].' precisa ser encerrada formalmente antes desta fase.');
     }
 
     private function assertClosureDate(array $phase,string $date): void
     {
-        $st=$this->pdo->prepare('SELECT f.ordem,c.data_conclusao_real FROM fases f JOIN cronograma_fases c ON c.fase_id=f.id AND c.municipio_id=f.municipio_id AND c.status="ENCERRADA" WHERE f.municipio_id=? AND f.ativo=1 AND f.ordem<? ORDER BY f.ordem DESC LIMIT 1');
-        $st->execute([$this->mid,(int)$phase['ordem']]);$prev=$st->fetch(PDO::FETCH_ASSOC);
+        $prev=$this->previousPhase($phase,false);
         if($prev){$min=(new \DateTimeImmutable((string)$prev['data_conclusao_real']))->modify('+1 day')->format('Y-m-d');}
         else{$q=$this->pdo->prepare('SELECT data_inicio FROM cronograma_processos WHERE municipio_id=?');$q->execute([$this->mid]);$min=(string)($q->fetchColumn()?:date('Y-m-d'));}
         if($date<$min)throw new RuntimeException('A data de encerramento não pode ser anterior ao início operacional da fase ('.$min.').');

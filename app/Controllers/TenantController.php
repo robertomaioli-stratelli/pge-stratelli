@@ -224,11 +224,15 @@ final class TenantController
     public function configuracoes(string $municipio): void
     {
         $data=(new WorkflowService())->load();$pdo=Database::connection();$mid=(int)Tenant::id();
-        $section=(string)($_GET['secao']??'fases');
-        $data['secao']=in_array($section,['parametros','fases','secretarias','tipos','documentos','importacao'],true)?$section:'fases';
+        $section=(string)($_GET['secao']??'estrutura');
+        $data['secao']=in_array($section,['parametros','estrutura','secretarias','tipos','documentos','importacao'],true)?$section:'estrutura';
+        if(!Auth::isPlatformAdmin() && $data['secao']!=='estrutura'){$data['secao']='estrutura';}
         $data['parametrosInstancia']=(new \App\Services\InstanceParameterService())->forMunicipio($mid,true);
+        if($data['secao']==='estrutura'){$data['arvoreOperacional']=(new \App\Services\OperationalHierarchyService())->tree();$data['modelosOperacionais']=(new \App\Services\OperationalHierarchyService())->modelos();}
+        $st=$pdo->prepare('SELECT e.id,e.numero,e.nome,p.titulo processo_titulo FROM pge_etapas_execucao e JOIN pge_processos_execucao p ON p.id=e.processo_id WHERE e.municipio_id=? ORDER BY p.id,e.numero');$st->execute([$mid]);$data['etapasExecucao']=$st->fetchAll();
         $data['atividadesFase']=$pdo->prepare('SELECT a.*,f.ordem AS fase_ordem,f.aba AS fase_aba,f.titulo AS fase_titulo FROM atividades_fase a JOIN fases f ON f.id=a.fase_id AND f.municipio_id=a.municipio_id WHERE a.municipio_id=? ORDER BY f.ordem,a.ordem,a.id');
         $data['atividadesFase']->execute([$mid]);$data['atividadesFase']=$data['atividadesFase']->fetchAll();
+        $st=$pdo->prepare('SELECT id,ato_legado_id,titulo,codigo FROM pge_atividades_ato WHERE municipio_id=? AND ativo=1 ORDER BY ordem,id');$st->execute([$mid]);$data['atividadesAto']=$st->fetchAll();
         $data['editarAtividade']=null;$atividadeEdit=(int)($_GET['editar_atividade']??0);
         if($atividadeEdit){$st=$pdo->prepare('SELECT * FROM atividades_fase WHERE id=? AND municipio_id=?');$st->execute([$atividadeEdit,$mid]);$data['editarAtividade']=$st->fetch()?:null;}
         foreach(['fase','secretaria','departamento','tipo','requisito'] as $entity){
@@ -274,15 +278,36 @@ final class TenantController
     public function downloadDocument(string $municipio,string $documento): void {(new DocumentService())->downloadDocument((int)$documento);}
     public function downloadHistory(string $municipio,string $historico): void {(new DocumentService())->downloadHistory((int)$historico);}
 
+    public function registerFormalStart(string $municipio): void
+    {
+        $this->csrf();
+        if (!Auth::isPlatformAdmin()) Response::abort(403, 'Apenas a Stratelli pode registrar o início formal.');
+        try {
+            (new \App\Services\FormalStartService())->register((int)Tenant::id(),(string)($_POST['data_inicio']??''),(string)($_POST['referencia']??''),(string)($_POST['observacao']??''));
+            Session::flash('ok', 'Documento formal registrado. A contagem de prazos foi iniciada.');
+        } catch (\Throwable $e) {
+            Session::flash('erro', $e->getMessage());
+        }
+        Response::redirect('/'.Tenant::current()['slug'].'/workflow');
+    }
+
+    public function downloadFormalStart(string $municipio): void
+    {
+        try {(new \App\Services\FormalStartService())->download((int)Tenant::id());}
+        catch (\Throwable $e) {Session::flash('erro',$e->getMessage());Response::redirect('/'.Tenant::current()['slug'].'/workflow');}
+    }
+
     public function saveScheduleStart(string $municipio): void
     {
-        $this->csrf();if(!Auth::isPlatformAdmin())Response::abort(403,'Apenas a Stratelli pode recalcular o cronograma.');(new EtapaArchiveService())->assertOpen();$date=(string)($_POST['data_inicio']??'');if(!$this->validDate($date)){Session::flash('erro','Informe uma data válida.');$this->backToWorkflow();}
-        $pdo=Database::connection();$st=$pdo->prepare('SELECT COUNT(*) FROM cronograma_fases WHERE municipio_id=? AND status="ENCERRADA"');$st->execute([Tenant::id()]);if((int)$st->fetchColumn()>0){Session::flash('erro','O marco inicial não pode ser alterado enquanto existirem fases formalmente encerradas. Reabra as fases encerradas antes de recalcular o cronograma.');$this->backToWorkflow();}$pdo->prepare('INSERT INTO cronograma_processos(municipio_id,data_inicio,criado_em,atualizado_em) VALUES(?,?,NOW(),NOW()) ON DUPLICATE KEY UPDATE data_inicio=VALUES(data_inicio),atualizado_em=NOW()')->execute([Tenant::id(),$date]);Audit::log('CRONOGRAMA_ATUALIZADO','Marco inicial alterado para '.$date,(int)Tenant::id(),['categoria'=>'ADMINISTRACAO','severidade'=>'ATENCAO']);Session::flash('ok','Marco inicial atualizado e prazos recalculados.');$this->backToWorkflow();
+        $this->csrf();
+        Session::flash('erro','A atualização manual do marco foi desativada. Envie o documento formal de início na tela de Workflow.');
+        Response::redirect('/'.Tenant::current()['slug'].'/workflow');
     }
 
     public function concludePhase(string $municipio,string $fase): void
     {
         $this->csrf();if(!Auth::isPlatformAdmin())Response::abort(403,'Apenas a Stratelli pode encerrar formalmente fases.');
+        if (!(new \App\Services\FormalStartService())->get((int)Tenant::id())) {Session::flash('erro','Não é possível encerrar fases antes do documento formal de início.');$this->backToWorkflow();}
         try{
             (new PhaseClosureService())->close((int)$fase,(string)($_POST['data_conclusao']??''),(string)($_POST['observacao']??''));
             Session::flash('ok','Fase encerrada formalmente. O snapshot documental foi preservado e a próxima fase foi recalculada.');
@@ -419,6 +444,7 @@ final class TenantController
 
     private function base(array $data,string $title): array
     {
+        if(!isset($data['arvoreOperacional']) && Auth::isPlatformAdmin())$data['arvoreOperacional']=(new \App\Services\OperationalHierarchyService())->tree();
         return $data+['tenant'=>Tenant::current(),'territorialEnabled'=>$this->territorialEnabledForCurrentUser(),'etapaArquivamento'=>(new EtapaArchiveService())->status(),'title'=>$title,'erro'=>Session::pullFlash('erro'),'ok'=>Session::pullFlash('ok')];
     }
     private function territorialEnabledForCurrentUser(): bool

@@ -1,9 +1,44 @@
 <?php
-use App\Core\Format;use App\Core\Csrf;
+use App\Core\Format;use App\Core\Csrf;use App\Core\PhaseNumber;
 $previewMode=$previewMode??'workflow';$slug=$tenant['slug'];
+$previewFormalmenteIniciado=(new \App\Services\FormalStartService())->get((int)$tenant['id'])!==null;
 // v4.17.1: utiliza sempre as fases situacionais, pois elas carregam o estado documental calculado
 // (ready/run/correction/done). A lista bruta de fases fazia o Workflow exibir PENDENTE mesmo com 100% aprovado.
 $phaseList=$fasesSituacionais;
+// V19: filhos operacionais dos atos, limitados ao município e aos atos visíveis.
+$workflowFilhas=[];
+try {
+    $workflowAtoIds=array_values(array_unique(array_map('intval',array_column(($atividadesVisiveis??[]),'id'))));
+    if($workflowAtoIds){
+        $workflowDb=\App\Core\Database::connection();
+        $workflowIn=implode(',',array_fill(0,count($workflowAtoIds),'?'));
+        $workflowStmt=$workflowDb->prepare('SELECT id,ato_legado_id,ordem,codigo,titulo,status_execucao FROM pge_atividades_ato WHERE municipio_id=? AND ativo=1 AND ato_legado_id IN ('.$workflowIn.') ORDER BY ato_legado_id,ordem,id');
+        $workflowStmt->execute(array_merge([(int)$tenant['id']],$workflowAtoIds));
+        foreach($workflowStmt->fetchAll(\PDO::FETCH_ASSOC) as $workflowChild){
+            $workflowFilhas[(int)$workflowChild['ato_legado_id']][]=$workflowChild;
+        }
+    }
+} catch (\Throwable $e) {
+    // Apenas a visualização: o Workflow deve continuar acessível se os filhos falharem.
+    error_log('[PGE Workflow V19] Consulta de atividades filhas: '.$e->getMessage());
+}
+$workflowNumeroAto=static function(array $ato, int $faseNumero):string{
+    foreach([(string)($ato['codigo']??''),(string)($ato['titulo']??'')] as $origem){
+        if(preg_match('/(?:^|[^0-9])([0-9]+\.[0-9]+)(?:\.|\b)/u',$origem,$m))return $m[1];
+    }
+    return $faseNumero.'.'.(int)($ato['ordem']??0);
+};
+$workflowNumeroAtividade=static function(array $filha,string $codigoAto):string{
+    foreach([(string)($filha['codigo']??''),(string)($filha['titulo']??'')] as $origem){
+        if(preg_match('/(?:^|[^0-9])([0-9]+\.[0-9]+\.[0-9]+)(?:\.|\b)/u',$origem,$m))return $m[1];
+    }
+    return $codigoAto.'.'.(int)($filha['ordem']??0);
+};
+$workflowSemPrefixo=static function(string $titulo,string $codigo):string{
+    $codigo=preg_quote($codigo,'/');
+    $limpo=preg_replace('/^\s*'.$codigo.'\s*[.\-–:]?\s*/u','',$titulo);
+    return trim((string)$limpo)?:$titulo;
+};
 $icons=['▣','▤','✎','⌕','☷','⚖','◎','◇','✓','§'];
 $obsEncerramentoObrigatoria=!empty(($parametrosInstancia??[])['observacao_encerramento_obrigatoria']);
 $viewedPhaseId=0;
@@ -20,7 +55,7 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
       <span class="process-phase-nav-label">Navegar pelas fases</span>
       <div class="process-phase-nav-actions">
         <button type="button" class="process-nav-btn prev" aria-label="Ver fases anteriores" title="Voltar uma fase">‹</button>
-        <span class="process-phase-nav-position" aria-live="polite">Fase <?=Format::h($phaseList[0]['ordem']??0)?></span>
+        <span class="process-phase-nav-position" aria-live="polite">Fase <?=Format::h(PhaseNumber::from($phaseList[0]))?></span>
         <button type="button" class="process-nav-btn next" aria-label="Ver próximas fases" title="Avançar uma fase">›</button>
       </div>
     </div><?php endif;?>
@@ -28,16 +63,42 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
 </div>
 <?php if($phaseList):?>
 <div class="contract-preview-scroll"><div class="contract-preview-flow" style="--phase-count:<?=count($phaseList)?>">
-<?php foreach($phaseList as $idx=>$f):$deadline=$cronogramaPorFase[(int)$f['id']]??null;$globalStatus=$f['status_situacional']??(!empty($deadline['conclusao_real'])?'done':'pending');$isCurrent=(int)($faseSituacional['id']??0)===(int)$f['id'];$isViewed=$viewedPhaseId===(int)$f['id'];$class=($globalStatus==='done'?'completed':($isCurrent?'current':'upcoming'));if(($deadline['status']??'')==='overdue')$class='overdue';elseif(($deadline['status']??'')==='attention'&&$isCurrent)$class='attention';$stageClass=trim($class.($isViewed?' is-viewed':''));$dateLabel=Format::date($deadline['inicio']??null).' — '.Format::date($deadline['fim']??null);$reqs=array_values(array_filter($requisitosVisiveis,fn($r)=>(int)$r['fase_id']===(int)$f['id']));$a=$w=$c=$p=0;foreach($reqs as$r){$d=$ultimosDocs[(int)$r['id']]??null;if(!$d)$p++;elseif($d['status']==='APROVADO')$a++;elseif($d['status']==='CORRECAO')$c++;else$w++;}$tot=count($reqs);$phaseActs=array_values(array_filter(($atividadesVisiveis??[]),fn($x)=>(int)$x['fase_id']===(int)$f['id']));$phaseActMetric=$faseMetricasAtividades[(int)$f['id']]??['total'=>0,'concluidas'=>0,'percentual'=>0];$pct=$phaseActMetric['total']?(int)$phaseActMetric['percentual']:($tot?round($a/$tot*100):0);$access=$faseAcesso[(int)$f['id']]??['pode_acessar'=>true,'motivo'=>''];$canOpen=(bool)($access['pode_acessar']??false);$tag=$globalStatus==='done'?'ENCERRADA':($globalStatus==='ready'?'PRONTA PARA ENCERRAMENTO':($globalStatus==='correction'?'CORREÇÃO SOLICITADA':($globalStatus==='run'?'EM ANDAMENTO':'PENDENTE')));$url='/'.rawurlencode($slug).'/workflow/fase/'.(int)$f['id'];?>
-<div class="contract-preview-stage <?=Format::h($stageClass)?>" data-phase-order="<?=Format::h($f['ordem'])?>" <?=$isCurrent?'aria-current="step"':''?> <?=$isViewed?'data-viewing="true"':''?>>
-<div class="contract-preview-number"><?=Format::h($f['ordem'])?></div>
+<?php foreach($phaseList as $idx=>$f):$deadline=$cronogramaPorFase[(int)$f['id']]??null;$globalStatus=$f['status_situacional']??(!empty($deadline['conclusao_real'])?'done':'pending');$isCurrent=(int)($faseSituacional['id']??0)===(int)$f['id'];$isViewed=$viewedPhaseId===(int)$f['id'];$class=$globalStatus==='done'?'completed':($isCurrent?'current':'upcoming');if($class!=='completed'&&$isCurrent&&($deadline['status']??'')==='overdue')$class='overdue';if (!$previewFormalmenteIniciado) $class='upcoming';$stageClass=trim($class.($isViewed?' is-viewed':''));$dateLabel=$previewFormalmenteIniciado ? (Format::date($deadline['inicio']??null).' — '.Format::date($deadline['fim']??null)) : 'AGUARDANDO INÍCIO FORMAL';$reqs=array_values(array_filter($requisitosVisiveis,fn($r)=>(int)$r['fase_id']===(int)$f['id']));$a=$w=$c=$p=0;foreach($reqs as$r){$d=$ultimosDocs[(int)$r['id']]??null;if(!$d)$p++;elseif($d['status']==='APROVADO')$a++;elseif($d['status']==='CORRECAO')$c++;else$w++;}$tot=count($reqs);$phaseActs=array_values(array_filter(($atividadesVisiveis??[]),fn($x)=>(int)$x['fase_id']===(int)$f['id']));$phaseActMetric=$faseMetricasAtividades[(int)$f['id']]??['total'=>0,'concluidas'=>0,'percentual'=>0];$pct=$phaseActMetric['total']?(int)$phaseActMetric['percentual']:($tot?round($a/$tot*100):0);$access=$faseAcesso[(int)$f['id']]??['pode_acessar'=>true,'motivo'=>''];$canOpen=(bool)($access['pode_acessar']??false);$tag=$globalStatus==='done'?'ENCERRADA':($globalStatus==='ready'?'PRONTA PARA ENCERRAMENTO':($globalStatus==='correction'?'CORREÇÃO SOLICITADA':($globalStatus==='run'?'EM ANDAMENTO':'PENDENTE')));$url='/'.rawurlencode($slug).'/workflow/fase/'.(int)$f['id'];?>
+<div class="contract-preview-stage <?=Format::h($stageClass)?>" data-phase-order="<?=Format::h(PhaseNumber::from($f))?>" <?=$isCurrent?'aria-current="step"':''?> <?=$isViewed?'data-viewing="true"':''?>>
+<div class="contract-preview-number"><?=Format::h(PhaseNumber::from($f))?></div>
 <?php if($canOpen):?><a class="contract-preview-card production-stage-link" href="<?=Format::h($url)?>"><?php else:?><div class="contract-preview-card production-stage-locked" title="<?=Format::h($access['motivo']??'Fase bloqueada')?>"><?php endif;?>
 <div class="contract-preview-date"><?=Format::h($dateLabel)?></div><div class="contract-preview-body"><div class="contract-preview-icon"><?=Format::h($icons[$idx%count($icons)])?></div><strong><?=Format::h($f['titulo'])?></strong><small><?=$tag?> · <?=Format::h($deadline['rotulo']??'AGUARDANDO')?></small></div><div class="contract-preview-duration"><?php if(!$canOpen&&$scope!=='stratelli'):?>🔒 BLOQUEADA<?php else:?><?=$phaseActMetric['total']?$pct.'% DOS ATOS':($tot?$pct.'% APROVADO':'SEM ATOS')?><?php endif;?></div>
 <?php if($canOpen):?></a><?php else:?></div><?php endif;?>
-<?php if(true):?><div class="contract-preview-milestone dashboard-activity-stack"><div class="dashboard-activity-head"><b><?=$phaseActMetric['concluidas']?>/<?=$phaseActMetric['total']?> atos concluídos</b><span><?=$pct?>%</span></div><?php if($phaseActs):?><div class="dashboard-activity-list"><?php foreach($phaseActs as$act):$am=$atividadeMetricas[(int)$act['id']]??['status'=>'PENDENTE','percentual'=>0,'concluida'=>false,'total_documentos'=>0,'aprovados'=>0];?><div class="dashboard-activity-item <?=!empty($am['concluida'])?'is-done':''?>"><div class="dashboard-activity-row"><span class="dashboard-activity-check"><?=!empty($am['concluida'])?'✓':'○'?></span><div><b><?=Format::h($act['ordem'].'. '.$act['titulo'])?></b><small><?=Format::h(str_replace('_',' ',(string)$am['status']))?><?php if($am['total_documentos']):?> · <?=$am['aprovados']?>/<?=$am['total_documentos']?> docs<?php endif;?></small></div><strong><?=$am['percentual']?>%</strong></div><?php if($scope==='stratelli'&&$previewMode==='dashboard'):?><form method="post" action="/<?=Format::h($slug)?>/atividades/<?=(int)$act['id']?>/<?=!empty($am['concluida'])?'reabrir':'concluir'?>"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><button class="dashboard-activity-action" type="submit"><?=!empty($am['concluida'])?'Reabrir ato':'Concluir ato'?></button></form><?php endif;?></div><?php endforeach;?></div><?php else:?><small class="dashboard-activity-empty">Nenhum ato/atividade visível para este perfil.</small><?php endif;?><div class="dashboard-doc-mini">Docs: <?=$a?> aprovados · <?=$w?> em análise · <?=$c?> correção · <?=$p?> pendentes</div></div><?php else:?><div class="contract-preview-milestone"><small class="contract-preview-milestone-label">ENTREGÁVEL</small><?=Format::h($f['entregavel']?:'Entregável a definir')?></div><?php if($scope==='stratelli'&&$globalStatus==='ready'&&$canOpen):?><?php $previewCloseId='phase-close-dialog-'.(int)$f['id'];$previewCloseMin=(string)($deadline['inicio']??$dataInicioProcesso);$previewCloseToday=date('Y-m-d');$previewCloseAvailable=$previewCloseMin<=$previewCloseToday;?><?php if($previewCloseAvailable):?><button type="button" class="contract-preview-close-action" onclick="document.getElementById('<?=Format::h($previewCloseId)?>').showModal()">✓ Encerrar fase</button><dialog id="<?=Format::h($previewCloseId)?>" class="phase-close-dialog"><form class="phase-close-dialog-form" method="post" action="/<?=Format::h($slug)?>/cronograma/fases/<?=(int)$f['id']?>/encerrar"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><div class="phase-close-dialog-head"><div class="phase-close-dialog-headcopy"><small>ENCERRAMENTO FORMAL</small><h3>Encerrar Fase <?=Format::h($f['ordem'])?> — <?=Format::h($f['aba'])?></h3><p>Ao confirmar, o sistema registrará o encerramento formal, preservará o snapshot documental e liberará a próxima fase.</p></div><button type="button" class="phase-close-dialog-x" aria-label="Fechar" onclick="this.closest('dialog').close()">×</button></div><div class="phase-close-dialog-summary"><div class="phase-close-dialog-summary-item"><small>Fase</small><b><?=Format::h($f['titulo'])?></b><span><?=Format::h($f['entregavel']?:'Entregável cadastrado')?></span></div><div class="phase-close-dialog-summary-item"><small>Status atual</small><b>Pronta para encerramento</b><span>Documentação obrigatória aprovada</span></div></div><div class="phase-close-dialog-grid"><label class="phase-close-field"><span>Data do encerramento</span><input type="date" name="data_conclusao" value="<?=Format::h($previewCloseToday)?>" min="<?=Format::h($previewCloseMin)?>" max="<?=Format::h($previewCloseToday)?>" required></label><label class="phase-close-field"><span>Responsável</span><input type="text" value="<?=Format::h($user['nome']??'Stratelli')?>" readonly></label><label class="phase-close-field phase-close-dialog-observation"><span>Observação do encerramento <em><?=$obsEncerramentoObrigatoria?'obrigatória':'opcional'?></em></span><textarea name="observacao" rows="5" maxlength="1000" <?=$obsEncerramentoObrigatoria?'required':''?> placeholder="Registre a decisão, conferências realizadas, pendências saneadas e o contexto do encerramento."></textarea><small class="phase-close-field-help">Este texto ficará registrado no histórico formal da fase.</small></label></div><div class="phase-close-dialog-warning"><div class="phase-close-dialog-warning-icon">!</div><div><b>Confirmação necessária</b><span>O botão verde da prévia apenas abre este formulário. A fase só será encerrada após clicar em <strong>Confirmar encerramento</strong>.</span></div></div><div class="phase-close-dialog-actions"><button type="button" class="btn neutral" onclick="this.closest('dialog').close()">Cancelar</button><button class="btn approve" type="submit">✓ Confirmar encerramento</button></div></form></dialog><?php else:?><button type="button" class="contract-preview-close-action is-disabled" disabled title="O encerramento ficará disponível em <?=Format::h(Format::date($previewCloseMin))?>">◷ Encerramento em <?=Format::h(Format::date($previewCloseMin))?></button><?php endif;?><?php endif;?><?php endif;?>
+<?php if(true):?><div class="contract-preview-milestone dashboard-activity-stack">
+<div class="dashboard-activity-head"><b><?=$phaseActMetric['concluidas']?>/<?=$phaseActMetric['total']?> atos concluídos</b><span><?=$pct?>%</span></div>
+<?php if($phaseActs):?><div class="dashboard-activity-list">
+<?php foreach($phaseActs as $act):
+  $am=$atividadeMetricas[(int)$act['id']]??['status'=>'PENDENTE','percentual'=>0,'concluida'=>false,'total_documentos'=>0,'aprovados'=>0];
+  $numeroAto=$workflowNumeroAto($act,PhaseNumber::from($f));
+  $atoConcluido=!empty($am['concluida']) || ($act['status_execucao']??'')==='CONCLUIDA';
+  $atoClasse=$atoConcluido?'is-complete':($class==='overdue'?'is-overdue':($class==='current'?'is-current':'is-upcoming'));
+  $filhas=$workflowFilhas[(int)$act['id']]??[];
+  $qtdFilhas=count($filhas);$concluidasFilhas=count(array_filter($filhas,static fn($a)=>($a['status_execucao']??'')==='CONCLUIDA'));
+?>
+<div class="dashboard-activity-item pge-wf-ato <?=$atoClasse?>">
+  <div class="dashboard-activity-row"><span class="dashboard-activity-check"><?=$atoConcluido?'✓':'○'?></span>
+    <div><b><?=Format::h($numeroAto.'. '.$workflowSemPrefixo((string)$act['titulo'],$numeroAto))?></b>
+      <small><?=$atoConcluido?'CONCLUÍDO':($atoClasse==='is-overdue'?'EM ATRASO':($atoClasse==='is-current'?'EM ANDAMENTO':'AGUARDANDO ABERTURA'))?><?php if($qtdFilhas):?> · <?=$concluidasFilhas?>/<?=$qtdFilhas?> atividades<?php endif;?></small></div>
+    <strong><?=$qtdFilhas?(int)round($concluidasFilhas/$qtdFilhas*100):(int)($am['percentual']??0)?>%</strong>
+  </div>
+  <?php if($filhas):?><div class="pge-wf-filhas" aria-label="Atividades do ato <?=Format::h($numeroAto)?>">
+    <?php foreach($filhas as $filha):$numeroFilha=$workflowNumeroAtividade($filha,$numeroAto);$filhaConcluida=($filha['status_execucao']??'')==='CONCLUIDA';$filhaClasse=$filhaConcluida?'is-complete':$atoClasse; ?>
+    <div class="pge-wf-filha <?=$filhaClasse?>"><span class="pge-wf-filha-check"><?=$filhaConcluida?'✓':'○'?></span>
+      <div><b><?=Format::h($numeroFilha.'. '.$workflowSemPrefixo((string)$filha['titulo'],$numeroFilha))?></b><small><?=$filhaConcluida?'CONCLUÍDA':($filhaClasse==='is-overdue'?'EM ATRASO':($filhaClasse==='is-current'?'PENDENTE':'AGUARDANDO ABERTURA'))?></small></div>
+    </div>
+    <?php endforeach;?></div><?php endif;?>
+  <?php if($scope==='stratelli'&&$previewMode==='dashboard'&&$previewFormalmenteIniciado):?><form method="post" action="/<?=Format::h($slug)?>/atividades/<?=(int)$act['id']?>/<?=$atoConcluido?'reabrir':'concluir'?>"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><button class="dashboard-activity-action" type="submit"><?=$atoConcluido?'Reabrir ato':'Concluir ato'?></button></form><?php endif;?>
+</div>
+<?php endforeach;?></div><?php else:?><small class="dashboard-activity-empty">Nenhum ato visível para este perfil.</small><?php endif;?>
+<div class="dashboard-doc-mini">Docs: <?=$a?> aprovados · <?=$w?> em análise · <?=$c?> correção · <?=$p?> pendentes</div></div><?php else:?><div class="contract-preview-milestone"><small class="contract-preview-milestone-label">ENTREGÁVEL</small><?=Format::h($f['entregavel']?:'Entregável a definir')?></div><?php if($scope==='stratelli'&&$globalStatus==='ready'&&$canOpen&&$previewFormalmenteIniciado):?><?php $previewCloseId='phase-close-dialog-'.(int)$f['id'];$previewCloseMin=(string)($deadline['inicio']??$dataInicioProcesso);$previewCloseToday=date('Y-m-d');$previewCloseAvailable=$previewCloseMin<=$previewCloseToday;?><?php if($previewCloseAvailable):?><button type="button" class="contract-preview-close-action" onclick="document.getElementById('<?=Format::h($previewCloseId)?>').showModal()">✓ Encerrar fase</button><dialog id="<?=Format::h($previewCloseId)?>" class="phase-close-dialog"><form class="phase-close-dialog-form" method="post" action="/<?=Format::h($slug)?>/cronograma/fases/<?=(int)$f['id']?>/encerrar"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><div class="phase-close-dialog-head"><div class="phase-close-dialog-headcopy"><small>ENCERRAMENTO FORMAL</small><h3>Encerrar Fase <?=Format::h(PhaseNumber::from($f))?> — <?=Format::h($f['aba'])?></h3><p>Ao confirmar, o sistema registrará o encerramento formal, preservará o snapshot documental e liberará a próxima fase.</p></div><button type="button" class="phase-close-dialog-x" aria-label="Fechar" onclick="this.closest('dialog').close()">×</button></div><div class="phase-close-dialog-summary"><div class="phase-close-dialog-summary-item"><small>Fase</small><b><?=Format::h($f['titulo'])?></b><span><?=Format::h($f['entregavel']?:'Entregável cadastrado')?></span></div><div class="phase-close-dialog-summary-item"><small>Status atual</small><b>Pronta para encerramento</b><span>Documentação obrigatória aprovada</span></div></div><div class="phase-close-dialog-grid"><label class="phase-close-field"><span>Data do encerramento</span><input type="date" name="data_conclusao" value="<?=Format::h($previewCloseToday)?>" min="<?=Format::h($previewCloseMin)?>" max="<?=Format::h($previewCloseToday)?>" required></label><label class="phase-close-field"><span>Responsável</span><input type="text" value="<?=Format::h($user['nome']??'Stratelli')?>" readonly></label><label class="phase-close-field phase-close-dialog-observation"><span>Observação do encerramento <em><?=$obsEncerramentoObrigatoria?'obrigatória':'opcional'?></em></span><textarea name="observacao" rows="5" maxlength="1000" <?=$obsEncerramentoObrigatoria?'required':''?> placeholder="Registre a decisão, conferências realizadas, pendências saneadas e o contexto do encerramento."></textarea><small class="phase-close-field-help">Este texto ficará registrado no histórico formal da fase.</small></label></div><div class="phase-close-dialog-warning"><div class="phase-close-dialog-warning-icon">!</div><div><b>Confirmação necessária</b><span>O botão verde da prévia apenas abre este formulário. A fase só será encerrada após clicar em <strong>Confirmar encerramento</strong>.</span></div></div><div class="phase-close-dialog-actions"><button type="button" class="btn neutral" onclick="this.closest('dialog').close()">Cancelar</button><button class="btn approve" type="submit">✓ Confirmar encerramento</button></div></form></dialog><?php else:?><button type="button" class="contract-preview-close-action is-disabled" disabled title="O encerramento ficará disponível em <?=Format::h(Format::date($previewCloseMin))?>">◷ Encerramento em <?=Format::h(Format::date($previewCloseMin))?></button><?php endif;?><?php endif;?><?php endif;?>
 </div>
 <?php endforeach;?></div></div><?php endif;?>
-<?php if($previewMode==='dashboard'):?><div class="contract-preview-footer dashboard-process-footer"><div class="contract-preview-legal dashboard-process-summary"><div class="contract-preview-legal-icon">◎</div><div class="dashboard-process-summary-content"><b><?=Format::h(strtoupper($dashboardResumoCard['titulo']))?></b><div class="dashboard-process-summary-metrics"><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['progresso'])?></b><small>Progresso</small></div><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['pendencias'])?></b><small>Pendências</small></div><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['analise'])?></b><small>Em análise</small></div><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['fases'])?></b><small>Fases encerradas</small></div></div></div></div><div class="contract-preview-note"><b>LEITURA DA SITUAÇÃO</b><span>Cada fase apresenta seus atos/atividades. Documentos pertencem aos atos; atos concluídos compõem o percentual da fase.</span></div></div><?php else:?><div class="contract-preview-footer"><div class="contract-preview-legal"><div class="contract-preview-legal-icon">⚖</div><div><b>BASE LEGAL</b><span>Lei nº 14.133/2021 e demais normas aplicáveis às licitações e contratações públicas.</span></div></div><div class="contract-preview-note"><b>LEITURA DA PRÉVIA</b><span>As datas e durações são parâmetros operacionais cadastrados no INPACTA by Stratelli e são recalculadas após o encerramento formal da etapa anterior.</span></div></div><?php endif;?>
+<?php if($previewMode==='dashboard'&&$previewFormalmenteIniciado):?><div class="contract-preview-footer dashboard-process-footer"><div class="contract-preview-legal dashboard-process-summary"><div class="contract-preview-legal-icon">◎</div><div class="dashboard-process-summary-content"><b><?=Format::h(strtoupper($dashboardResumoCard['titulo']))?></b><div class="dashboard-process-summary-metrics"><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['progresso'])?></b><small>Progresso</small></div><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['pendencias'])?></b><small>Pendências</small></div><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['analise'])?></b><small>Em análise</small></div><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['fases'])?></b><small>Fases encerradas</small></div></div></div></div><div class="contract-preview-note"><b>LEITURA DA SITUAÇÃO</b><span>Cada fase apresenta seus atos/atividades. Documentos pertencem aos atos; atos concluídos compõem o percentual da fase.</span></div></div><?php else:?><div class="contract-preview-footer"><div class="contract-preview-legal"><div class="contract-preview-legal-icon">⚖</div><div><b>BASE LEGAL</b><span>Lei nº 14.133/2021 e demais normas aplicáveis às licitações e contratações públicas.</span></div></div><div class="contract-preview-note"><b>LEITURA DA PRÉVIA</b><span>As datas e durações são parâmetros operacionais cadastrados no INPACTA by Stratelli e são recalculadas após o encerramento formal da etapa anterior.</span></div></div><?php endif;?>
 </section>
 
 
@@ -114,3 +175,34 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
   });
 })();
 </script>
+
+<style>
+/* PGE Workflow V19: estados e hierarquia por Fase > Ato > Atividade. */
+.contract-preview .contract-preview-stage.completed .contract-preview-number,
+.contract-preview .contract-preview-stage.completed .contract-preview-date,
+.contract-preview .contract-preview-stage.completed .contract-preview-milestone{background:#16804a!important;color:#fff!important}
+.contract-preview .contract-preview-stage.current .contract-preview-number,
+.contract-preview .contract-preview-stage.current .contract-preview-date,
+.contract-preview .contract-preview-stage.current .contract-preview-milestone{background:#12518e!important;color:#fff!important}
+.contract-preview .contract-preview-stage.upcoming .contract-preview-number,
+.contract-preview .contract-preview-stage.upcoming .contract-preview-date,
+.contract-preview .contract-preview-stage.upcoming .contract-preview-milestone{background:#687689!important;color:#fff!important}
+.contract-preview .contract-preview-stage.overdue .contract-preview-number,
+.contract-preview .contract-preview-stage.overdue .contract-preview-date,
+.contract-preview .contract-preview-stage.overdue .contract-preview-milestone{background:#bb302e!important;color:#fff!important}
+.contract-preview .contract-preview-stage.completed .contract-preview-card{border-color:#16804a!important}
+.contract-preview .contract-preview-stage.current .contract-preview-card{border-color:#12518e!important}
+.contract-preview .contract-preview-stage.upcoming .contract-preview-card{border-color:#8995a4!important}
+.contract-preview .contract-preview-stage.overdue .contract-preview-card{border-color:#bb302e!important}
+.contract-preview .pge-wf-ato{border-radius:9px;padding:9px;margin:0!important}
+.contract-preview .pge-wf-ato.is-complete,.contract-preview .pge-wf-filha.is-complete{background:#16804a!important;color:#fff!important}
+.contract-preview .pge-wf-ato.is-current,.contract-preview .pge-wf-filha.is-current{background:#195b9c!important;color:#fff!important}
+.contract-preview .pge-wf-ato.is-upcoming,.contract-preview .pge-wf-filha.is-upcoming{background:#7a8697!important;color:#fff!important}
+.contract-preview .pge-wf-ato.is-overdue,.contract-preview .pge-wf-filha.is-overdue{background:#c43f3b!important;color:#fff!important}
+.contract-preview .pge-wf-filhas{display:grid;gap:5px;margin:8px 0 0 10px;padding-left:9px;border-left:2px solid rgba(255,255,255,.46)}
+.contract-preview .pge-wf-filha{display:grid;grid-template-columns:14px minmax(0,1fr);gap:6px;padding:7px;border-radius:7px;border:1px solid rgba(255,255,255,.24)}
+.contract-preview .pge-wf-filha b{font-size:10px;line-height:1.4;display:block;overflow-wrap:anywhere}
+.contract-preview .pge-wf-filha small{font-size:8px;display:block;opacity:.9;margin-top:3px}
+.contract-preview .pge-wf-filha-check{font-size:12px;font-weight:900}
+.contract-preview .dashboard-activity-row b{overflow-wrap:anywhere!important}
+</style>

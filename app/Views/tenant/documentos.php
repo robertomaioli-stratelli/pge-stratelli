@@ -7,6 +7,8 @@ $correction=count(array_filter($documentosPagina,fn($x)=>$x['classe']==='correct
 $pending=count(array_filter($documentosPagina,fn($x)=>$x['classe']==='pending'));
 $models=count(array_filter($documentosPagina,fn($x)=>$x['tem_modelo']));
 ?>
+<?php require __DIR__.'/partials/hierarchy_summary.php'; ?>
+
 <div class="module-page">
     <div class="module-hero">
         <div><h1>Documentos</h1><p>Catálogo documental com versão atual, integridade SHA-256, responsáveis, validação e trilha completa de auditoria.</p></div>
@@ -39,7 +41,7 @@ $models=count(array_filter($documentosPagina,fn($x)=>$x['tem_modelo']));
                 <tbody>
                 <?php foreach($group['itens'] as $item): $r=$item['requisito'];$d=$item['documento']; ?>
                     <tr>
-                        <td><b><?=Format::h($r['nome'])?></b><br><small><?=Format::h($r['descricao']?:'Sem orientação complementar.')?></small></td>
+                        <td><b><?=Format::h($r['nome'])?></b><br><?php if(!empty($r['atividade_titulo'])):?><small>Ato: <?=Format::h($r['atividade_titulo'])?></small><br><?php endif;?><?php if(!empty($r['atividade_ato_id'])):?><small>Atividade vinculada: #<?=intval($r['atividade_ato_id'])?></small><br><?php endif;?><small><?=Format::h($r['descricao']?:'Sem orientação complementar.')?></small></td>
                         <td><b><?=Format::h($r['secretaria_sigla']?:$r['secretaria_nome'])?></b><br><small><?=Format::h($r['secretaria_nome'])?></small><?php if(!empty($r['departamento_nome'])):?><br><small><?=Format::h($r['departamento_nome'])?></small><?php endif;?></td>
                         <td><?=Format::h($r['tipo_nome'])?></td>
                         <td><span class="document-model-state <?=$item['tem_modelo']?'available':'missing'?>"><?=$item['tem_modelo']?'✓ Modelo disponível':'Modelo não enviado'?></span></td>

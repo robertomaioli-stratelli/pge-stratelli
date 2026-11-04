@@ -14,7 +14,7 @@ $instanceHeaderText='#FFFFFF';if(preg_match('/^#([0-9A-Fa-f]{6})$/',$instancePri
 $instanceNotificationsEnabled=$platform||!$tenant||!empty($instanceParams['notificacoes_ativas']);
 ?>
 <!doctype html><html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>INPACTA | <?=Format::h($title)?></title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/assets/mvp-base.css?v=4206"><link rel="stylesheet" href="/assets/production.css?v=4242"><link rel="stylesheet" href="/assets/global-search.css?v=4206"><link rel="stylesheet" href="/assets/tenant-theme.css?v=4209"><link rel="stylesheet" href="/assets/municipality-profile.css?v=42010"><link rel="stylesheet" href="/assets/dark-theme.css?v=4242"><script>(function(){try{var t=localStorage.getItem('pgeTheme');if(t==='dark')document.documentElement.classList.add('theme-dark');}catch(e){}})();</script></head>
+<title>INPACTA | <?=Format::h($title)?></title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/assets/mvp-base.css?v=4206"><link rel="stylesheet" href="/assets/production.css?v=4242"><link rel="stylesheet" href="/assets/global-search.css?v=4206"><link rel="stylesheet" href="/assets/tenant-theme.css?v=4209"><link rel="stylesheet" href="/assets/municipality-profile.css?v=42010"><link rel="stylesheet" href="/assets/dark-theme.css?v=4242"><script>(function(){try{var t=localStorage.getItem('pgeTheme');if(t==='dark')document.documentElement.classList.add('theme-dark');}catch(e){}})();</script><link rel="stylesheet" href="/assets/pge-select-fix.css?v=17"></head>
 <body class="<?=$tenant?'tenant-theme-active tenant-decoration-'.Format::h($instanceHeaderDecoration):''?>" style="--navy:<?=Format::h($instancePrimary)?>;--navy2:<?=Format::h($instanceSecondary)?>;--preview-accent:<?=Format::h($instanceSecondary)?>;--tenant-primary:<?=Format::h($instancePrimary)?>;--tenant-secondary:<?=Format::h($instanceSecondary)?>;--tenant-header-text:<?=Format::h($instanceHeaderText)?>"><div class="app production-app" id="appShell">
 <aside class="side" id="menuLateral">
     <div class="brand"><div class="mark">IN</div><div>PGE<br><small>Plataforma de Governança Executiva</small></div></div>
@@ -28,6 +28,7 @@ $instanceNotificationsEnabled=$platform||!$tenant||!empty($instanceParams['notif
         <a class="mi <?=activeLink('/admin/municipios',$path)?>" href="/admin/municipios">▥ Municípios</a>
         <a class="mi <?=activeLink('/admin/usuarios',$path)?>" href="/admin/usuarios">◉ Usuários</a>
         <a class="mi <?=activeLink('/admin/auditoria',$path)?>" href="/admin/auditoria">◷ Auditoria e Segurança</a>
+        <a class="mi <?=activeLink('/admin/modelos-processos',$path)?>" href="/admin/modelos-processos">▤ Modelos de Processos</a>
         <a class="mi <?=activeLink('/admin/configuracoes',$path)?>" href="/admin/configuracoes">⚙ Configurações</a>
     <?php else:$slug=$tenant['slug']??$user['municipio_slug'];?>
         <?php if($platform):?><a class="mi" href="/admin">← Visão Macro</a><a class="mi" href="/admin/municipios">▥ Municípios</a><?php endif;?>
@@ -87,8 +88,9 @@ $instanceNotificationsEnabled=$platform||!$tenant||!empty($instanceParams['notif
         </div><?php endif;?>
         <form method="post" action="/logout" class="header-logout-form"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><button class="header-action-button header-logout-button" type="submit">↪ Sair</button></form>
     </div>
+	<link rel="stylesheet" href="/assets/pge-select-fix.css?v=17">
 </header>
-<div class="content production-content"><?php if(!empty($erro)):?><div class="flash error"><?=Format::h($erro)?></div><?php endif;?><?php if(!empty($ok)):?><div class="flash ok"><?=Format::h($ok)?></div><?php endif;?><?=$content?></div></main>
+<div class="content production-content"><?php if($tenant):?><div class="pge-hierarchy-shortcut" style="margin-bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a class="btn neutral" href="/<?=Format::h($tenant['slug'])?>/hierarquia">▤ Processo → Etapas → Fases → Atos → Atividades</a><small>Visão hierárquica da execução e dos documentos</small></div><?php endif;?><?php if(!empty($erro)):?><div class="flash error"><?=Format::h($erro)?></div><?php endif;?><?php if(!empty($ok)):?><div class="flash ok"><?=Format::h($ok)?></div><?php endif;?><?=$content?></div></main>
 </div>
 <script>
 function currentTheme(){return document.documentElement.classList.contains('theme-dark')?'dark':'light';}
@@ -262,4 +264,5 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
 });
 </script>
+<script src="/assets/pge-select-fix.js?v=17" defer></script>
 </body></html>
