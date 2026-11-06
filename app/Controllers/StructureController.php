@@ -24,6 +24,6 @@ final class StructureController {
    }
    Session::flash('ok','Estrutura atualizada.');
   }catch(\Throwable $e){Session::flash('erro',$e->getMessage());}
-  Response::redirect('/'.Tenant::current()['slug'].'/configuracoes?secao=estrutura');
+  Response::redirect('/'.Tenant::current()['slug'].'/configuracoes?secao=estrutura&nivel='.urlencode((string)($_POST['tipo']??'etapa')));
  }
 }

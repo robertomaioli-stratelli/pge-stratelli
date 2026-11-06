@@ -67,6 +67,9 @@ final class PhaseClosureService
         if(!$this->validDate($date))throw new RuntimeException('Informe uma data de encerramento válida.');
         if($date>date('Y-m-d'))throw new RuntimeException('A data de encerramento não pode estar no futuro.');
         $observation=trim($observation);if((new InstanceParameterService())->observationRequired($this->mid,'encerramento')&&$observation==='')throw new RuntimeException('Informe uma observação para o encerramento formal da fase.');
+        $check=$this->pdo->prepare('SELECT ativo FROM fases WHERE id=? AND municipio_id=?');
+        $check->execute([$phaseId,$this->mid]);
+        if((int)$check->fetchColumn()!==1)throw new RuntimeException('Esta fase pertence a uma modalidade inativa. Habilite a Etapa correspondente antes de encerrá-la.');
         $phase=$this->phase($phaseId);
         $existing=$this->current($phaseId);if($existing&&strtoupper((string)$existing['status'])==='ENCERRADA')throw new RuntimeException('Esta fase já está formalmente encerrada.');
         $this->assertPreviousPhasesClosed($phase);

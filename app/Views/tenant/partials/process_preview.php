@@ -195,14 +195,27 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
 .contract-preview .contract-preview-stage.upcoming .contract-preview-card{border-color:#8995a4!important}
 .contract-preview .contract-preview-stage.overdue .contract-preview-card{border-color:#bb302e!important}
 .contract-preview .pge-wf-ato{border-radius:9px;padding:9px;margin:0!important}
-.contract-preview .pge-wf-ato.is-complete,.contract-preview .pge-wf-filha.is-complete{background:#16804a!important;color:#fff!important}
-.contract-preview .pge-wf-ato.is-current,.contract-preview .pge-wf-filha.is-current{background:#195b9c!important;color:#fff!important}
-.contract-preview .pge-wf-ato.is-upcoming,.contract-preview .pge-wf-filha.is-upcoming{background:#7a8697!important;color:#fff!important}
-.contract-preview .pge-wf-ato.is-overdue,.contract-preview .pge-wf-filha.is-overdue{background:#c43f3b!important;color:#fff!important}
+/* V37: mesma semântica de status; atos em tom forte e atividades em tom mais claro. */
+.contract-preview .pge-wf-ato.is-complete{background:#16804a!important;color:#fff!important}
+.contract-preview .pge-wf-ato.is-current{background:#195b9c!important;color:#fff!important}
+.contract-preview .pge-wf-ato.is-upcoming{background:#7a8697!important;color:#fff!important}
+.contract-preview .pge-wf-ato.is-overdue{background:#c43f3b!important;color:#fff!important}
+.contract-preview .pge-wf-filha.is-complete{background:#27945d!important;color:#fff!important}
+.contract-preview .pge-wf-filha.is-current{background:#367bb5!important;color:#fff!important}
+.contract-preview .pge-wf-filha.is-upcoming{background:#96a1ae!important;color:#fff!important}
+.contract-preview .pge-wf-filha.is-overdue{background:#d55f59!important;color:#fff!important}
 .contract-preview .pge-wf-filhas{display:grid;gap:5px;margin:8px 0 0 10px;padding-left:9px;border-left:2px solid rgba(255,255,255,.46)}
 .contract-preview .pge-wf-filha{display:grid;grid-template-columns:14px minmax(0,1fr);gap:6px;padding:7px;border-radius:7px;border:1px solid rgba(255,255,255,.24)}
 .contract-preview .pge-wf-filha b{font-size:10px;line-height:1.4;display:block;overflow-wrap:anywhere}
 .contract-preview .pge-wf-filha small{font-size:8px;display:block;opacity:.9;margin-top:3px}
 .contract-preview .pge-wf-filha-check{font-size:12px;font-weight:900}
 .contract-preview .dashboard-activity-row b{overflow-wrap:anywhere!important}
+/* V36: tipografia ampliada nos atos e atividades; usado no Workflow e Dashboard. */
+.contract-preview .dashboard-activity-row > div b{font-size:12.5px!important;line-height:1.52!important;letter-spacing:0!important;overflow-wrap:anywhere}
+.contract-preview .dashboard-activity-row > div small{font-size:9.5px!important;line-height:1.45!important}
+.contract-preview .pge-wf-filha b{font-size:11.5px!important;line-height:1.5!important;overflow-wrap:anywhere}
+.contract-preview .pge-wf-filha small{font-size:9px!important;line-height:1.45!important}
+.contract-preview .pge-wf-filha{padding:9px 8px!important;gap:7px!important}
+.contract-preview .pge-wf-ato{padding:11px!important}
+
 </style>
