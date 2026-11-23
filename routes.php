@@ -9,11 +9,14 @@ use App\Controllers\SearchController;
 use App\Controllers\ProcessModelController;
 use App\Controllers\HierarchyController;
 use App\Controllers\StructureController;
+use App\Controllers\SsoController;
 use App\Core\Response;
 use App\Core\Router;
 
 $router=new Router();
 $router->get('/',fn()=>Response::redirect(Router::homeForUser()),['auth']);
+$router->get('/sso',[SsoController::class,'entrar']); // SSO Stratelli: sem middleware — se já houver sessão, o token troca para o usuário autenticado pela origem.
+$router->get('/sso/existe',[SsoController::class,'existe']); // Pré-checagem da origem: e-mail tem conta ativa? (não consome o token)
 $router->get('/login',[AuthController::class,'loginForm'],['guest']);
 $router->post('/login',[AuthController::class,'login'],['guest']);
 $router->get('/esqueci-senha',[AuthController::class,'forgotForm'],['guest']);

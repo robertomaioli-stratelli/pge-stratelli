@@ -9,24 +9,57 @@ final class Auth
 
     public static function attempt(string $email, string $password): bool
     {
-        $email=strtolower(trim($email));$ip=Audit::ip();$pdo=Database::connection();
+        $email=strtolower(trim($email));$ip=Audit::ip();
         if(self::isLoginBlocked($email,$ip)){
             self::recordAttempt($email,$ip,null,false,'LIMITE_DE_TENTATIVAS');
             Audit::logActor(null,'LOGIN_BLOQUEADO','Tentativas excessivas para '.$email,null,['categoria'=>'SEGURANCA','severidade'=>'ALERTA','sucesso'=>0,'email'=>$email]);
             return false;
         }
-        $stmt=$pdo->prepare('SELECT u.*,m.slug municipio_slug,m.nome municipio_nome,m.uf municipio_uf,m.inteligencia_territorial_ativa municipio_territorial_ativa,s.nome secretaria_nome,s.sigla secretaria_sigla,d.nome departamento_nome,d.sigla departamento_sigla FROM usuarios u LEFT JOIN municipios m ON m.id=u.municipio_id LEFT JOIN secretarias s ON s.id=u.secretaria_id AND s.municipio_id=u.municipio_id LEFT JOIN departamentos d ON d.id=u.departamento_id AND d.municipio_id=u.municipio_id WHERE LOWER(u.email)=LOWER(?) AND u.ativo=1 LIMIT 1');
-        $stmt->execute([$email]);$user=$stmt->fetch(PDO::FETCH_ASSOC);
+        $user=self::findActiveUserByEmail($email);
         if(!$user||!password_verify($password,(string)$user['senha_hash'])){
             self::recordAttempt($email,$ip,$user?(int)$user['id']:null,false,'CREDENCIAIS_INVALIDAS');
             Audit::logActor($user?(int)$user['id']:null,'LOGIN_FALHA','Falha de autenticação para '.$email,$user['municipio_id']??null,['categoria'=>'SEGURANCA','severidade'=>'ALERTA','sucesso'=>0,'email'=>$email]);
             return false;
         }
-        Session::regenerate();Session::put('user_id',(int)$user['id']);Session::put('auth_version',(int)($user['auth_version']??1));Session::put('auth_started_at',time());Session::put('auth_last_activity_at',time());self::$user=null;
-        $pdo->prepare('UPDATE usuarios SET ultimo_login_em=NOW() WHERE id=?')->execute([$user['id']]);
+        self::openSessionFor($user);
         self::recordAttempt($email,$ip,(int)$user['id'],true,'SUCESSO');
         Audit::logActor((int)$user['id'],'LOGIN_SUCESSO','Autenticação realizada',(int)($user['municipio_id']??0)?:null,['categoria'=>'SEGURANCA']);
         return true;
+    }
+
+    /** Abre a sessão local a partir de um e-mail já autenticado por SSO (assinatura verificada e token consumido pelo chamador). */
+    public static function loginBySso(string $email): bool
+    {
+        $email=strtolower(trim($email));$ip=Audit::ip();
+        $user=self::findActiveUserByEmail($email);
+        if(!$user){
+            self::recordAttempt($email,$ip,null,false,'SSO_SEM_CONTA');
+            Audit::logActor(null,'LOGIN_SSO_FALHA','SSO Stratelli sem conta ativa para '.$email,null,['categoria'=>'SEGURANCA','severidade'=>'ALERTA','sucesso'=>0,'email'=>$email]);
+            return false;
+        }
+        self::openSessionFor($user);
+        self::recordAttempt($email,$ip,(int)$user['id'],true,'SSO_STRATELLI');
+        Audit::logActor((int)$user['id'],'LOGIN_SSO','Autenticação via SSO Stratelli',(int)($user['municipio_id']??0)?:null,['categoria'=>'SEGURANCA']);
+        return true;
+    }
+
+    /** Pré-checagem do SSO: o e-mail tem conta ativa nesta instalação? (não abre sessão) */
+    public static function emailTemContaAtiva(string $email): bool
+    {
+        return self::findActiveUserByEmail(strtolower(trim($email))) !== null;
+    }
+
+    private static function findActiveUserByEmail(string $email): ?array
+    {
+        $stmt=Database::connection()->prepare('SELECT u.*,m.slug municipio_slug,m.nome municipio_nome,m.uf municipio_uf,m.inteligencia_territorial_ativa municipio_territorial_ativa,s.nome secretaria_nome,s.sigla secretaria_sigla,d.nome departamento_nome,d.sigla departamento_sigla FROM usuarios u LEFT JOIN municipios m ON m.id=u.municipio_id LEFT JOIN secretarias s ON s.id=u.secretaria_id AND s.municipio_id=u.municipio_id LEFT JOIN departamentos d ON d.id=u.departamento_id AND d.municipio_id=u.municipio_id WHERE LOWER(u.email)=LOWER(?) AND u.ativo=1 LIMIT 1');
+        $stmt->execute([$email]);
+        return $stmt->fetch(PDO::FETCH_ASSOC)?:null;
+    }
+
+    private static function openSessionFor(array $user): void
+    {
+        Session::regenerate();Session::put('user_id',(int)$user['id']);Session::put('auth_version',(int)($user['auth_version']??1));Session::put('auth_started_at',time());Session::put('auth_last_activity_at',time());self::$user=null;
+        Database::connection()->prepare('UPDATE usuarios SET ultimo_login_em=NOW() WHERE id=?')->execute([$user['id']]);
     }
 
     public static function user(): ?array
