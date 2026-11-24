@@ -8,13 +8,13 @@ final class PasswordResetService
         $email=strtolower(trim($email));if(!filter_var($email,FILTER_VALIDATE_EMAIL))return null;$pdo=Database::connection();
         if($this->rateLimitedByIp($pdo)){Audit::logActor(null,'RECUPERACAO_SENHA_LIMITADA','Limite de solicitações de recuperação atingido para o IP',null,['categoria'=>'SEGURANCA','severidade'=>'ALERTA','sucesso'=>false]);return null;}
         $st=$pdo->prepare('SELECT id,municipio_id,nome,email FROM usuarios WHERE LOWER(email)=LOWER(?) AND ativo=1 LIMIT 1');$st->execute([$email]);$u=$st->fetch();
-        if(!$u){Audit::logActor(null,'RECUPERACAO_SENHA_SOLICITADA','Solicitação para conta não localizada',null,['categoria'=>'SEGURANCA','email'=>$email]);return null;}
+        if(!$u){Audit::logActor(null,'RECUPERACAO_SENHA_SOLICITADA','Solicitação recebida. Nenhum e-mail enviado.',null,['categoria'=>'SEGURANCA','sucesso'=>false,'email'=>$email]);return null;}
         if($this->rateLimitedByUser($pdo,(int)$u['id'])){Audit::logActor((int)$u['id'],'RECUPERACAO_SENHA_LIMITADA','Limite de solicitações de recuperação atingido para a conta',(int)($u['municipio_id']??0)?:null,['categoria'=>'SEGURANCA','severidade'=>'ALERTA','sucesso'=>false]);return null;}
         $token=$this->issue((int)$u['id']);$url=$this->url($token);$minutes=$this->minutes();
         try{(new MailService())->sendPasswordReset((string)$u['email'],(string)($u['nome']??''),$url,$minutes);Audit::logActor((int)$u['id'],'EMAIL_RECUPERACAO_ENVIADO','E-mail de recuperação de senha enviado',(int)($u['municipio_id']??0)?:null,['categoria'=>'SEGURANCA']);}
         catch(\Throwable $e){$this->invalidateToken($token);Audit::logActor((int)$u['id'],'EMAIL_RECUPERACAO_FALHOU','Falha no envio do e-mail de recuperação: '.$e->getMessage(),(int)($u['municipio_id']??0)?:null,['categoria'=>'SEGURANCA','severidade'=>'ALERTA','sucesso'=>false]);throw $e;}
         Audit::logActor((int)$u['id'],'RECUPERACAO_SENHA_SOLICITADA','Token temporário de recuperação emitido e enviado por e-mail',(int)($u['municipio_id']??0)?:null,['categoria'=>'SEGURANCA']);
-        $show=filter_var(getenv('PASSWORD_RESET_SHOW_LINK_LOCAL')?:'false',FILTER_VALIDATE_BOOLEAN);return $show?$url:null;
+        $show=getenv('APP_ENV')==='local' && filter_var(getenv('PASSWORD_RESET_SHOW_LINK_LOCAL')?:'false',FILTER_VALIDATE_BOOLEAN);return $show?$url:null;
     }
     public function adminSend(int $userId): void
     {

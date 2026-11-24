@@ -16,6 +16,9 @@
         <form method="post" action="/esqueci-senha" class="login-form recovery-form">
             <input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>">
             <label>E-mail<input type="email" name="email" required autocomplete="email" placeholder="nome@dominio.com.br"></label>
+            <?php if ($turnstileRequired): ?>
+                <?php require __DIR__ . '/turnstile.php'; ?>
+            <?php endif; ?>
             <button class="btn primary" type="submit">Enviar link de recuperação</button>
         </form>
         <div class="recovery-security-note"><b>Segurança</b><span>O link expira automaticamente e só pode ser utilizado uma vez. A plataforma nunca informa se um e-mail possui ou não cadastro.</span></div>

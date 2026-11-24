@@ -29,12 +29,15 @@ $rangeEnd=$total?min($page*$per,$total):0;
         <a class="btn neutral" href="/admin/auditoria/exportar?<?=http_build_query($queryBase)?>">↓ Exportar CSV</a>
     </div>
 
-    <div class="module-kpis-grid">
-        <div class="module-kpi"><small>EVENTOS</small><b><?=$summary['total']?></b><span>No filtro atual</span></div>
-        <div class="module-kpi warning"><small>FALHAS</small><b><?=$summary['falhas']?></b><span>Operações sem sucesso</span></div>
-        <div class="module-kpi alert"><small>ALERTAS</small><b><?=$summary['alertas']?></b><span>Eventos críticos</span></div>
-        <div class="module-kpi"><small>LOGINS</small><b><?=$summary['logins']?></b><span>Tentativas e acessos</span></div>
-        <div class="module-kpi neutral"><small>DOWNLOADS</small><b><?=$summary['downloads']?></b><span>Acessos a arquivos</span></div>
+    <div class="module-kpis-grid security-audit-kpis">
+        <div class="module-kpi"><small>EVENTOS</small><b><?=$summary['total']?></b><span>No filtro atual</span><i class="security-audit-kpi-icon" aria-hidden="true">☰</i></div>
+        <div class="module-kpi warning"><small>FALHAS</small><b><?=$summary['falhas']?></b><span>Operações sem sucesso</span><i class="security-audit-kpi-icon" aria-hidden="true">×</i></div>
+        <div class="module-kpi alert"><small>ALERTAS</small><b><?=$summary['alertas']?></b><span>Eventos críticos</span><i class="security-audit-kpi-icon" aria-hidden="true">⚠︎</i></div>
+        <div class="module-kpi"><small>LOGINS</small><b><?=$summary['logins']?></b><span>Tentativas e acessos</span><i class="security-audit-kpi-icon" aria-hidden="true">⇥</i></div>
+        <div class="module-kpi neutral"><small>DOWNLOADS</small><b><?=$summary['downloads']?></b><span>Acessos a arquivos</span><i class="security-audit-kpi-icon" aria-hidden="true">⇩</i></div>
+        <div class="module-kpi warning"><small>RECUPERAÇÕES SOLICITADAS</small><b><?=$summary['recuperacoes_solicitadas']?></b><span>Pedidos de redefinição de senha</span><i class="security-audit-kpi-icon" aria-hidden="true">↻</i></div>
+        <div class="module-kpi success"><small>AVISOS DE LOGIN ENVIADOS</small><b><?=$summary['avisos_login_enviados']?></b><span>E-mails sobre falhas consecutivas</span><i class="security-audit-kpi-icon" aria-hidden="true">✉︎</i></div>
+        <div class="module-kpi danger"><small>LOGINS BLOQUEADOS</small><b><?=$summary['logins_bloqueados']?></b><span>Bloqueios por excesso de tentativas</span><i class="security-audit-kpi-icon" aria-hidden="true">⊘</i></div>
     </div>
 
     <section class="card security-audit-card">
@@ -75,12 +78,25 @@ $rangeEnd=$total?min($page*$per,$total):0;
                 <tbody>
                 <?php if($items):foreach($items as$a):?><tr>
                     <td><?=Format::h(Format::dateTime($a['criado_em']))?></td>
-                    <td><b><?=Format::h($a['evento'])?></b><br><small><?=$a['sucesso']?'✓ Sucesso':'× Falha'?></small></td>
+                    <td>
+                        <b><?=Format::h($a['evento'])?></b><br>
+                        <?php if ($a['evento'] === 'RECUPERACAO_SENHA_SOLICITADA' && $a['sucesso']): ?>
+                            <small class="security-audit-result is-processed">✓ Solicitação processada</small>
+                        <?php else: ?>
+                            <small class="security-audit-result <?=$a['sucesso']?'is-success':'is-failure'?>"><?=$a['sucesso']?'✓✓ Sucesso':'× Falha'?></small>
+                        <?php endif; ?>
+                    </td>
                     <td><b><?=Format::h($a['usuario_nome']?:'Não autenticado')?></b><br><small><?=Format::h($a['usuario_email']?:'—')?></small></td>
                     <td><?=Format::h($a['municipio_nome']?($a['municipio_nome'].' - '.$a['municipio_uf']):'Plataforma')?></td>
                     <td><b><?=Format::h($a['ip']?:'—')?></b><br><small><?=Format::h($browser->browser((string)$a['user_agent']))?></small></td>
                     <td><code><?=Format::h(($a['metodo']?:'GET').' '.($a['rota']?:'—'))?></code></td>
-                    <td><span class="security-badge cat-<?=strtolower($a['categoria'])?>"><?=Format::h($a['categoria'])?></span><br><span class="security-severity sev-<?=strtolower($a['severidade'])?>"><?=Format::h($a['severidade'])?></span></td>
+                    <td class="security-audit-classification">
+                        <span class="security-badge cat-<?=strtolower($a['categoria'])?>"><?=Format::h($a['categoria'])?></span><br>
+                        <span class="security-severity sev-<?=strtolower($a['severidade'])?>"><?=Format::h($a['severidade'])?></span>
+                        <?php if ($a['evento'] === 'RECUPERACAO_SENHA_SOLICITADA'): ?>
+                            <br><span class="security-severity sev-atencao">RECUPERAÇÃO</span>
+                        <?php endif; ?>
+                    </td>
                     <td><?=Format::h($a['detalhes']?:'—')?><?php if($a['contexto_json']):?><details><summary>Contexto técnico</summary><code><?=Format::h($a['contexto_json'])?></code></details><?php endif;?></td>
                 </tr><?php endforeach;else:?><tr><td colspan="8"><div class="empty-state">Nenhum evento encontrado.</div></td></tr><?php endif;?>
                 </tbody>

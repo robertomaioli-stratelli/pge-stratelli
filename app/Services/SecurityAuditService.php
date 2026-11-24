@@ -55,26 +55,29 @@ final class SecurityAuditService
         $st->execute($params);
         $items=$st->fetchAll();
 
-        $summary=['total'=>$total,'falhas'=>0,'alertas'=>0,'logins'=>0,'downloads'=>0];
         $st=$pdo->prepare(
             'SELECT '
             .'COALESCE(SUM(a.sucesso=0),0) AS falhas, '
             .'COALESCE(SUM(a.severidade="ALERTA"),0) AS alertas, '
             .'COALESCE(SUM(a.evento LIKE "LOGIN%"),0) AS logins, '
-            .'COALESCE(SUM(a.evento LIKE "%DOWNLOAD%"),0) AS downloads'
+            .'COALESCE(SUM(a.evento LIKE "%DOWNLOAD%"),0) AS downloads, '
+            ."COALESCE(SUM(a.evento='RECUPERACAO_SENHA_SOLICITADA'),0) AS recuperacoes_solicitadas, "
+            ."COALESCE(SUM(a.evento='LOGIN_ALERTA_EMAIL_ENVIADO'),0) AS avisos_login_enviados, "
+            ."COALESCE(SUM(a.evento='LOGIN_BLOQUEADO'),0) AS logins_bloqueados"
             .$base
         );
         $st->execute($params);
-        $s=$st->fetch();
-        if($s){
-            $summary=[
-                'total'=>$total,
-                'falhas'=>(int)($s['falhas']??0),
-                'alertas'=>(int)($s['alertas']??0),
-                'logins'=>(int)($s['logins']??0),
-                'downloads'=>(int)($s['downloads']??0),
-            ];
-        }
+        $counts=$st->fetch() ?: [];
+        $summary=[
+            'total'=>$total,
+            'falhas'=>(int)($counts['falhas']??0),
+            'alertas'=>(int)($counts['alertas']??0),
+            'logins'=>(int)($counts['logins']??0),
+            'downloads'=>(int)($counts['downloads']??0),
+            'recuperacoes_solicitadas'=>(int)($counts['recuperacoes_solicitadas']??0),
+            'avisos_login_enviados'=>(int)($counts['avisos_login_enviados']??0),
+            'logins_bloqueados'=>(int)($counts['logins_bloqueados']??0),
+        ];
 
         $municipios=$pdo->query('SELECT id,nome,uf FROM municipios ORDER BY nome')->fetchAll();
         return compact(

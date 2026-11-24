@@ -6,6 +6,9 @@
         <form method="post" action="/login" class="login-form"><input type="hidden" name="_token" value="<?=htmlspecialchars(Csrf::token())?>">
             <label>E-mail<input type="email" name="email" autocomplete="username" required></label>
             <label>Senha<input type="password" name="senha" autocomplete="current-password" required></label>
+            <?php if ($turnstileRequired): ?>
+                <?php require __DIR__ . '/turnstile.php'; ?>
+            <?php endif; ?>
             <button class="btn primary" type="submit">Entrar</button>
         </form><div class="login-help"><a href="/esqueci-senha">Esqueci minha senha</a></div>
     </section>
