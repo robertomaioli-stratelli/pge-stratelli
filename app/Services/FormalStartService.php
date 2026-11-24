@@ -27,6 +27,43 @@ final class FormalStartService
         return $q->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
+    /**
+     * Valida o conteudo do PDF antes de o FileStorage mover o upload.
+     * O tipo MIME retornado por provedores diferentes pode variar;
+     * a validacao nao deve depender apenas dele.
+     */
+    private static function validatePdfContent(string $temporaryPath): void
+    {
+        if ($temporaryPath === '' || !is_file($temporaryPath) || !is_readable($temporaryPath)) {
+            throw new RuntimeException('Nao foi possivel ler o PDF enviado.');
+        }
+
+        $handle = fopen($temporaryPath, 'rb');
+        if ($handle === false) {
+            throw new RuntimeException('Nao foi possivel ler o PDF enviado.');
+        }
+        try {
+            $header = fread($handle, 8);
+            if ($header === false || !preg_match('/^%PDF-[12]\.[0-9]/', $header)) {
+                throw new RuntimeException('O documento deve ser um PDF valido.');
+            }
+            if (fseek($handle, -min(2048, (int) filesize($temporaryPath)), SEEK_END) !== 0) {
+                throw new RuntimeException('Nao foi possivel verificar o PDF enviado.');
+            }
+            $tail = stream_get_contents($handle);
+            if ($tail === false || strpos($tail, '%%EOF') === false) {
+                throw new RuntimeException('O documento PDF esta incompleto ou invalido.');
+            }
+        } finally {
+            fclose($handle);
+        }
+
+        $detectedMime = (new \finfo(FILEINFO_MIME_TYPE))->file($temporaryPath);
+        if (!in_array(strtolower((string) $detectedMime), ['application/pdf', 'application/x-pdf', 'application/octet-stream'], true)) {
+            throw new RuntimeException('O conteudo enviado nao foi reconhecido como PDF.');
+        }
+    }
+
     public function register(int $mid, string $date, string $reference, string $observation): void
     {
         if (!Auth::isPlatformAdmin()) throw new RuntimeException('Somente administradores da Stratelli podem formalizar o início.');
@@ -37,9 +74,17 @@ final class FormalStartService
         if ($reference === '' || mb_strlen($reference) > 180) throw new RuntimeException('Informe a identificação do documento (até 180 caracteres).');
         $etapa=$this->etapaHabilitada($mid);if($etapa===null)throw new RuntimeException('Habilite uma Etapa antes de formalizar o início.');
         if ($this->get($mid)) throw new RuntimeException('O início formal já foi registrado; não é permitido sobrescrevê-lo. Solicite retificação auditada.');
+        // Antes de mover o arquivo, valide o formato real do PDF recebido.
+        $upload = $_FILES['documento_inicio'] ?? null;
+        if (!is_array($upload) || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            throw new RuntimeException('Envie um documento PDF valido.');
+        }
+        self::validatePdfContent((string) ($upload['tmp_name'] ?? ''));
         $file = (new FileStorage())->storeUpload('documento_inicio', 'marcos_formais/'.$mid, 'inicio_formal', ['pdf'], 20971520);
         try {
-            if (($file['mime'] ?? '') !== 'application/pdf') throw new RuntimeException('O documento deve ser um PDF válido.');
+            // O conteudo foi validado diretamente; normalize o MIME persistido,
+            // mesmo se FileStorage retornar application/octet-stream ou x-pdf.
+            $file['mime'] = 'application/pdf';
             $this->pdo->beginTransaction();
             $st=$this->pdo->prepare('INSERT INTO pge_inicios_formais (municipio_id,etapa_execucao_id,data_inicio,referencia,observacao,arquivo_original,arquivo_salvo,arquivo_mime,arquivo_tamanho,checksum_sha256,usuario_id,status,criado_em) VALUES (?,?,?,?,?,?,?,?,?,?,?,"ATIVO",NOW())');
             $st->execute([$mid,$etapa,$date,$reference,mb_substr(trim($observation),0,2000),$file['original'],$file['path'],$file['mime'],$file['size'],$file['checksum'],(int)(Auth::id()??0)]);
