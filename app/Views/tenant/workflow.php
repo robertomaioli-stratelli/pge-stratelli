@@ -4,7 +4,29 @@ use App\Core\Auth;use App\Core\Csrf;use App\Core\Format;use App\Core\PhaseNumber
 $slug=$tenant['slug'];$isPlatform=Auth::isPlatformAdmin();$deadline=$prazoAtividade;$today=date('Y-m-d');$parametrosInstancia=$parametrosInstancia??[];$obsEnvioObrigatoria=!empty($parametrosInstancia['observacao_envio_obrigatoria']);$obsAprovacaoObrigatoria=!empty($parametrosInstancia['observacao_aprovacao_obrigatoria']);$obsEncerramentoObrigatoria=!empty($parametrosInstancia['observacao_encerramento_obrigatoria']);$obsReaberturaObrigatoria=!empty($parametrosInstancia['observacao_reabertura_obrigatoria']);
 $faseRotuloWorkflow = 'Fase';
 if (!empty($atividade) && is_array($atividade)) {
-    $faseNumeroWorkflow = PhaseNumber::from($atividade);
+    // Número visual da fase: relativo à etapa/modalidade, nunca o ID nem a ordem global.
+    // O WorkflowService fornece as fases de todas as etapas em ordem de cadastro.
+    $faseNumeroWorkflow = null;
+    $tituloNumerado = trim((string)($atividade['titulo'] ?? ''));
+    if (preg_match('/^([1-9][0-9]*)\s*[.\-–)]\s*/u', $tituloNumerado, $faseMatch)) {
+        $faseNumeroWorkflow = (int)$faseMatch[1];
+    } else {
+        $etapaAtualId = (int)($atividade['etapa_execucao_id'] ?? 0);
+        $contadorFasesEtapa = 0;
+        foreach (($fasesTodas ?? []) as $faseCandidata) {
+            if ((int)($faseCandidata['etapa_execucao_id'] ?? 0) !== $etapaAtualId) {
+                continue;
+            }
+            $contadorFasesEtapa++;
+            if ((int)($faseCandidata['id'] ?? 0) === (int)($atividade['id'] ?? 0)) {
+                $faseNumeroWorkflow = $contadorFasesEtapa;
+                break;
+            }
+        }
+    }
+    if ($faseNumeroWorkflow === null) {
+        $faseNumeroWorkflow = PhaseNumber::from($atividade);
+    }
     $faseNomeWorkflow = trim((string)($atividade['aba'] ?? $atividade['titulo'] ?? ''));
     $faseNomeWorkflow = trim((string)preg_replace('/^\s*\d+\s*[.\-–)]\s*/u', '', $faseNomeWorkflow));
     $faseRotuloWorkflow = 'Fase ' . $faseNumeroWorkflow . ($faseNomeWorkflow !== '' ? ' — ' . $faseNomeWorkflow : '');
