@@ -4,6 +4,7 @@ $h=static fn($s)=>Format::h((string)($s??''));
 $dest='/'.rawurlencode((string)$slug).'/configuracoes/estrutura/salvar';
 $allP=[];$allE=[];$allF=[];$allA=[];$allT=[];
 foreach(($arvoreOperacional??[]) as $p){$allP[]=$p;foreach($p['etapas'] as $e){$e['_processo']=$p['titulo'];$allE[]=$e;foreach($e['fases'] as $f){$f['_etapa']=$e['nome'];$f['_etapa_id']=$e['id'];$allF[]=$f;foreach($f['atos'] as $a){$a['_fase']=$f['titulo'];$a['_fase_id']=$f['id'];$allA[]=$a;foreach($a['atividades'] as $v){$v['_ato']=$a['titulo'];$v['_ato_id']=$a['id'];$allT[]=$v;}}}}}
+$activePrintStages=array_values(array_filter($allE,static fn($e)=>!empty($e['habilitada'])));
 $types=['etapa'=>['Etapas',$allE],'fase'=>['Fases',$allF],'ato'=>['Atos',$allA],'atividade'=>['Atividades',$allT]];
 $selected=(string)($_GET['nivel']??'etapa');if(!isset($types[$selected])&&$selected!=='arvore')$selected='etapa';
 $editId=(int)($_GET['id']??0);$editing=null;
@@ -24,11 +25,23 @@ if($selected!=='arvore'){foreach($types[$selected][1] as $item){if((int)$item['i
 <?php if($selected==='arvore'):?>
 <section class="qs-panel qs-tree-panel" id="arvore-etapas" aria-labelledby="qs-tree-heading">
  <div class="qs-panel-title qs-tree-title"><div><h3 id="qs-tree-heading">Árvore hierárquica das Etapas</h3><p>Consulte todas as Etapas, Fases, Atos e Atividades. Expanda os níveis e use Editar para abrir o cadastro correspondente.</p></div><div class="qs-tree-actions"><button type="button" id="qs-tree-expand">Expandir tudo</button><button type="button" id="qs-tree-collapse">Recolher tudo</button></div></div>
+ <?php if($activePrintStages):?>
+ <div class="qs-tree-print-toolbar" aria-label="Impressão da árvore da etapa ativa">
+  <label for="qs-tree-print-stage">Etapa ativa a imprimir</label>
+  <select id="qs-tree-print-stage">
+  <?php foreach($activePrintStages as $qsActivePrintStage):?>
+   <option value="<?=(int)$qsActivePrintStage['id']?>"><?=$h($qsActivePrintStage['nome']??'Etapa ativa')?></option>
+  <?php endforeach;?>
+  </select>
+  <button type="button" id="qs-tree-print-button" class="btn secondary">Imprimir / Salvar PDF</button>
+  <small>Inclui todas as fases, atos e atividades da etapa selecionada.</small>
+ </div>
+ <?php else:?><p class="qs-note">Nenhuma etapa ativa para impressão. Habilite uma etapa na aba Etapas.</p><?php endif;?>
  <div class="qs-tree-search"><label for="qs-tree-filter">Localizar na estrutura</label><input type="search" id="qs-tree-filter" placeholder="Pesquise etapa, fase, ato ou atividade..."></div>
  <div class="qs-tree-content" id="qs-tree-content">
  <?php if(!$allE):?><div class="qs-empty">Nenhuma Etapa cadastrada. Utilize a aba Etapas para iniciar a estrutura.</div><?php endif;?>
  <?php foreach(($arvoreOperacional??[]) as $qsTreeProcess):foreach(($qsTreeProcess['etapas']??[]) as $qsTreeEtapa):?>
- <details class="qs-tree-node qs-tree-etapa" open data-tree-label="<?=$h(mb_strtolower((string)($qsTreeEtapa['nome']??''),'UTF-8'))?>">
+ <details class="qs-tree-node qs-tree-etapa" open data-tree-id="<?=(int)$qsTreeEtapa['id']?>" data-tree-label="<?=$h(mb_strtolower((string)($qsTreeEtapa['nome']??''),'UTF-8'))?>">
  <summary><span class="qs-tree-chevron" aria-hidden="true">▸</span><span class="qs-tree-badge">ETAPA</span><strong><?=$h($qsTreeEtapa['nome']??'Etapa sem nome')?></strong><span class="qs-modalidade-status <?=!empty($qsTreeEtapa['habilitada'])?'is-on':'is-off'?>"><?=!empty($qsTreeEtapa['habilitada'])?'ATIVA':'INATIVA'?></span><span class="qs-tree-count"><?=count($qsTreeEtapa['fases']??[])?> fases</span><a class="qs-tree-edit" href="?secao=estrutura&amp;nivel=etapa&amp;id=<?=(int)$qsTreeEtapa['id']?>">Editar</a></summary>
  <div class="qs-tree-children">
  <?php foreach(($qsTreeEtapa['fases']??[]) as $qsTreeFase):?>
@@ -105,6 +118,32 @@ if($selected!=='arvore'){foreach($types[$selected][1] as $item){if((int)$item['i
 .qs-note{font-size:.84rem;color:#52667c;margin:0 0 7px;line-height:1.5}
 
 .qs-head{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:22px 4px 16px}.qs-head h2{margin:4px 0 6px;font-size:1.45rem}.qs-head p{margin:0;color:#607084;font-size:.93rem}.qs-eyebrow{font-size:.71rem;letter-spacing:.11em;color:#58759a;font-weight:800}.qs-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:10px 0 20px}.qs-metrics>div{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;gap:10px;align-items:baseline}.qs-metrics b{font-size:1.7rem;color:#12375f}.qs-metrics span{color:#65758a;font-size:.86rem}.qs-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.qs-tabs a{padding:10px 18px;background:#f1f5f9;border-radius:9px;text-decoration:none;color:#304760;font-weight:650}.qs-tabs a.qs-active{color:white;background:#173b63}.qs-tabs small{opacity:.75;margin-left:5px}.qs-grid{display:grid;grid-template-columns:minmax(300px,0.85fr) minmax(340px,1.15fr);gap:16px;align-items:start}.qs-panel{border:1px solid #dce5ef;border-radius:13px;background:#fff;padding:20px;min-width:0}.qs-panel-title{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #e5ebf1;padding-bottom:13px;margin-bottom:15px}.qs-panel-title h3{margin:0;font-size:1.06rem}.qs-panel-title span{font-size:.79rem;color:#64748b}.qs-form{display:flex;flex-direction:column;gap:12px}.qs-form label{display:flex;flex-direction:column;gap:6px;font-size:.85rem;font-weight:600;color:#405268}.qs-form input,.qs-form select,.qs-form textarea,.qs-filter input{width:100%;box-sizing:border-box;border:1px solid #c9d5e3;border-radius:8px;padding:10px 11px;font:inherit;background:white;color:#172c42}.qs-form textarea{resize:vertical}.qs-form button{align-self:flex-start;margin-top:5px}.qs-inline{display:grid;grid-template-columns:1fr 2fr;gap:12px}.qs-filter{margin-bottom:11px}.qs-item{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid #ebeff4;padding:13px 2px}.qs-item-main{display:flex;gap:12px;min-width:0}.qs-code{min-width:50px;font-size:.78rem;font-weight:800;color:#3970a4}.qs-item strong{display:block;font-size:.89rem;overflow-wrap:anywhere}.qs-item small{display:block;color:#7c8797;margin-top:3px;font-size:.78rem}.qs-edit{white-space:nowrap;font-size:.83rem;text-decoration:none;font-weight:700;color:#1761a6}.qs-empty{padding:26px;color:#64748b;text-align:center}.qs-warning{padding:13px;border:1px solid #ead09b;background:#fff8eb;border-radius:9px;color:#87520d}@media(max-width:930px){.qs-grid{grid-template-columns:1fr}.qs-metrics{grid-template-columns:repeat(2,1fr)}.qs-head{align-items:flex-start;flex-direction:column}}
+
+.qs-tree-print-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 17px;padding:13px;border:1px solid #d5e4f0;border-radius:10px;background:#f5f9fd}
+.qs-tree-print-toolbar label{font-size:.86rem;color:#244764;font-weight:750}
+.qs-tree-print-toolbar select{min-width:220px;max-width:100%;flex:1 1 250px;padding:9px;border:1px solid #c9d5e3;border-radius:8px;background:#fff}
+.qs-tree-print-toolbar button{cursor:pointer}
+.qs-tree-print-toolbar small{width:100%;color:#60748a}
+#pge-tree-print-document{display:none}
+@media print{
+ @page{size:A4 portrait;margin:14mm 12mm}
+ body.pge-tree-print-mode > :not(#pge-tree-print-document){display:none!important}
+ body.pge-tree-print-mode #pge-tree-print-document{display:block!important;font:10pt/1.45 Arial,Helvetica,sans-serif!important;color:#10253f!important;background:white!important}
+ #pge-tree-print-document *{box-sizing:border-box}
+ #pge-tree-print-document .pge-print-header{border-bottom:2px solid #153f6b;margin-bottom:16px;padding-bottom:10px}
+ #pge-tree-print-document h1{font-size:17pt;margin:0 0 4px;color:#12375f}
+ #pge-tree-print-document .pge-print-subtitle{font-size:9pt;color:#52677c}
+ #pge-tree-print-document .qs-tree-node{display:block!important;margin:7px 0!important;break-inside:auto}
+ #pge-tree-print-document .qs-tree-node>summary{display:flex!important;break-after:avoid;align-items:flex-start!important;gap:7px!important;padding:6px 8px!important;border:1px solid #d8e3ef!important;border-radius:4px!important;background:#f4f8fc!important;color:#122a45!important}
+ #pge-tree-print-document .qs-tree-node>summary strong{font-size:10pt!important;font-weight:700!important;flex:1!important}
+ #pge-tree-print-document .qs-tree-fase>summary{background:#edf3f9!important}
+ #pge-tree-print-document .qs-tree-ato>summary{background:#f7f9f7!important}
+ #pge-tree-print-document .qs-tree-children{display:block!important;margin-left:15px!important;padding-left:9px!important;border-left:1px solid #c3d0dc!important}
+ #pge-tree-print-document .qs-tree-leaf{display:flex!important;break-inside:avoid;padding:5px 8px!important;margin:3px 0!important;border:1px solid #e4e8ee!important;background:#fff!important}
+ #pge-tree-print-document .qs-tree-badge{font-size:8pt!important;white-space:nowrap!important;color:#2b5279!important;background:#edf2f7!important}
+ #pge-tree-print-document .qs-tree-chevron,#pge-tree-print-document .qs-tree-edit,#pge-tree-print-document .qs-tree-count,#pge-tree-print-document .qs-modalidade-status{display:none!important}
+ #pge-tree-print-document [hidden]{display:block!important}
+}
 </style>
 <script>(function(){const f=document.getElementById('qs-search');if(!f)return;f.addEventListener('input',()=>{const term=f.value.toLocaleLowerCase('pt-BR');document.querySelectorAll('#qs-items .qs-item').forEach(el=>{el.hidden=!el.dataset.search.includes(term);});});})();</script>
 
@@ -131,5 +170,47 @@ if($selected!=='arvore'){foreach($types[$selected][1] as $item){if((int)$item['i
  });
  // Links de edição dentro do summary não devem alternar a expansão.
  root.querySelectorAll('summary a').forEach(a=>a.addEventListener('click',e=>e.stopPropagation()));
+})();
+</script>
+
+<script>
+(function(){
+ const button=document.getElementById('qs-tree-print-button');
+ const stage=document.getElementById('qs-tree-print-stage');
+ const root=document.getElementById('qs-tree-content');
+ if(!button||!stage||!root)return;
+ let printContainer=null;
+ const cleanup=()=>{
+  document.body.classList.remove('pge-tree-print-mode');
+  if(printContainer){printContainer.remove();printContainer=null;}
+ };
+ window.addEventListener('afterprint',cleanup);
+ button.addEventListener('click',()=>{
+  cleanup();
+  const source=[...root.querySelectorAll('.qs-tree-etapa')].find(el=>el.dataset.treeId===stage.value);
+  if(!source){window.alert('Etapa ativa não encontrada na árvore. Atualize a página.');return;}
+  printContainer=document.createElement('div');
+  printContainer.id='pge-tree-print-document';
+  const heading=document.createElement('div');
+  heading.className='pge-print-header';
+  const title=document.createElement('h1');
+  title.textContent='Árvore Hierárquica — '+(stage.options[stage.selectedIndex]?.textContent?.trim()||'Etapa ativa');
+  heading.appendChild(title);
+  const subtitle=document.createElement('div');
+  subtitle.className='pge-print-subtitle';
+  subtitle.textContent='Estrutura administrativa • Etapas, fases, atos e atividades • Gerado em '+new Date().toLocaleString('pt-BR');
+  heading.appendChild(subtitle);
+  printContainer.appendChild(heading);
+  const tree=source.cloneNode(true);
+  tree.removeAttribute('hidden');
+  tree.querySelectorAll('[hidden]').forEach(el=>el.removeAttribute('hidden'));
+  [tree,...tree.querySelectorAll('details')].forEach(el=>{if(el.tagName==='DETAILS')el.open=true;});
+  tree.querySelectorAll('.qs-tree-edit').forEach(el=>el.remove());
+  printContainer.appendChild(tree);
+  document.body.appendChild(printContainer);
+  document.body.classList.add('pge-tree-print-mode');
+  window.print();
+  // O navegador também emite afterprint ao fechar a impressão / salvar PDF.
+ });
 })();
 </script>
