@@ -1,5 +1,28 @@
 <link rel="stylesheet" href="/assets/sla.css?v=4208">
 <?php use App\Core\Csrf;use App\Core\Format;use App\Core\PhaseNumber;$slug=$tenant['slug'];$phase=$faseSituacional;$deadline=$prazoDashboard;$phaseStatus=match($faseSituacionalStatus){'done'=>'ENCERRADA','ready'=>'PRONTA PARA ENCERRAMENTO','correction'=>'CORREÇÃO SOLICITADA','run'=>'EM ANDAMENTO',default=>'AGUARDANDO INÍCIO'};?>
+<?php
+// Número visual relativo à modalidade/etapa ativa, sem expor a ordem global do cadastro.
+// A mesma sequência é usada pela prévia do processo (process_preview.php).
+$dashboardNumeroFase = null;
+if (!empty($phase['id'])) {
+    foreach (($fasesSituacionais ?? []) as $dashboardIndiceFase => $dashboardFase) {
+        if ((int)($dashboardFase['id'] ?? 0) !== (int)$phase['id']) {
+            continue;
+        }
+        $dashboardTituloFase = trim((string)($dashboardFase['titulo'] ?? ''));
+        if (preg_match('/^([1-9][0-9]*)\s*[.\-–)]\s*/u', $dashboardTituloFase, $dashboardNumeroExplicito)) {
+            $dashboardNumeroFase = (int)$dashboardNumeroExplicito[1];
+        } else {
+            $dashboardNumeroFase = (int)$dashboardIndiceFase + 1;
+        }
+        break;
+    }
+    if ($dashboardNumeroFase === null) {
+        // Compatibilidade quando o controlador não fornece a lista completa de fases.
+        $dashboardNumeroFase = PhaseNumber::from($phase);
+    }
+}
+?>
 <?php require __DIR__.'/partials/hierarchy_summary.php'; ?>
 
 <div class="hero dashboard-hero"><div><h1>Dashboard Situacional</h1><p><?=$scope==='stratelli'?'Visão executiva do processo atual do município, da fase em andamento e das secretarias que ainda precisam agir.':($scope==='secretaria'?'Visão restrita às fases e aos documentos sob responsabilidade da sua secretaria.':'Visão consolidada do processo municipal, reunindo todas as secretarias, documentos, entregas, correções e análises.')?></p></div><div class="notice <?=$scope==='stratelli'?'purple':''?>">● Situação calculada em tempo real pelo banco de dados</div></div>
@@ -14,14 +37,14 @@
   <a class="btn primary" href="/<?=Format::h($slug)?>/workflow">Registrar documento no Workflow</a>
 <?php endif; ?></section>
 <div class="kpis dashboard-kpis">
-<div class="kpi alert"><small><?=$scope==='secretaria'?'FASE DA SUA UNIDADE':'FASE ATUAL'?></small><b>Fase <?=Format::h(isset($phase['id'])?PhaseNumber::from($phase):'—')?></b><span><?=Format::h($phase['aba']??'Sem fase ativa')?></span></div>
+<div class="kpi alert"><small><?=$scope==='secretaria'?'FASE DA SUA UNIDADE':'FASE ATUAL'?></small><b>Fase <?=Format::h($dashboardNumeroFase ?? '—')?></b><span><?=Format::h($phase['aba']??'Sem fase ativa')?></span></div>
 <div class="kpi kpi-deadline deadline-<?=Format::h($deadline['status']??'blocked')?>"><small>SITUAÇÃO DO PRAZO</small><b class="responsive-kpi-value"><?=Format::h($deadline['rotulo']??'—')?></b><span><?=Format::h($deadline['texto']??'Cronograma indisponível')?></span></div>
 <div class="kpi success"><small>PROGRESSO GERAL</small><b><?=$progresso?>%</b><span><?=$totalAprovados?> de <?=$totalDocs?> documentos aprovados</span></div>
 <div class="kpi alert"><small>SECRETARIAS PENDENTES</small><b><?=count($dashboardSecretariasPendentes)?></b><span>Precisam entregar ou corrigir</span></div>
 <div class="kpi alert"><small>DOCUMENTOS PENDENTES</small><b><?=$dashboardFaseNaoEntregues+$dashboardFaseCorrecoes?></b><span>Na fase atual</span></div>
 <div class="kpi waiting"><small>AGUARDANDO ANÁLISE</small><b><?=$dashboardFaseAguardando?></b><span>Recebidos na fase atual</span></div>
 </div>
-<?php if($phase):?><section class="dashboard-phase-focus"><div class="dashboard-phase-number"><small>ESTAMOS ATUALMENTE NA</small><b><?=Format::h(PhaseNumber::from($phase))?></b><span>FASE <?=Format::h(PhaseNumber::from($phase))?><br><?=Format::h($phase['aba'])?></span></div><div class="dashboard-phase-main"><h2><?=Format::h($phase['titulo'])?></h2><p><?=Format::h($phase['descricao'])?></p><span class="phase-focus-status"><?=$phaseStatus?></span><div class="phase-focus-progress"><div><span>Progresso documental da fase</span><strong><?=$dashboardFaseProgresso?>%</strong></div><div class="phase-focus-track"><span style="width:<?=$dashboardFaseProgresso?>%"></span></div></div><div class="phase-focus-counters"><div><b><?=$dashboardFaseAprovados?></b><small>APROVADOS</small></div><div><b><?=$dashboardFaseAguardando?></b><small>EM ANÁLISE</small></div><div><b><?=$dashboardFaseCorrecoes?></b><small>CORREÇÕES</small></div><div><b><?=$dashboardFaseNaoEntregues?></b><small>NÃO ENTREGUES</small></div></div></div><div class="dashboard-phase-deadline"><b>Prazo da fase</b><p><?=Format::h(Format::date($deadline['inicio']??null))?> a <?=Format::h(Format::date($deadline['fim']??null))?></p><span class="deadline-status-pill <?=Format::h($deadline['status']??'blocked')?>"><?=Format::h($deadline['rotulo']??'—')?></span><p><?=Format::h($deadline['texto']??'')?></p><?php $canOpenDashboardPhase=(bool)($faseAcesso[(int)$phase['id']]['pode_acessar']??false);?><?php if($canOpenDashboardPhase):?><a class="btn primary" href="/<?=Format::h($slug)?>/workflow/fase/<?=(int)$phase['id']?>">Abrir detalhes da fase</a><?php else:?><span class="btn phase-locked-button" aria-disabled="true">🔒 Aguardando fase anterior</span><?php endif;?></div></section><?php endif;?>
+<?php if($phase):?><section class="dashboard-phase-focus"><div class="dashboard-phase-number"><small>ESTAMOS ATUALMENTE NA</small><b><?=Format::h($dashboardNumeroFase ?? '—')?></b><span>FASE <?=Format::h($dashboardNumeroFase ?? '—')?><br><?=Format::h($phase['aba'])?></span></div><div class="dashboard-phase-main"><h2><?=Format::h($phase['titulo'])?></h2><p><?=Format::h($phase['descricao'])?></p><span class="phase-focus-status"><?=$phaseStatus?></span><div class="phase-focus-progress"><div><span>Progresso documental da fase</span><strong><?=$dashboardFaseProgresso?>%</strong></div><div class="phase-focus-track"><span style="width:<?=$dashboardFaseProgresso?>%"></span></div></div><div class="phase-focus-counters"><div><b><?=$dashboardFaseAprovados?></b><small>APROVADOS</small></div><div><b><?=$dashboardFaseAguardando?></b><small>EM ANÁLISE</small></div><div><b><?=$dashboardFaseCorrecoes?></b><small>CORREÇÕES</small></div><div><b><?=$dashboardFaseNaoEntregues?></b><small>NÃO ENTREGUES</small></div></div></div><div class="dashboard-phase-deadline"><b>Prazo da fase</b><p><?=Format::h(Format::date($deadline['inicio']??null))?> a <?=Format::h(Format::date($deadline['fim']??null))?></p><span class="deadline-status-pill <?=Format::h($deadline['status']??'blocked')?>"><?=Format::h($deadline['rotulo']??'—')?></span><p><?=Format::h($deadline['texto']??'')?></p><?php $canOpenDashboardPhase=(bool)($faseAcesso[(int)$phase['id']]['pode_acessar']??false);?><?php if($canOpenDashboardPhase):?><a class="btn primary" href="/<?=Format::h($slug)?>/workflow/fase/<?=(int)$phase['id']?>">Abrir detalhes da fase</a><?php else:?><span class="btn phase-locked-button" aria-disabled="true">🔒 Aguardando fase anterior</span><?php endif;?></div></section><?php endif;?>
 <?php $slaRows=$slaOperacional['secretarias']??[];$slaResumo=$slaOperacional['resumo']??[];?>
 <section class="sla-dashboard-strip">
     <div class="sla-dashboard-head"><div><h2><?=$scope==='secretaria'?'Meu SLA operacional':'SLA por Secretaria'?></h2><p>Pontualidade da primeira entrega obrigatória, correções e qualidade da primeira versão.</p></div><a class="mini-link primary" href="/<?=Format::h($slug)?>/relatorios/sla">Ver análise completa →</a></div>
