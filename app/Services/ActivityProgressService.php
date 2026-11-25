@@ -55,29 +55,55 @@ final class ActivityProgressService
   if($atoId>0)$this->synchronizeAct($atoId);
  }
 
- /** Conclui automaticamente somente quando ha requisito obrigatorio e todos estao aprovados. */
+ /**
+  * Reconcilia as atividades do ato individualmente e, quando TODOS os documentos
+  * obrigatorios do ato e de seus filhos estiverem aprovados, conclui o ato.
+  * As atividades prontas nao dependem das demais atividades pendentes.
+  */
  public function synchronizeAct(int $atoId): bool
  {
+  // Sem inicio formal, conserva status; nunca antecipa a contagem do cronograma.
   if(!(new FormalStartService())->get($this->mid))return false;
-  // A transacao garante a atualizacao atomica das atividades e do ato.
-  $this->pdo->beginTransaction();$changed=false;
+  $this->pdo->beginTransaction();
+  $changed=false;
+  $completedAct=false;
   try {
    $snapshot=$this->snapshot($atoId);
-   if(!$snapshot['pronto']){$this->pdo->commit();return false;}
-   $q=$this->pdo->prepare('SELECT status_execucao FROM atividades_fase WHERE id=? AND municipio_id=? FOR UPDATE');$q->execute([$atoId,$this->mid]);$wasCompleted=$q->fetchColumn()==='CONCLUIDA';
-   $childDocs=[];
-   foreach($snapshot['requisitos'] as $doc)if((int)$doc['atividade_ato_id']>0)$childDocs[(int)$doc['atividade_ato_id']][]=$doc;
-   foreach($snapshot['filhas'] as $child){
-    $cid=(int)$child['id'];$required=$childDocs[$cid]??[];
-    // Atividades sem requisito obrigatorio nao bloqueiam a conclusao documental do ato.
-    if(!$required)continue;
-    $ok=true;foreach($required as $doc)if($doc['ultimo_status']!=='APROVADO')$ok=false;
-    if($ok)$this->pdo->prepare('UPDATE pge_atividades_ato SET status_execucao="CONCLUIDA",concluida_em=COALESCE(concluida_em,NOW()),concluida_por_usuario_id=COALESCE(concluida_por_usuario_id,?) WHERE id=? AND municipio_id=? AND ativo=1 AND status_execucao<>"CONCLUIDA"')->execute([Auth::id(),$cid,$this->mid]);
+   $byChild=[];
+   foreach($snapshot['requisitos'] as $doc){
+    $childId=(int)($doc['atividade_ato_id']??0);
+    if($childId>0)$byChild[$childId][]=$doc;
    }
-   if(!$wasCompleted){$this->pdo->prepare('UPDATE atividades_fase SET status_execucao="CONCLUIDA",concluida_em=NOW(),concluida_por_usuario_id=?,atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([Auth::id(),$atoId,$this->mid]);$changed=true;}
+   // Primeiro sincroniza cada atividade filha que possui documentos obrigatorios.
+   foreach($snapshot['filhas'] as $child){
+    $cid=(int)$child['id'];
+    $required=$byChild[$cid]??[];
+    if(!$required)continue;
+    $ready=true;
+    foreach($required as $doc){
+     if(($doc['ultimo_status']??'')!=='APROVADO'){$ready=false;break;}
+    }
+    if($ready){
+     $st=$this->pdo->prepare('UPDATE pge_atividades_ato SET status_execucao="CONCLUIDA",concluida_em=COALESCE(concluida_em,NOW()),concluida_por_usuario_id=COALESCE(concluida_por_usuario_id,?) WHERE id=? AND municipio_id=? AND ativo=1 AND status_execucao<>"CONCLUIDA"');
+     $st->execute([Auth::id(),$cid,$this->mid]);
+     if($st->rowCount()>0)$changed=true;
+    }
+   }
+   // Nao conclui o ato parcialmente. Ao menos um requisito obrigatorio e exigido.
+   if($snapshot['pronto']){
+    $st=$this->pdo->prepare('UPDATE atividades_fase SET status_execucao="CONCLUIDA",concluida_em=COALESCE(concluida_em,NOW()),concluida_por_usuario_id=COALESCE(concluida_por_usuario_id,?),atualizado_em=NOW() WHERE id=? AND municipio_id=? AND ativo=1 AND status_execucao<>"CONCLUIDA"');
+    $st->execute([Auth::id(),$atoId,$this->mid]);
+    $completedAct=$st->rowCount()>0;
+    if($completedAct)$changed=true;
+   }
    $this->pdo->commit();
-  }catch(\Throwable $e){if($this->pdo->inTransaction())$this->pdo->rollBack();throw $e;}
-  if($changed)Audit::log('ATO_CONCLUIDO_AUTOMATICAMENTE','Ato #'.$atoId.' concluido por aprovacao de todos os documentos obrigatorios.',$this->mid,['categoria'=>'OPERACIONAL']);
+  } catch(\Throwable $e){
+   if($this->pdo->inTransaction())$this->pdo->rollBack();
+   throw $e;
+  }
+  if($completedAct){
+   Audit::log('ATO_CONCLUIDO_AUTOMATICAMENTE','Ato #'.$atoId.' concluido por aprovacao de todos os documentos obrigatorios.',$this->mid,['categoria'=>'OPERACIONAL']);
+  }
   return $changed;
  }
 
