@@ -16,16 +16,46 @@ final class ActivityProgressService
    $manual=strtoupper((string)($a['status_execucao']??'PENDENTE'))==='CONCLUIDA';$total=count($required);$complete=$total>0?($approved===$total):$manual;
    $pct=$total>0?(int)round($approved/$total*100):($complete?100:0);
    if(!empty($children[$aid])){$done=0;$points=0;foreach($children[$aid] as $child){$childDocs=array_values(array_filter($docByChild[(int)$child['id']]??[],fn($r)=>(int)$r['obrigatorio']===1));$childApproved=0;foreach($childDocs as $r)if(($latest[(int)$r['id']]['status']??'')==='APROVADO')$childApproved++;$childComplete=$childDocs?($childApproved===count($childDocs)):($child['status_execucao']==='CONCLUIDA');$points+=$childDocs?(int)round(100*$childApproved/count($childDocs)):($childComplete?100:0);if($childComplete)$done++;}$complete=$done===count($children[$aid])&&($total===0||$approved===$total);$pct=(int)round(($points/count($children[$aid]) + ($total>0?100*$approved/$total:0))/($total>0?2:1));}
+   $complete=$manual; // A conclusão do ato exige confirmação administrativa.
    $status=$complete?'CONCLUIDA':($correction?'CORRECAO':(($approved+$waiting)>0?'EM_ANDAMENTO':'PENDENTE'));
    $out[$aid]=['id'=>$aid,'fase_id'=>(int)$a['fase_id'],'total_documentos'=>$total,'aprovados'=>$approved,'aguardando'=>$waiting,'correcao'=>$correction,'pendentes'=>$missing,'percentual'=>$pct,'concluida'=>$complete,'status'=>$status,'manual'=>$manual];
   }return$out;
  }
  public function phaseMetrics(array $activities,array $activityMetrics): array
  { $out=[];foreach($activities as$a){if(!(int)$a['ativo'])continue;$fid=(int)$a['fase_id'];if(!isset($out[$fid]))$out[$fid]=['total'=>0,'concluidas'=>0,'percentual'=>0];$out[$fid]['total']++;if(!empty($activityMetrics[(int)$a['id']]['concluida']))$out[$fid]['concluidas']++;}foreach($out as&$m)$m['percentual']=$m['total']?(int)round($m['concluidas']/$m['total']*100):0;unset($m);return$out; }
- public function setCompleted(int $activityId,bool $completed): void
- { if(!Auth::isPlatformAdmin())throw new RuntimeException('Apenas a Stratelli pode concluir ou reabrir um ato/atividade.');$q=$this->pdo->prepare('SELECT a.fase_id FROM atividades_fase a JOIN fases f ON f.id=a.fase_id AND f.municipio_id=a.municipio_id AND f.ativo=1 WHERE a.id=? AND a.municipio_id=? AND a.ativo=1');$q->execute([$activityId,$this->mid]);$fid=(int)$q->fetchColumn();if(!$fid)throw new RuntimeException('Ato/atividade não localizado.');(new PhaseClosureService())->assertOpen($fid);
-  if($completed && !(new FormalStartService())->get($this->mid)) throw new RuntimeException('Registre o início formal do processo antes de concluir atos.');
-  if($completed){$q=$this->pdo->prepare('SELECT COUNT(*) FROM pge_atividades_ato WHERE municipio_id=? AND ato_legado_id=? AND ativo=1 AND status_execucao<>"CONCLUIDA"');$q->execute([$this->mid,$activityId]);if((int)$q->fetchColumn()>0)throw new RuntimeException('Conclua as atividades do ato antes de encerrá-lo.');$q=$this->pdo->prepare('SELECT COUNT(*) total,SUM(CASE WHEN d.status="APROVADO" THEN 1 ELSE 0 END) approved FROM requisitos_documentais r LEFT JOIN documentos_enviados d ON d.id=(SELECT MAX(d2.id) FROM documentos_enviados d2 WHERE d2.municipio_id=r.municipio_id AND d2.requisito_id=r.id) WHERE r.municipio_id=? AND r.atividade_id=? AND r.ativo=1 AND r.obrigatorio=1');$q->execute([$this->mid,$activityId]);$m=$q->fetch(PDO::FETCH_ASSOC)?:[];$total=(int)($m['total']??0);$approved=(int)($m['approved']??0);if($total>0&&$approved<$total)throw new RuntimeException('Este ato ainda possui documentos obrigatórios não aprovados.');}
-  $this->pdo->prepare('UPDATE atividades_fase SET status_execucao=?,concluida_em=?,concluida_por_usuario_id=?,atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$completed?'CONCLUIDA':'PENDENTE',$completed?date('Y-m-d H:i:s'):null,$completed?Auth::id():null,$activityId,$this->mid]);
+ public function setCompleted(int $activityId, bool $completed): void
+ {
+  if (!Auth::isPlatformAdmin()) throw new RuntimeException('Apenas a Stratelli pode concluir ou reabrir um ato.');
+  $q=$this->pdo->prepare('SELECT a.fase_id FROM atividades_fase a JOIN fases f ON f.id=a.fase_id AND f.municipio_id=a.municipio_id AND f.ativo=1 WHERE a.id=? AND a.municipio_id=? AND a.ativo=1');
+  $q->execute([$activityId,$this->mid]);$fid=(int)$q->fetchColumn();
+  if(!$fid)throw new RuntimeException('Ato não localizado.');
+  (new PhaseClosureService())->assertOpen($fid);
+  if($completed && !(new FormalStartService())->get($this->mid))throw new RuntimeException('Registre o início formal antes de concluir atos.');
+  $this->pdo->beginTransaction();
+  try {
+   $q=$this->pdo->prepare('SELECT id,status_execucao FROM pge_atividades_ato WHERE municipio_id=? AND ato_legado_id=? AND ativo=1 FOR UPDATE');
+   $q->execute([$this->mid,$activityId]);$children=$q->fetchAll(PDO::FETCH_ASSOC);
+   if($completed){
+    // Inclui os documentos obrigatórios do próprio ato e de suas atividades subordinadas.
+    $q=$this->pdo->prepare('SELECT r.id,r.atividade_ato_id,(SELECT d.status FROM documentos_enviados d WHERE d.municipio_id=r.municipio_id AND d.requisito_id=r.id ORDER BY d.id DESC LIMIT 1) AS ultimo_status FROM requisitos_documentais r WHERE r.municipio_id=? AND r.ativo=1 AND r.obrigatorio=1 AND (r.atividade_id=? OR r.atividade_ato_id IN (SELECT a.id FROM pge_atividades_ato a WHERE a.municipio_id=? AND a.ato_legado_id=? AND a.ativo=1))');
+    $q->execute([$this->mid,$activityId,$this->mid,$activityId]);$docs=$q->fetchAll(PDO::FETCH_ASSOC);
+    $docsPorFilha=[];$temDocsObrigatorios=false;
+    foreach($docs as $doc){$temDocsObrigatorios=true;if($doc['ultimo_status']!=='APROVADO')throw new RuntimeException('O ato contém documentos obrigatórios não entregues ou ainda não aprovados.');$childId=(int)($doc['atividade_ato_id']??0);if($childId>0)$docsPorFilha[$childId]=true;}
+    if(!$temDocsObrigatorios&&!$children)throw new RuntimeException('Este ato não possui documentos obrigatórios para conferência.');
+    foreach($children as $child){$childId=(int)$child['id'];
+     if(empty($docsPorFilha[$childId])&&$child['status_execucao']!=='CONCLUIDA')throw new RuntimeException('Há atividade sem documentos obrigatórios que ainda não foi concluída.');
+    }
+    // Filhas com documentos exigidos e aprovados acompanham a conclusão do ato.
+    if($docsPorFilha){$ids=array_keys($docsPorFilha);$params=array_merge([Auth::id(),$this->mid,$activityId],$ids);$holders=implode(',',array_fill(0,count($ids),'?'));
+     $this->pdo->prepare('UPDATE pge_atividades_ato SET status_execucao="CONCLUIDA",concluida_em=NOW(),concluida_por_usuario_id=? WHERE municipio_id=? AND ato_legado_id=? AND ativo=1 AND id IN ('.$holders.')')->execute($params);
+    }
+   }else{
+    // Ao reabrir, mantém o histórico de aprovação documental intacto.
+    // A reabertura de cada atividade subordinada deve ser tratada separadamente.
+   }
+   $q=$this->pdo->prepare('UPDATE atividades_fase SET status_execucao=?,concluida_em=?,concluida_por_usuario_id=?,atualizado_em=NOW() WHERE id=? AND municipio_id=?');
+   $q->execute([$completed?'CONCLUIDA':'PENDENTE',$completed?date('Y-m-d H:i:s'):null,$completed?Auth::id():null,$activityId,$this->mid]);
+   $this->pdo->commit();
+  }catch(\Throwable $e){if($this->pdo->inTransaction())$this->pdo->rollBack();throw $e;}
  }
 }

@@ -89,7 +89,7 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
 <?php foreach($phaseActs as $act):
   $am=$atividadeMetricas[(int)$act['id']]??['status'=>'PENDENTE','percentual'=>0,'concluida'=>false,'total_documentos'=>0,'aprovados'=>0];
   $numeroAto=$workflowNumeroAto($act,$faseNumeroVisual);
-  $atoConcluido=!empty($am['concluida']) || ($act['status_execucao']??'')==='CONCLUIDA';
+  $atoConcluido=($act['status_execucao']??'')==='CONCLUIDA';
   $atoClasse=$atoConcluido?'is-complete':($class==='overdue'?'is-overdue':($class==='current'?'is-current':'is-upcoming'));
   $filhas=$workflowFilhas[(int)$act['id']]??[];
   $qtdFilhas=count($filhas);$concluidasFilhas=count(array_filter($filhas,static fn($a)=>($a['status_execucao']??'')==='CONCLUIDA'));
@@ -106,7 +106,46 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
       <div><b><?=Format::h($numeroFilha.'. '.$workflowSemPrefixo((string)$filha['titulo'],$numeroFilha))?></b><small><?=$filhaConcluida?'CONCLUÍDA':($filhaClasse==='is-overdue'?'EM ATRASO':($filhaClasse==='is-current'?'PENDENTE':'AGUARDANDO ABERTURA'))?></small></div>
     </div>
     <?php endforeach;?></div><?php endif;?>
-  <?php if($scope==='stratelli'&&$previewMode==='dashboard'&&$previewFormalmenteIniciado):?><form method="post" action="/<?=Format::h($slug)?>/atividades/<?=(int)$act['id']?>/<?=$atoConcluido?'reabrir':'concluir'?>"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><button class="dashboard-activity-action" type="submit"><?=$atoConcluido?'Reabrir ato':'Concluir ato'?></button></form><?php endif;?>
+  <?php if($scope==='stratelli'&&$previewMode==='dashboard'&&$previewFormalmenteIniciado):
+    $atoDocumentoLinhas=[];$atoPodeConcluir=true;$qtdDocsObrigatorios=0;$qtdDocsAprovados=0;
+    $idsFilhasDoAto=array_map('intval',array_column($filhas,'id'));
+    foreach(($requisitosVisiveis??[]) as $requisitoAto){
+      if((int)($requisitoAto['ativo']??0)!==1)continue;
+      $idFilhaRequisito=(int)($requisitoAto['atividade_ato_id']??0);
+      if((int)($requisitoAto['atividade_id']??0)!==(int)$act['id']&&!in_array($idFilhaRequisito,$idsFilhasDoAto,true))continue;
+      $docUltimo=$ultimosDocs[(int)$requisitoAto['id']]??null;
+      $situacaoDoc=$docUltimo?(string)($docUltimo['status']??'EM_ANALISE'):'NAO_ENTREGUE';
+      $obrigatorioDoc=(int)($requisitoAto['obrigatorio']??0)===1;
+      if($obrigatorioDoc){$qtdDocsObrigatorios++;if($situacaoDoc==='APROVADO')$qtdDocsAprovados++;else $atoPodeConcluir=false;}
+      $atoDocumentoLinhas[]=['nome'=>(string)$requisitoAto['nome'],'status'=>$situacaoDoc,'obrigatorio'=>$obrigatorioDoc,'filha_id'=>$idFilhaRequisito];
+    }
+    // Uma atividade filha sem documento obrigatório precisa estar previamente concluída.
+    foreach($filhas as $filhaAto){
+      $filhaId=(int)$filhaAto['id'];$temDocObrigatorio=false;
+      foreach($atoDocumentoLinhas as $linhaDoc){if($linhaDoc['filha_id']===$filhaId&&$linhaDoc['obrigatorio']){$temDocObrigatorio=true;break;}}
+      if(!$temDocObrigatorio&&($filhaAto['status_execucao']??'')!=='CONCLUIDA')$atoPodeConcluir=false;
+    }
+    if(!$qtdDocsObrigatorios&&!$filhas)$atoPodeConcluir=false;
+    $conferenciaId='pge-conferencia-ato-'.(int)$act['id'];
+  ?>
+    <button class="dashboard-activity-action" type="button" onclick="document.getElementById('<?=Format::h($conferenciaId)?>').showModal()"><?=$atoConcluido?'Reabrir ato':'Conferir / Concluir ato'?></button>
+    <dialog id="<?=Format::h($conferenciaId)?>" class="pge-ato-conferencia" aria-label="Conferência documental do ato <?=Format::h($numeroAto)?>">
+      <div class="pge-ato-conferencia-top"><div><small>CONFERÊNCIA DOCUMENTAL</small><h3><?=Format::h($numeroAto.'. '.$workflowSemPrefixo((string)$act['titulo'],$numeroAto))?></h3><p>Verifique os documentos obrigatórios antes de registrar a conclusão do ato.</p></div><button type="button" class="pge-ato-conferencia-close" onclick="this.closest('dialog').close()" aria-label="Fechar">×</button></div>
+      <div class="pge-ato-conferencia-resumo"><b><?=$qtdDocsAprovados?> de <?=$qtdDocsObrigatorios?> documentos obrigatórios aprovados</b><span><?=$atoConcluido?'Ato já concluído':($atoPodeConcluir?'Documentação pronta para conclusão':'Existem pendências que impedem a conclusão')?></span></div>
+      <div class="pge-ato-conferencia-lista">
+      <?php if($atoDocumentoLinhas):foreach($atoDocumentoLinhas as $linhaDoc):
+        $rotuloDoc=['APROVADO'=>'Aprovado','CORRECAO'=>'Correção solicitada','NAO_ENTREGUE'=>'Não entregue','EM_ANALISE'=>'Em análise','ENVIADO'=>'Aguardando validação'][$linhaDoc['status']]??'Aguardando validação';
+        $classeDoc=$linhaDoc['status']==='APROVADO'?'ok':($linhaDoc['status']==='NAO_ENTREGUE'?'missing':'pending');
+      ?><div class="pge-ato-conferencia-doc"><div><b><?=Format::h($linhaDoc['nome'])?></b><small><?=$linhaDoc['obrigatorio']?'Obrigatório':'Opcional'?></small></div><span class="pge-ato-conferencia-status <?=$classeDoc?>"><?=Format::h($rotuloDoc)?></span></div><?php endforeach;else:?>
+        <p>Nenhum documento está vinculado a este ato. A conclusão deve ser verificada conforme as atividades cadastradas.</p>
+      <?php endif;?>
+      </div>
+      <?php if(!$atoConcluido&&$filhas):?><p class="pge-ato-conferencia-info">As atividades com documentos obrigatórios aprovados serão concluídas junto com o ato. Atividades sem documento obrigatório precisam estar previamente concluídas.</p><?php endif;?>
+      <div class="pge-ato-conferencia-acoes"><button type="button" class="pge-ato-conferencia-cancelar" onclick="this.closest('dialog').close()">Cancelar</button>
+        <form method="post" action="/<?=Format::h($slug)?>/atividades/<?=(int)$act['id']?>/<?=$atoConcluido?'reabrir':'concluir'?>"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><button type="submit" class="pge-ato-conferencia-confirmar" <?=(!$atoConcluido&&!$atoPodeConcluir)?'disabled title="Existem documentos ou atividades pendentes"':''?>><?=$atoConcluido?'Confirmar reabertura':'✓ Confirmar conclusão do ato'?></button></form>
+      </div>
+    </dialog>
+  <?php endif;?>
 </div>
 <?php endforeach;?></div><?php else:?><small class="dashboard-activity-empty">Nenhum ato visível para este perfil.</small><?php endif;?>
 <div class="dashboard-doc-mini">Docs: <?=$a?> aprovados · <?=$w?> em análise · <?=$c?> correção · <?=$p?> pendentes</div></div><?php else:?><div class="contract-preview-milestone"><small class="contract-preview-milestone-label">ENTREGÁVEL</small><?=Format::h($f['entregavel']?:'Entregável a definir')?></div><?php if($scope==='stratelli'&&$globalStatus==='ready'&&$canOpen&&$previewFormalmenteIniciado):?><?php $previewCloseId='phase-close-dialog-'.(int)$f['id'];$previewCloseMin=(string)($deadline['inicio']??$dataInicioProcesso);$previewCloseToday=date('Y-m-d');$previewCloseAvailable=$previewCloseMin<=$previewCloseToday;?><?php if($previewCloseAvailable):?><button type="button" class="contract-preview-close-action" onclick="document.getElementById('<?=Format::h($previewCloseId)?>').showModal()">✓ Encerrar fase</button><dialog id="<?=Format::h($previewCloseId)?>" class="phase-close-dialog"><form class="phase-close-dialog-form" method="post" action="/<?=Format::h($slug)?>/cronograma/fases/<?=(int)$f['id']?>/encerrar"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><div class="phase-close-dialog-head"><div class="phase-close-dialog-headcopy"><small>ENCERRAMENTO FORMAL</small><h3>Encerrar Fase <?=Format::h($faseNumeroVisual)?> — <?=Format::h($f['aba'])?></h3><p>Ao confirmar, o sistema registrará o encerramento formal, preservará o snapshot documental e liberará a próxima fase.</p></div><button type="button" class="phase-close-dialog-x" aria-label="Fechar" onclick="this.closest('dialog').close()">×</button></div><div class="phase-close-dialog-summary"><div class="phase-close-dialog-summary-item"><small>Fase</small><b><?=Format::h($f['titulo'])?></b><span><?=Format::h($f['entregavel']?:'Entregável cadastrado')?></span></div><div class="phase-close-dialog-summary-item"><small>Status atual</small><b>Pronta para encerramento</b><span>Documentação obrigatória aprovada</span></div></div><div class="phase-close-dialog-grid"><label class="phase-close-field"><span>Data do encerramento</span><input type="date" name="data_conclusao" value="<?=Format::h($previewCloseToday)?>" min="<?=Format::h($previewCloseMin)?>" max="<?=Format::h($previewCloseToday)?>" required></label><label class="phase-close-field"><span>Responsável</span><input type="text" value="<?=Format::h($user['nome']??'Stratelli')?>" readonly></label><label class="phase-close-field phase-close-dialog-observation"><span>Observação do encerramento <em><?=$obsEncerramentoObrigatoria?'obrigatória':'opcional'?></em></span><textarea name="observacao" rows="5" maxlength="1000" <?=$obsEncerramentoObrigatoria?'required':''?> placeholder="Registre a decisão, conferências realizadas, pendências saneadas e o contexto do encerramento."></textarea><small class="phase-close-field-help">Este texto ficará registrado no histórico formal da fase.</small></label></div><div class="phase-close-dialog-warning"><div class="phase-close-dialog-warning-icon">!</div><div><b>Confirmação necessária</b><span>O botão verde da prévia apenas abre este formulário. A fase só será encerrada após clicar em <strong>Confirmar encerramento</strong>.</span></div></div><div class="phase-close-dialog-actions"><button type="button" class="btn neutral" onclick="this.closest('dialog').close()">Cancelar</button><button class="btn approve" type="submit">✓ Confirmar encerramento</button></div></form></dialog><?php else:?><button type="button" class="contract-preview-close-action is-disabled" disabled title="O encerramento ficará disponível em <?=Format::h(Format::date($previewCloseMin))?>">◷ Encerramento em <?=Format::h(Format::date($previewCloseMin))?></button><?php endif;?><?php endif;?><?php endif;?>
@@ -115,6 +154,29 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
 <?php if($previewMode==='dashboard'&&$previewFormalmenteIniciado):?><div class="contract-preview-footer dashboard-process-footer"><div class="contract-preview-legal dashboard-process-summary"><div class="contract-preview-legal-icon">◎</div><div class="dashboard-process-summary-content"><b><?=Format::h(strtoupper($dashboardResumoCard['titulo']))?></b><div class="dashboard-process-summary-metrics"><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['progresso'])?></b><small>Progresso</small></div><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['pendencias'])?></b><small>Pendências</small></div><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['analise'])?></b><small>Em análise</small></div><div class="dashboard-process-summary-metric"><b><?=Format::h($dashboardResumoCard['fases'])?></b><small>Fases encerradas</small></div></div></div></div><div class="contract-preview-note"><b>LEITURA DA SITUAÇÃO</b><span>Cada fase apresenta seus atos/atividades. Documentos pertencem aos atos; atos concluídos compõem o percentual da fase.</span></div></div><?php else:?><div class="contract-preview-footer"><div class="contract-preview-legal"><div class="contract-preview-legal-icon">⚖</div><div><b>BASE LEGAL</b><span>Lei nº 14.133/2021 e demais normas aplicáveis às licitações e contratações públicas.</span></div></div><div class="contract-preview-note"><b>LEITURA DA PRÉVIA</b><span>As datas e durações são parâmetros operacionais cadastrados no INPACTA by Stratelli e são recalculadas após o encerramento formal da etapa anterior.</span></div></div><?php endif;?>
 </section>
 
+
+<style>
+.pge-ato-conferencia{width:min(760px,calc(100vw - 32px));max-height:86vh;padding:0;border:1px solid #cbd5e1;border-radius:16px;background:white;color:#102a4b;box-shadow:0 24px 80px #0b1d3d55;overflow:auto}
+.pge-ato-conferencia::backdrop{background:#081a35a8}
+.pge-ato-conferencia-top{display:flex;justify-content:space-between;gap:12px;padding:22px 24px 15px;border-bottom:1px solid #dbe4ef}
+.pge-ato-conferencia-top small{font-weight:800;color:#586d86;letter-spacing:.06em}
+.pge-ato-conferencia-top h3{margin:6px 0 6px;font-size:20px;line-height:1.4}
+.pge-ato-conferencia-top p{margin:0;color:#536780;font-size:13px}
+.pge-ato-conferencia-close{border:0;background:#edf2f8;border-radius:8px;padding:4px 12px;font-size:23px;align-self:start;cursor:pointer}
+.pge-ato-conferencia-resumo{margin:18px 24px;padding:14px 16px;background:#f1f5fb;border:1px solid #d8e3ef;border-radius:10px;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.pge-ato-conferencia-resumo span{color:#54677f}
+.pge-ato-conferencia-lista{margin:0 24px;display:flex;flex-direction:column;gap:8px}
+.pge-ato-conferencia-doc{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px;border:1px solid #dee6f0;border-radius:9px;font-size:13px}
+.pge-ato-conferencia-doc b{display:block}.pge-ato-conferencia-doc small{display:block;margin-top:5px;color:#718096}
+.pge-ato-conferencia-status{white-space:nowrap;padding:5px 8px;border-radius:8px;font-weight:700;background:#fff0c2;color:#855600}
+.pge-ato-conferencia-status.ok{background:#dff7e9;color:#146534}.pge-ato-conferencia-status.missing{background:#fee6e6;color:#a32929}
+.pge-ato-conferencia-info{font-size:12px;color:#526680;margin:16px 24px 0}
+.pge-ato-conferencia-acoes{display:flex;justify-content:flex-end;gap:10px;padding:20px 24px;position:sticky;bottom:0;background:white;border-top:1px solid #e1e8f0;margin-top:18px}
+.pge-ato-conferencia-acoes button{border:0;border-radius:9px;padding:12px 16px;font-weight:700;cursor:pointer}
+.pge-ato-conferencia-cancelar{background:#edf2f9;color:#193452}.pge-ato-conferencia-confirmar{background:#137e47;color:white}
+.pge-ato-conferencia-confirmar:disabled{background:#abb7c6;cursor:not-allowed}
+@media(max-width:620px){.pge-ato-conferencia-doc{align-items:flex-start;flex-direction:column}.pge-ato-conferencia-status{white-space:normal}.pge-ato-conferencia-acoes{flex-wrap:wrap}}
+</style>
 
 <script>
 (function(){

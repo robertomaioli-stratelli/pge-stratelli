@@ -394,8 +394,28 @@ final class TenantController
     public function configTogglePhase(string $municipio,string $id): void {$this->configAction(fn($s)=>$s->togglePhase((int)$id),'Status da fase alterado.','fases');}
     public function configSaveActivity(string $municipio): void {$this->configAction(fn($s)=>$s->saveActivity($_POST),'Ato/atividade salvo com sucesso.','fases');}
     public function configToggleActivity(string $municipio,string $id): void {$this->configAction(fn($s)=>$s->toggleActivity((int)$id),'Status do ato/atividade alterado.','fases');}
-    public function completeActivity(string $municipio,string $id): void {$this->csrf();try{(new \App\Services\ActivityProgressService())->setCompleted((int)$id,true);Session::flash('ok','Ato/atividade concluído.');}catch(\Throwable $e){Session::flash('erro',$e->getMessage());}Response::redirect('/'.Tenant::current()['slug'].'/dashboard');}
-    public function reopenActivity(string $municipio,string $id): void {$this->csrf();try{(new \App\Services\ActivityProgressService())->setCompleted((int)$id,false);Session::flash('ok','Ato/atividade reaberto.');}catch(\Throwable $e){Session::flash('erro',$e->getMessage());}Response::redirect('/'.Tenant::current()['slug'].'/dashboard');}
+    private function redirectAfterActivityAction(int $id): never
+    {
+        $pdo=Database::connection();
+        $q=$pdo->prepare('SELECT fase_id FROM atividades_fase WHERE id=? AND municipio_id=?');
+        $q->execute([$id,(int)Tenant::id()]);
+        $fase=(int)$q->fetchColumn();
+        Response::redirect('/'.Tenant::current()['slug'].'/workflow'.($fase?'/fase/'.$fase:''));
+    }
+    public function completeActivity(string $municipio,string $id): void
+    {
+        $this->csrf();
+        try {(new \App\Services\ActivityProgressService())->setCompleted((int)$id,true);Session::flash('ok','Ato concluído após conferência documental.');}
+        catch (\Throwable $e) {Session::flash('erro',$e->getMessage());}
+        $this->redirectAfterActivityAction((int)$id);
+    }
+    public function reopenActivity(string $municipio,string $id): void
+    {
+        $this->csrf();
+        try {(new \App\Services\ActivityProgressService())->setCompleted((int)$id,false);Session::flash('ok','Ato reaberto.');}
+        catch (\Throwable $e) {Session::flash('erro',$e->getMessage());}
+        $this->redirectAfterActivityAction((int)$id);
+    }
     public function configSaveSecretaria(string $municipio): void {$this->configAction(fn($s)=>$s->saveSecretaria($_POST),'Secretaria e vínculos salvos.','secretarias');}
     public function configToggleSecretaria(string $municipio,string $id): void {$this->configAction(fn($s)=>$s->toggleSecretaria((int)$id),'Status da secretaria alterado.','secretarias');}
     public function configSaveDepartamento(string $municipio): void {$this->configAction(fn($s)=>$s->saveDepartamento($_POST),'Departamento salvo.','secretarias');}
