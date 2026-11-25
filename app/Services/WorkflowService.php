@@ -253,7 +253,22 @@ final class WorkflowService
         $manual=[];foreach($this->all('SELECT * FROM cronograma_fases WHERE municipio_id=?',[$mid]) as $r)$manual[(int)$r['fase_id']]=$r;
         $schedule=[];$prevDeadline=null;$prevConclusion=null;$prevProcesso=null;$attentionDays=(new InstanceParameterService())->deadlineAlertDays($mid);
         foreach(array_values(array_filter($phases,fn($f)=>(int)$f['ativo']===1)) as $i=>$f){
-            $processoAtual=(int)($f['pge_processo_id']??0);if($prevProcesso!==null && $processoAtual!==$prevProcesso){$prevDeadline=null;$prevConclusion=null;}$primeiraFase=$prevDeadline===null;$prevProcesso=$processoAtual;$duration=max(1,(int)$f['dia_fim']-(int)$f['dia_inicio']+1);$m=$manual[(int)$f['id']]??null;$closed=$m&&strtoupper((string)($m['status']??'ENCERRADA'))==='ENCERRADA';$real=$closed?($m['data_conclusao_real']??null):null;
+            $processoAtual=(int)($f['pge_processo_id']??0);if($prevProcesso!==null && $processoAtual!==$prevProcesso){$prevDeadline=null;$prevConclusion=null;}$primeiraFase=$prevDeadline===null;$prevProcesso=$processoAtual;$duration=max(1,(int)$f['dia_fim']-(int)$f['dia_inicio']+1);$m=$manual[(int)$f['id']]??null;
+            // 1/1 e valores zerados sao o padrao de fase sem planejamento. Nao gerar vencimento ficticio.
+            // A mesma distincao ja e utilizada pela visualizacao Gantt.
+            if ((int)$f['dia_inicio']<=0 || (int)$f['dia_fim']<=(int)$f['dia_inicio']) {
+                $closedNoTerm=$m && strtoupper((string)($m['status']??''))==='ENCERRADA';
+                $realNoTerm=$closedNoTerm?($m['data_conclusao_real']??null):null;
+                $schedule[(int)$f['id']]=['fase_id'=>(int)$f['id'],'duracao'=>null,'inicio'=>null,'fim'=>null,
+                    'conclusao_real'=>$realNoTerm,'conclusao_origem'=>$realNoTerm?'formal':'',
+                    'bloqueada'=>!$primeiraFase&&!$prevConclusion,'status'=>$realNoTerm?'completed-on-time':'unscheduled',
+                    'rotulo'=>$realNoTerm?'ENCERRADA':'SEM PRAZO DEFINIDO',
+                    'texto'=>$realNoTerm?'Fase encerrada sem prazo planejado':'Nenhum vencimento pode ser calculado sem prazo de fase configurado.',
+                    'dias_restantes'=>null,'dias_desvio'=>0,'percentual_tempo'=>0,'provisorio'=>true,'registro_manual'=>$m];
+                $prevDeadline=null;
+                $prevConclusion=$realNoTerm;
+                continue;
+            }$closed=$m&&strtoupper((string)($m['status']??'ENCERRADA'))==='ENCERRADA';$real=$closed?($m['data_conclusao_real']??null):null;
             if($primeiraFase){$phaseStart=$start;$blocked=false;}elseif($prevConclusion){$phaseStart=$this->addDays($prevConclusion,1);$blocked=false;}else{$phaseStart=$this->addDays((string)$prevDeadline,1);$blocked=true;}
             $end=$this->addDays($phaseStart,$duration-1);$daysRemaining=$this->days($today,$end);$deviation=$real?$this->days($end,$real):0;$attention=$attentionDays;
             if($real)$status=$deviation>0?'completed-late':'completed-on-time';elseif($blocked)$status='blocked';elseif($today<$phaseStart)$status='scheduled';elseif($daysRemaining<0)$status='overdue';elseif($daysRemaining<=$attention)$status='attention';else$status='on-track';

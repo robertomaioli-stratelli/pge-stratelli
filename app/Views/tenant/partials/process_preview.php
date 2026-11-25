@@ -6,6 +6,17 @@ $previewFormalmenteIniciado=(new \App\Services\FormalStartService())->get((int)$
 // (ready/run/correction/done). A lista bruta de fases fazia o Workflow exibir PENDENTE mesmo com 100% aprovado.
 $phaseList=$fasesSituacionais;
 // V19: filhos operacionais dos atos, limitados ao município e aos atos visíveis.
+// Prazo individual calculado: nao herdar atraso da fase para atos/atividades sem vencimento.
+$workflowPrazoItens=[];
+try {
+    $dbPrazo=\App\Core\Database::connection();
+    $qPrazo=$dbPrazo->prepare('SELECT nivel,item_id,fim_previsto FROM pge_prazo_resultados WHERE municipio_id=? AND situacao="CALCULADO" AND fim_previsto IS NOT NULL AND nivel IN ("ATO","ATIVIDADE")');
+    $qPrazo->execute([(int)$tenant['id']]);
+    foreach($qPrazo->fetchAll(\PDO::FETCH_ASSOC) as $pr){
+        $workflowPrazoItens[$pr['nivel'].':'.(int)$pr['item_id']]=(string)$pr['fim_previsto'];
+    }
+} catch (\Throwable $ex) { error_log('[PGE prazos individuais] '.$ex->getMessage()); }
+$workflowHoje=date('Y-m-d');
 $workflowFilhas=[];
 try {
     $workflowAtoIds=array_values(array_unique(array_map('intval',array_column(($atividadesVisiveis??[]),'id'))));
@@ -90,7 +101,10 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
   $am=$atividadeMetricas[(int)$act['id']]??['status'=>'PENDENTE','percentual'=>0,'concluida'=>false,'total_documentos'=>0,'aprovados'=>0];
   $numeroAto=$workflowNumeroAto($act,$faseNumeroVisual);
   $atoConcluido=($act['status_execucao']??'')==='CONCLUIDA';
-  $atoClasse=$atoConcluido?'is-complete':($class==='overdue'?'is-overdue':($class==='current'?'is-current':'is-upcoming'));
+  $fimAto=(string)($workflowPrazoItens['ATO:'.(int)$act['id']]??($act['fim_previsto']??''));
+  $prazoExplicitoAto=$fimAto!=='' && preg_match('/^\d{4}-\d{2}-\d{2}$/',$fimAto);
+  $atoAtrasado=$previewFormalmenteIniciado && !$atoConcluido && $prazoExplicitoAto && $fimAto<$workflowHoje;
+  $atoClasse=$atoConcluido?'is-complete':($atoAtrasado?'is-overdue':(in_array($class,['current','overdue'],true)?'is-current':'is-upcoming'));
   $filhas=$workflowFilhas[(int)$act['id']]??[];
   $qtdFilhas=count($filhas);$concluidasFilhas=count(array_filter($filhas,static fn($a)=>($a['status_execucao']??'')==='CONCLUIDA'));
 ?>
@@ -101,7 +115,11 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
     <strong><?=$qtdFilhas?(int)round($concluidasFilhas/$qtdFilhas*100):(int)($am['percentual']??0)?>%</strong>
   </div>
   <?php if($filhas):?><div class="pge-wf-filhas" aria-label="Atividades do ato <?=Format::h($numeroAto)?>">
-    <?php foreach($filhas as $filha):$numeroFilha=$workflowNumeroAtividade($filha,$numeroAto);$filhaConcluida=($filha['status_execucao']??'')==='CONCLUIDA';$filhaClasse=$filhaConcluida?'is-complete':$atoClasse; ?>
+    <?php foreach($filhas as $filha):$numeroFilha=$workflowNumeroAtividade($filha,$numeroAto);$filhaConcluida=($filha['status_execucao']??'')==='CONCLUIDA';
+      $fimFilha=(string)($workflowPrazoItens['ATIVIDADE:'.(int)$filha['id']]??'');
+      $filhaAtrasada=$previewFormalmenteIniciado&&!$filhaConcluida&&preg_match('/^\d{4}-\d{2}-\d{2}$/',$fimFilha)&&$fimFilha<$workflowHoje;
+      $filhaClasse=$filhaConcluida?'is-complete':($filhaAtrasada?'is-overdue':$atoClasse);
+      if(!$filhaConcluida&&!$filhaAtrasada&&$filhaClasse==='is-overdue')$filhaClasse='is-current'; ?>
     <div class="pge-wf-filha <?=$filhaClasse?>"><span class="pge-wf-filha-check"><?=$filhaConcluida?'✓':'○'?></span>
       <div><b><?=Format::h($numeroFilha.'. '.$workflowSemPrefixo((string)$filha['titulo'],$numeroFilha))?></b><small><?=$filhaConcluida?'CONCLUÍDA':($filhaClasse==='is-overdue'?'EM ATRASO':($filhaClasse==='is-current'?'PENDENTE':'AGUARDANDO ABERTURA'))?></small></div>
     </div>
