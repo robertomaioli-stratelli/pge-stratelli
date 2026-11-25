@@ -42,6 +42,7 @@ final class DocumentService
             $this->pdo->commit();
         }catch(\Throwable $e){$this->pdo->rollBack();$this->files->discard($up['path']);throw $e;}
         Audit::log('DOCUMENTO_ENVIADO','Documento #'.$docId.' · requisito #'.$requirementId.' · versão '.$version.' · SHA-256 '.$up['checksum'],$this->mid);
+        if($status==='APROVADO'){try{(new ActivityProgressService())->synchronizeFromRequirement($requirementId);}catch(\Throwable $e){error_log('[PGE ato automatico] '.$e->getMessage());}}
         try{(new NotificationService())->documentUploaded($docId);}catch(\Throwable){}
         return $docId;
     }
@@ -75,6 +76,7 @@ final class DocumentService
         $this->pdo->prepare('UPDATE documentos_enviados SET status=?,observacao_validacao=?,validado_por_usuario_id=?,validado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$status,$observation?:null,Auth::id(),$documentId,$this->mid]);
         $this->history->log(['fase_id'=>$doc['fase_id'],'requisito_id'=>$doc['requisito_id'],'documento_id'=>$documentId,'evento'=>$status==='APROVADO'?'Documento aprovado':'Correção solicitada','tipo_arquivo'=>'validacao','arquivo_original'=>$doc['arquivo_original'],'arquivo_salvo'=>$doc['arquivo_salvo'],'tamanho'=>$doc['tamanho'],'mime_type'=>$doc['mime_type']??'','checksum_sha256'=>$doc['checksum_sha256']??'','versao'=>$doc['versao']??null,'motivo'=>$observation?:'Documento conferido e aprovado pela Stratelli.','status'=>$status]);
         Audit::log($status==='APROVADO'?'DOCUMENTO_APROVADO':'DOCUMENTO_CORRECAO_SOLICITADA','Documento #'.$documentId.' · versão '.(int)$doc['versao'].' · SHA-256 '.($doc['checksum_sha256']??''),$this->mid);
+        if($status==='APROVADO'){try{(new ActivityProgressService())->synchronizeFromRequirement((int)$doc['requisito_id']);}catch(\Throwable $e){error_log('[PGE ato automatico] '.$e->getMessage());}}
         try{(new NotificationService())->documentValidated($documentId,$status,$observation);}catch(\Throwable){}
     }
 

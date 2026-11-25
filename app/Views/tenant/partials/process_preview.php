@@ -130,7 +130,7 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
   ?>
     <button class="dashboard-activity-action" type="button" onclick="document.getElementById('<?=Format::h($conferenciaId)?>').showModal()"><?=$atoConcluido?'Reabrir ato':'Conferir / Concluir ato'?></button>
     <dialog id="<?=Format::h($conferenciaId)?>" class="pge-ato-conferencia" aria-label="Conferência documental do ato <?=Format::h($numeroAto)?>">
-      <div class="pge-ato-conferencia-top"><div><small>CONFERÊNCIA DOCUMENTAL</small><h3><?=Format::h($numeroAto.'. '.$workflowSemPrefixo((string)$act['titulo'],$numeroAto))?></h3><p>Verifique os documentos obrigatórios antes de registrar a conclusão do ato.</p></div><button type="button" class="pge-ato-conferencia-close" onclick="this.closest('dialog').close()" aria-label="Fechar">×</button></div>
+      <div class="pge-ato-conferencia-top"><div><small>CONFERÊNCIA DOCUMENTAL</small><h3><?=Format::h($numeroAto.'. '.$workflowSemPrefixo((string)$act['titulo'],$numeroAto))?></h3><p>Confira os documentos obrigatórios. A conclusão também é registrada automaticamente após a aprovação de todos.</p></div><button type="button" class="pge-ato-conferencia-close" onclick="this.closest('dialog').close()" aria-label="Fechar">×</button></div>
       <div class="pge-ato-conferencia-resumo"><b><?=$qtdDocsAprovados?> de <?=$qtdDocsObrigatorios?> documentos obrigatórios aprovados</b><span><?=$atoConcluido?'Ato já concluído':($atoPodeConcluir?'Documentação pronta para conclusão':'Existem pendências que impedem a conclusão')?></span></div>
       <div class="pge-ato-conferencia-lista">
       <?php if($atoDocumentoLinhas):foreach($atoDocumentoLinhas as $linhaDoc):
@@ -140,7 +140,7 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
         <p>Nenhum documento está vinculado a este ato. A conclusão deve ser verificada conforme as atividades cadastradas.</p>
       <?php endif;?>
       </div>
-      <?php if(!$atoConcluido&&$filhas):?><p class="pge-ato-conferencia-info">As atividades com documentos obrigatórios aprovados serão concluídas junto com o ato. Atividades sem documento obrigatório precisam estar previamente concluídas.</p><?php endif;?>
+      <?php if(!$atoConcluido&&$filhas):?><p class="pge-ato-conferencia-info">As atividades com documentos obrigatórios aprovados acompanham a conclusão automática.</p><?php endif;?>
       <div class="pge-ato-conferencia-acoes"><button type="button" class="pge-ato-conferencia-cancelar" onclick="this.closest('dialog').close()">Cancelar</button>
         <form method="post" action="/<?=Format::h($slug)?>/atividades/<?=(int)$act['id']?>/<?=$atoConcluido?'reabrir':'concluir'?>"><input type="hidden" name="_token" value="<?=Format::h(Csrf::token())?>"><button type="submit" class="pge-ato-conferencia-confirmar" <?=(!$atoConcluido&&!$atoPodeConcluir)?'disabled title="Existem documentos ou atividades pendentes"':''?>><?=$atoConcluido?'Confirmar reabertura':'✓ Confirmar conclusão do ato'?></button></form>
       </div>
