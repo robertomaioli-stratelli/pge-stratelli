@@ -46,13 +46,16 @@ final class ConfigurationService
     public function saveSecretaria(array $d): void
     {
         $id=(int)($d['id']??0);$name=trim((string)($d['nome']??''));$sigla=strtoupper(trim((string)($d['sigla']??'')));
+        $cargo=trim((string)($d['cargo_responsavel']??''));
+        $emails=$this->normalizeResponsibleEmails((string)($d['emails_responsaveis']??''));
+        if(mb_strlen($cargo)>180)throw new RuntimeException('O cargo do responsavel deve ter no maximo 180 caracteres.');
         if($name==='')throw new RuntimeException('Informe o nome da secretaria.');
         $activityIds=array_values(array_unique(array_filter(array_map('intval',(array)($d['atividade_ids']??[])))));
         $phaseIds=array_values(array_unique(array_filter(array_map('intval',(array)($d['fase_ids']??[])))));
         if($activityIds){$marks=implode(',',array_fill(0,count($activityIds),'?'));$st=$this->pdo->prepare("SELECT id,fase_id FROM atividades_fase WHERE municipio_id=? AND ativo=1 AND id IN ($marks)");$st->execute(array_merge([$this->mid],$activityIds));$valid=[];foreach($st->fetchAll()as$a){$valid[]=(int)$a['id'];$phaseIds[]=(int)$a['fase_id'];}if(count($valid)!==count($activityIds))throw new RuntimeException('Há ato/atividade inválido no vínculo da secretaria.');$activityIds=$valid;$phaseIds=array_values(array_unique($phaseIds));}
         $this->pdo->beginTransaction();try{
-            if($id)$this->pdo->prepare('UPDATE secretarias SET nome=?,sigla=?,atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$name,$sigla,$id,$this->mid]);
-            else{$this->pdo->prepare('INSERT INTO secretarias(municipio_id,nome,sigla,ativo,criado_em,atualizado_em) VALUES(?,?,?,1,NOW(),NOW())')->execute([$this->mid,$name,$sigla]);$id=(int)$this->pdo->lastInsertId();}
+            if($id)$this->pdo->prepare('UPDATE secretarias SET nome=?,sigla=?,cargo_responsavel=?,emails_responsaveis=?,atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$name,$sigla,$cargo,$emails,$id,$this->mid]);
+            else{$this->pdo->prepare('INSERT INTO secretarias(municipio_id,nome,sigla,cargo_responsavel,emails_responsaveis,ativo,criado_em,atualizado_em) VALUES(?,?,?,?,?,1,NOW(),NOW())')->execute([$this->mid,$name,$sigla,$cargo,$emails]);$id=(int)$this->pdo->lastInsertId();}
             $this->pdo->prepare('DELETE FROM atividade_secretarias WHERE municipio_id=? AND secretaria_id=?')->execute([$this->mid,$id]);
             $this->pdo->prepare('DELETE FROM fase_secretarias WHERE municipio_id=? AND secretaria_id=?')->execute([$this->mid,$id]);
             foreach($phaseIds as$fid)$this->pdo->prepare('INSERT IGNORE INTO fase_secretarias(municipio_id,fase_id,secretaria_id) VALUES(?,?,?)')->execute([$this->mid,$fid,$id]);
@@ -61,7 +64,27 @@ final class ConfigurationService
         }catch(\Throwable$e){$this->pdo->rollBack();throw$e;}
     }
     public function toggleSecretaria(int $id): void{$this->pdo->prepare('UPDATE secretarias SET ativo=IF(ativo=1,0,1),atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$id,$this->mid]);}
-    public function saveDepartamento(array $d): void{$id=(int)($d['id']??0);$sid=(int)($d['secretaria_id']??0);$name=trim((string)($d['nome']??''));$sigla=strtoupper(trim((string)($d['sigla']??'')));if(!$sid||$name==='')throw new RuntimeException('Informe a secretaria e o departamento.');if($id)$this->pdo->prepare('UPDATE departamentos SET secretaria_id=?,nome=?,sigla=?,atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$sid,$name,$sigla,$id,$this->mid]);else$this->pdo->prepare('INSERT INTO departamentos(municipio_id,secretaria_id,nome,sigla,ativo,criado_em,atualizado_em) VALUES(?,?,?,?,1,NOW(),NOW())')->execute([$this->mid,$sid,$name,$sigla]);}
+    public function saveDepartamento(array $d): void
+    {
+        $id=(int)($d['id']??0);
+        $sid=(int)($d['secretaria_id']??0);
+        $name=trim((string)($d['nome']??''));
+        $sigla=strtoupper(trim((string)($d['sigla']??'')));
+        $cargo=trim((string)($d['cargo_responsavel']??''));
+        $emails=$this->normalizeResponsibleEmails((string)($d['emails_responsaveis']??''));
+        if(mb_strlen($cargo)>180)throw new RuntimeException('O cargo do responsavel deve ter no maximo 180 caracteres.');
+        if(!$sid||$name==='')throw new RuntimeException('Informe a secretaria e o departamento.');
+        $check=$this->pdo->prepare('SELECT id FROM secretarias WHERE id=? AND municipio_id=?');
+        $check->execute([$sid,$this->mid]);
+        if(!$check->fetchColumn())throw new RuntimeException('Secretaria invalida para este municipio.');
+        if($id){
+            $this->pdo->prepare('UPDATE departamentos SET secretaria_id=?,nome=?,sigla=?,cargo_responsavel=?,emails_responsaveis=?,atualizado_em=NOW() WHERE id=? AND municipio_id=?')
+                ->execute([$sid,$name,$sigla,$cargo,$emails,$id,$this->mid]);
+        }else{
+            $this->pdo->prepare('INSERT INTO departamentos(municipio_id,secretaria_id,nome,sigla,cargo_responsavel,emails_responsaveis,ativo,criado_em,atualizado_em) VALUES(?,?,?,?,?,?,1,NOW(),NOW())')
+                ->execute([$this->mid,$sid,$name,$sigla,$cargo,$emails]);
+        }
+    }
     public function toggleDepartamento(int $id): void{$this->pdo->prepare('UPDATE departamentos SET ativo=IF(ativo=1,0,1),atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$id,$this->mid]);}
     public function saveTipo(array $d): void{$id=(int)($d['id']??0);$name=trim((string)($d['nome']??''));$desc=trim((string)($d['descricao']??''));$ext=$this->normalizeExtensions((string)($d['extensoes']??''));if($name===''||$ext==='')throw new RuntimeException('Informe o nome e as extensões permitidas.');if($id)$this->pdo->prepare('UPDATE tipos_documento SET nome=?,descricao=?,extensoes=?,atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$name,$desc,$ext,$id,$this->mid]);else$this->pdo->prepare('INSERT INTO tipos_documento(municipio_id,nome,descricao,extensoes,ativo,criado_em,atualizado_em) VALUES(?,?,?,?,1,NOW(),NOW())')->execute([$this->mid,$name,$desc,$ext]);}
     public function toggleTipo(int $id): void{$this->pdo->prepare('UPDATE tipos_documento SET ativo=IF(ativo=1,0,1),atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$id,$this->mid]);}
@@ -87,5 +110,24 @@ final class ConfigurationService
         return $id;
     }
     public function toggleRequirement(int $id): void{$q=$this->pdo->prepare('SELECT fase_id FROM requisitos_documentais WHERE id=? AND municipio_id=?');$q->execute([$id,$this->mid]);$fid=(int)$q->fetchColumn();if($fid)(new PhaseClosureService())->assertOpen($fid);$this->pdo->prepare('UPDATE requisitos_documentais SET ativo=IF(ativo=1,0,1),atualizado_em=NOW() WHERE id=? AND municipio_id=?')->execute([$id,$this->mid]);}
+    /** Normaliza contatos para futuras notificacoes; nao envia mensagens. */
+    private function normalizeResponsibleEmails(string $raw): string
+    {
+        $raw=trim($raw);
+        if($raw==='')return '';
+        $values=preg_split('/[,;\r\n]+/', $raw, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $unique=[];
+        foreach($values as $value){
+            $email=trim($value);
+            if($email==='')continue;
+            if(mb_strlen($email)>254 || !filter_var($email,FILTER_VALIDATE_EMAIL)){
+                throw new RuntimeException('Endereco de e-mail invalido: '.$email);
+            }
+            $key=strtolower($email);
+            if(!isset($unique[$key]))$unique[$key]=$email;
+        }
+        if(count($unique)>30)throw new RuntimeException('Informe no maximo 30 e-mails por unidade.');
+        return implode(',',array_values($unique));
+    }
     private function normalizeExtensions(string$v):string{$items=preg_split('/[,;\s]+/',strtolower($v),-1,PREG_SPLIT_NO_EMPTY)?:[];$items=array_values(array_unique(array_map(fn($x)=>ltrim(trim($x),'.'),$items)));return implode(',',$items);}
 }
