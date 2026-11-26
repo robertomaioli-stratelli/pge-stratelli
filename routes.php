@@ -12,6 +12,7 @@ use App\Controllers\HierarchyController;
 use App\Controllers\StructureController;
 use App\Core\Response;
 use App\Core\Router;
+use App\Controllers\SsoController;
 
 $router=new Router();
 $router->get('/',fn()=>Response::redirect(Router::homeForUser()),['auth']);
