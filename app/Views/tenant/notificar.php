@@ -11,10 +11,11 @@ $slug=$tenant['slug'];
 </style>
 <div class="ops-backdrop"><div class="ops-modal" role="dialog" aria-modal="true" aria-label="Notificar e cobrar documentos">
 <div class="ops-top"><h2>✉ Notificar / Cobrar documentos pendentes</h2><a class="ops-btn ops-soft" href="/<?=$h($slug)?>/dashboard">✕ Fechar</a></div>
-<p class="ops-note">Os itens sem prazo permanecem <b>Pendentes</b>. Somente data-limite calculada e vencida gera a classificação <b>Atrasado</b>. Nenhum envio é realizado sem confirmação.</p>
+<p class="ops-note">Escopo: <strong><?=$h($escopo??'ETAPA')?></strong>. Os itens sem prazo permanecem <b>Pendentes</b>. Somente data-limite calculada e vencida gera a classificação <b>Atrasado</b>. Nenhum envio é realizado sem confirmação.</p>
 <?php if(!empty($erro)):?><p class="ops-warn"><?=$h($erro)?></p><?php endif;?>
 <?php if(!empty($ok)):?><p style="color:#087344"><?=$h($ok)?></p><?php endif;?>
 <form class="ops-form" action="/<?=$h($slug)?>/notificar/enviar" method="post" id="opsForm">
+<input type="hidden" name="escopo" value="<?=$h($escopo??'ETAPA')?>"><input type="hidden" name="item" value="<?=(int)($escopoId??0)?>">
 <input type="hidden" name="_token" value="<?=$h(Csrf::token())?>">
 <label><b>Selecionar grupo</b>
 <select class="ops-input" name="filtro" id="opsFilter"><option value="TODOS">Todos os pendentes e atrasados</option><option value="PENDENTE">Somente pendentes (inclusive sem prazo)</option><option value="ATRASADO">Somente atrasados com prazo vencido</option></select></label>

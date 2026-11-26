@@ -23,10 +23,12 @@ final class OperationalEmailService
     }
 
     /** Busca apenas requisitos ativos da etapa ativa, sem alterar status. */
-    public function pendencias(int $mid): array
+    public function pendencias(int $mid, string $escopo = 'ETAPA', int $escopoId = 0): array
     {
         $etapa=$this->etapaAtiva($mid);
-        $q=$this->db->prepare('SELECT r.id requisito_id,r.nome documento,r.descricao orientacao,r.obrigatorio,r.perfil_envio,r.secretaria_id,r.departamento_id, '
+        if (!in_array($escopo,['ETAPA','FASE','ATO','ATIVIDADE'],true)) throw new RuntimeException('Escopo inválido.');
+        if ($escopo !== 'ETAPA' && $escopoId < 1) throw new RuntimeException('Item do escopo inválido.');
+        $q=$this->db->prepare('SELECT r.id requisito_id,r.nome documento,r.descricao orientacao,r.obrigatorio,r.perfil_envio,r.secretaria_id,r.departamento_id,r.atividade_ato_id, '
             .'f.id fase_id,f.titulo fase,f.ordem ordem_fase,a.id ato_id,a.titulo ato,a.ordem ordem_ato, '
             .'atv.id atividade_id,atv.titulo atividade,atv.ordem ordem_atividade, '
             .'t.nome tipo_documento,t.extensoes extensoes_permitidas, '
@@ -51,8 +53,11 @@ final class OperationalEmailService
         $today=(new \DateTimeImmutable('today',new \DateTimeZone('America/Sao_Paulo')))->format('Y-m-d');
         foreach($q->fetchAll(PDO::FETCH_ASSOC) as $r) {
             if($r['estado_documental']==='APROVADO') continue;
+            if ($escopo === 'FASE' && (int)$r['fase_id'] !== $escopoId) continue;
+            if ($escopo === 'ATO' && (int)$r['ato_id'] !== $escopoId) continue;
+            if ($escopo === 'ATIVIDADE' && (int)$r['atividade_ato_id'] !== $escopoId) continue;
             // Prazo do item mais especifico. Fase/ato sem prazo nao gera atraso.
-            $due=$r['atividade_id'] ? ($r['prazo_atividade']?:null) : ($r['ato_id'] ? ($r['prazo_ato']?:null) : ($r['prazo_fase']?:null));
+            $due=$r['atividade_ato_id'] ? ($r['prazo_atividade']?:null) : ($r['atividade_id'] ? ($r['prazo_ato']?:null) : ($r['prazo_fase']?:null));
             $r['data_limite']=$due;
             $r['classificacao']=$due!==null && $due<$today?'ATRASADO':'PENDENTE';
             $r['destinatarios']=$this->emails(array_filter([(string)($r['emails_secretaria']??''),(string)($r['emails_departamento']??'')]));
@@ -136,12 +141,12 @@ final class OperationalEmailService
     }
 
     /** A UI lista tudo antes da confirmacao. Backend recalcula e valida IDs, nao confia no POST. */
-    public function cobrar(int $mid,array $ids,string $filtro,string $mensagem,int $uid): array
+    public function cobrar(int $mid,array $ids,string $filtro,string $mensagem,int $uid,string $escopo='ETAPA',int $escopoId=0): array
     {
         if(!in_array($filtro,['PENDENTE','ATRASADO','TODOS'],true))throw new RuntimeException('Filtro invalido.');
         $ids=array_values(array_unique(array_map('intval',$ids)));
         if(!$ids||count($ids)>100)throw new RuntimeException('Selecione de 1 a 100 documentos.');
-        $itens=[];foreach($this->pendencias($mid) as $row){
+        $itens=[];foreach($this->pendencias($mid,$escopo,$escopoId) as $row){
             if(in_array((int)$row['requisito_id'],$ids,true) && ($filtro==='TODOS'||$row['classificacao']===$filtro))$itens[]=$row;
         }
         if(count($itens)!==count($ids))throw new RuntimeException('Selecao alterada. Reabra a tela e confira os documentos.');
