@@ -121,7 +121,7 @@ final class AdminController
     public function editUsuario(string $id): void
     {
         $pdo=Database::connection();$service=new UserService();try{$usuario=$service->findForAdmin((int)$id);}catch(\Throwable$e){Response::abort(404,$e->getMessage());}
-        $municipios=$pdo->query('SELECT id,nome,uf FROM municipios WHERE ativo=1 ORDER BY nome')->fetchAll();$secretarias=$pdo->query('SELECT id,municipio_id,nome,sigla FROM secretarias WHERE ativo=1 ORDER BY nome')->fetchAll();$departamentos=$pdo->query('SELECT id,municipio_id,secretaria_id,nome,sigla FROM departamentos WHERE ativo=1 ORDER BY nome')->fetchAll();
+        $municipios=$pdo->query('SELECT id,nome,uf FROM municipios WHERE ativo=1 ORDER BY nome')->fetchAll();$secretarias=$pdo->query('SELECT id,municipio_id,nome,sigla,cargo_responsavel,emails_responsaveis FROM secretarias WHERE ativo=1 ORDER BY nome')->fetchAll();$departamentos=$pdo->query('SELECT id,municipio_id,secretaria_id,nome,sigla,cargo_responsavel,emails_responsaveis FROM departamentos WHERE ativo=1 ORDER BY nome')->fetchAll();
         View::render('admin/usuario',['usuario'=>$usuario,'municipios'=>$municipios,'secretarias'=>$secretarias,'departamentos'=>$departamentos,'title'=>'Editar usuário','erro'=>Session::pullFlash('erro'),'ok'=>Session::pullFlash('ok')]);
     }
     public function updateUsuario(string $id): void
