@@ -128,4 +128,7 @@ $router->post('/{municipio}/configuracoes/restauracao/importar',[TenantControlle
 $router->post('/{municipio}/configuracoes/restauracao/{id}/restaurar',[TenantController::class,'configSnapshotRestore'],['auth','tenant','platform_admin']);
 $router->post('/{municipio}/configuracoes/restauracao/{id}/remover',[TenantController::class,'configSnapshotRemove'],['auth','tenant','platform_admin']);
 
+$router->get('/sso', [SsoController::class, 'entrar']);
+$router->get('/sso/existe', [SsoController::class, 'existe']);
+
 return $router;
