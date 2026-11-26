@@ -124,6 +124,7 @@ elseif(!empty($faseSituacional['id']))$viewedPhaseId=(int)$faseSituacional['id']
       <div><b><?=Format::h($numeroFilha.'. '.$workflowSemPrefixo((string)$filha['titulo'],$numeroFilha))?></b><small><?=$filhaConcluida?'CONCLUÍDA':($filhaClasse==='is-overdue'?'EM ATRASO':($filhaClasse==='is-current'?'PENDENTE':'AGUARDANDO ABERTURA'))?></small></div>
     </div>
     <?php endforeach;?></div><?php endif;?>
+  <?php if (\App\Core\Auth::isPlatformAdmin()): ?><a class="dashboard-activity-action" style="text-decoration:none;display:inline-block;margin:6px 8px 6px 0" href="/<?= Format::h($slug) ?>/notificar?escopo=ATO&amp;item=<?=(int)$act['id']?>">✉ Cobrar documentos deste ato</a><?php endif; ?>
   <?php if($scope==='stratelli'&&$previewMode==='dashboard'&&$previewFormalmenteIniciado):
     $atoDocumentoLinhas=[];$atoPodeConcluir=true;$qtdDocsObrigatorios=0;$qtdDocsAprovados=0;
     $idsFilhasDoAto=array_map('intval',array_column($filhas,'id'));

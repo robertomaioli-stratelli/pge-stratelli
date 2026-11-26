@@ -26,6 +26,12 @@ if (!empty($phase['id'])) {
 <?php require __DIR__.'/partials/hierarchy_summary.php'; ?>
 
 <div class="hero dashboard-hero"><div><h1>Dashboard Situacional</h1><p><?=$scope==='stratelli'?'Visão executiva do processo atual do município, da fase em andamento e das secretarias que ainda precisam agir.':($scope==='secretaria'?'Visão restrita às fases e aos documentos sob responsabilidade da sua secretaria.':'Visão consolidada do processo municipal, reunindo todas as secretarias, documentos, entregas, correções e análises.')?></p></div><div class="notice <?=$scope==='stratelli'?'purple':''?>">● Situação calculada em tempo real pelo banco de dados</div></div>
+<?php if (\App\Core\Auth::isPlatformAdmin()): ?>
+<div class="card" style="padding:14px 18px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:12px 0">
+  <div><strong>Comunicações e cobranças</strong><p style="margin:4px 0">Selecione documentos pendentes ou atrasados e confira os destinatários antes de enviar.</p></div>
+  <a class="btn primary" href="/<?= \App\Core\Format::h($slug) ?>/notificar">✉ Notificar / Cobrar</a>
+</div>
+<?php endif; ?>
 <?php $desk=$pendingDesk??['actionCount'=>0,'stats'=>[]];?>
 <section class="workdesk-dashboard-strip <?=($desk['actionCount']??0)>0?'has-actions':'is-clear'?>"><div class="workdesk-dashboard-icon"><?=($desk['actionCount']??0)>0?'◆':'✓'?></div><div><small><?=$scope==='stratelli'?'CENTRAL DE PENDÊNCIAS':'MINHA MESA'?></small><b><?php if(($desk['actionCount']??0)>0):?>Você tem <?=$desk['actionCount']?> ação(ões) pendente(s)<?php else:?>Nenhuma ação imediata para o seu perfil<?php endif;?></b><span><?php if(($desk['actionCount']??0)>0):?><?=($desk['stats']['correction']??0)?> correção(ões) · <?=($desk['stats']['send']??0)?> envio(s) · <?=($scope==='stratelli'?($desk['stats']['validation']??0):($desk['stats']['waiting']??0))?> em análise<?php if(($desk['stats']['closure']??0)>0):?> · <?=($desk['stats']['closure']??0)?> encerramento(s)<?php endif;?><?php else:?>Acompanhe itens informativos e dependências quando necessário.<?php endif;?></span></div><a class="btn primary" href="/<?=Format::h($slug)?>/pendencias"><?=$scope==='stratelli'?'Abrir Central':'Abrir Minha Mesa'?></a></section>
 <?php $formalStartDashboard=(new \App\Services\FormalStartService())->get((int)$tenant['id']); ?>

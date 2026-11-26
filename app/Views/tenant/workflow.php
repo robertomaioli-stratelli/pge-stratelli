@@ -157,6 +157,12 @@ $inicioFormalPge=(new \App\Services\FormalStartService())->get((int)$tenant['id'
 </section>
 
 
+<?php if (\App\Core\Auth::isPlatformAdmin()): ?>
+<div class="card" style="padding:14px 18px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:12px 0">
+  <div><strong>Comunicações e cobranças</strong><p style="margin:4px 0">Selecione documentos pendentes ou atrasados e confira os destinatários antes de enviar.</p></div>
+  <a class="btn primary" href="/<?= \App\Core\Format::h($slug) ?>/notificar<?= !empty($atividade['id']) ? '?escopo=FASE&amp;item='.(int)$atividade['id'] : '' ?>">✉ Notificar / Cobrar</a>
+</div>
+<?php endif; ?>
 <div class="hero"><div><h1>Workflow de Contratação / Fases</h1><p>Envio dos documentos e acompanhamento do processo</p></div><div class="notice <?=$scope==='stratelli'?'purple':''?>"><?=$scope==='municipio'?'Como Gestor Municipal, você acompanha e envia documentos de todas as secretarias vinculadas ao processo.':($scope==='secretaria'?'Acesso restrito aos documentos de responsabilidade de '.Format::h($user['secretaria_nome']??'sua secretaria').'. A fase atual é única para todas as secretarias e segue o andamento global definido pela Stratelli.':'Todas as fases, secretarias, tipos e modelos podem ser administrados no menu Configurações.')?></div></div>
 
 <?php if(!$atividadePodeAcessar):?>

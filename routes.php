@@ -2,6 +2,7 @@
 use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\TenantController;
+use App\Controllers\OperationalEmailController;
 use App\Controllers\DeadlineController;
 use App\Controllers\MediaController;
 use App\Controllers\NotificationController;
@@ -9,14 +10,11 @@ use App\Controllers\SearchController;
 use App\Controllers\ProcessModelController;
 use App\Controllers\HierarchyController;
 use App\Controllers\StructureController;
-use App\Controllers\SsoController;
 use App\Core\Response;
 use App\Core\Router;
 
 $router=new Router();
 $router->get('/',fn()=>Response::redirect(Router::homeForUser()),['auth']);
-$router->get('/sso',[SsoController::class,'entrar']); // SSO Stratelli: sem middleware — se já houver sessão, o token troca para o usuário autenticado pela origem.
-$router->get('/sso/existe',[SsoController::class,'existe']); // Pré-checagem da origem: e-mail tem conta ativa? (não consome o token)
 $router->get('/login',[AuthController::class,'loginForm'],['guest']);
 $router->post('/login',[AuthController::class,'login'],['guest']);
 $router->get('/esqueci-senha',[AuthController::class,'forgotForm'],['guest']);
@@ -58,6 +56,8 @@ $router->get('/admin/modelos-processos',[ProcessModelController::class,'index'],
 $router->post('/admin/modelos-processos/salvar',[ProcessModelController::class,'save'],['auth','platform_admin']);
 $router->get('/admin/configuracoes',[AdminController::class,'configuracoes'],['auth','platform_admin']);
 
+$router->get('/{municipio}/notificar',[OperationalEmailController::class,'index'],['auth','tenant','platform_admin']);
+$router->post('/{municipio}/notificar/enviar',[OperationalEmailController::class,'send'],['auth','tenant','platform_admin']);
 $router->get('/{municipio}/dashboard',[TenantController::class,'dashboard'],['auth','tenant']);
 $router->get('/{municipio}/municipio',[TenantController::class,'municipioCadastro'],['auth','tenant']);
 $router->get('/{municipio}/pendencias',[TenantController::class,'pendencias'],['auth','tenant']);
